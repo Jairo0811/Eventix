@@ -233,37 +233,34 @@ src/
 
 ---
 
-## ✅ Requisitos previos
+## 🚀 Clonar y probar Eventix
 
-Antes de ejecutar Eventix debes instalar:
+### 1. Requisitos previos
+
+Instala y verifica:
 
 - JDK 21.
 - Maven 3.6.3 o superior.
 - MySQL 8.
 - Git.
 
-Verifica las versiones:
-
 ```bash
 java -version
 mvn -version
 mysql --version
+git --version
 ```
 
----
-
-## 📥 Clonar el repositorio
+### 2. Clonar el repositorio
 
 ```bash
 git clone https://github.com/Jairo0811/Eventix.git
 cd Eventix
 ```
 
----
+### 3. Crear la base de datos
 
-## 🗄️ Preparar MySQL
-
-Ejecuta lo siguiente con una cuenta administradora de MySQL:
+Ejecuta en MySQL:
 
 ```sql
 CREATE DATABASE eventix
@@ -275,17 +272,15 @@ GRANT ALL PRIVILEGES ON eventix.* TO 'eventix'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-Flyway crea las tablas y los datos iniciales al iniciar la aplicación. Hibernate solo valida el esquema y no lo modifica automáticamente.
+Flyway crea automáticamente las tablas y los datos iniciales al iniciar la aplicación.
 
----
-
-## ⚙️ Configuración
+### 4. Configurar variables de entorno
 
 Usa `.env.example` como referencia. No publiques credenciales reales.
 
 | Variable | Requerida | Ejemplo |
 |---|---:|---|
-| `DB_URL` | Sí en producción | `jdbc:mysql://localhost:3306/eventix` |
+| `DB_URL` | Sí | `jdbc:mysql://localhost:3306/eventix` |
 | `DB_USERNAME` | Sí | `eventix` |
 | `DB_PASSWORD` | Sí | `una_contraseña_segura` |
 | `APP_PORT` | No | `8080` |
@@ -293,29 +288,41 @@ Usa `.env.example` como referencia. No publiques credenciales reales.
 | `MAIL_USERNAME` | Fase futura | vacío |
 | `MAIL_PASSWORD` | Fase futura | vacío |
 
-### PowerShell
+#### PowerShell
 
 ```powershell
 $env:DB_URL = "jdbc:mysql://localhost:3306/eventix"
 $env:DB_USERNAME = "eventix"
 $env:DB_PASSWORD = "una_contraseña_segura"
-mvn spring-boot:run
 ```
 
-### Bash
+#### Bash, Linux o macOS
 
 ```bash
 export DB_URL=jdbc:mysql://localhost:3306/eventix
 export DB_USERNAME=eventix
 export DB_PASSWORD=una_contraseña_segura
+```
+
+### 5. Ejecutar las pruebas
+
+```bash
+mvn clean verify
+```
+
+### 6. Iniciar la aplicación
+
+```bash
 mvn spring-boot:run
 ```
 
-Abre `http://localhost:8080`.
+Abre:
 
----
+```text
+http://localhost:8080
+```
 
-## 🔐 Credenciales iniciales
+### 7. Credenciales iniciales
 
 | Campo | Valor |
 |---|---|
@@ -327,28 +334,45 @@ El sistema obliga a cambiar la contraseña temporal en el primer inicio de sesi�
 
 > Estas credenciales son exclusivamente para desarrollo local.
 
----
-
-## ▶️ Ejecutar el proyecto
-
-### Opción 1: Maven
-
-```bash
-mvn spring-boot:run
-```
-
-### Opción 2: Compilar y ejecutar el JAR
+### 8. Ejecutar como archivo JAR
 
 ```bash
 mvn clean package
 java -jar target/eventix-0.1.0-SNAPSHOT.jar
 ```
 
-### Opción 3: Ejecutar pruebas
+### 9. Abrir en un IDE
 
-```bash
-mvn clean verify
-```
+#### Eclipse o Spring Tools
+
+1. Abre `File > Import`.
+2. Selecciona `Maven > Existing Maven Projects`.
+3. Elige la carpeta clonada de Eventix.
+4. Espera la descarga de dependencias.
+5. Ejecuta `EventixApplication` como `Spring Boot App` o `Java Application`.
+
+#### Apache NetBeans
+
+1. Abre `File > Open Project`.
+2. Selecciona la carpeta que contiene `pom.xml`.
+3. Espera la resolución de dependencias Maven.
+4. Ejecuta `EventixApplication`.
+
+#### IntelliJ IDEA
+
+1. Abre `File > Open`.
+2. Selecciona la carpeta del repositorio.
+3. Importa el proyecto como Maven.
+4. Configura JDK 21.
+5. Ejecuta `EventixApplication`.
+
+### 10. Problemas frecuentes
+
+- **Error de conexión a MySQL:** verifica `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` y que el servicio MySQL esté iniciado.
+- **Puerto 8080 ocupado:** define otro puerto con `APP_PORT`.
+- **Versión incorrecta de Java:** confirma que `java -version` y `mvn -version` utilizan JDK 21.
+- **Dependencias sin descargar:** ejecuta `mvn -U clean verify`.
+- **Migraciones fallidas:** verifica que el usuario de MySQL tenga permisos sobre la base `eventix`.
 
 ---
 
