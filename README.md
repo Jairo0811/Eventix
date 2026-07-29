@@ -8,8 +8,6 @@
   />
 </p>
 
-
-
 <p align="center">
   <img src="https://img.shields.io/badge/ITLA-2017--C2-0057B8?style=for-the-badge" alt="ITLA 2017-C2">
 </p>
@@ -351,3 +349,24 @@ java -jar target/eventix-0.1.0-SNAPSHOT.jar
 ```bash
 mvn clean verify
 ```
+
+---
+
+## 🎓 Información académica
+
+| Información | Detalle |
+|---|---|
+| 👨‍🎓 Estudiante | Francis Jairo Matías Rosario |
+| 🆔 Matrícula | 2015-2984 |
+| 📖 Asignatura | Programación 2 (SOF-004) |
+| 👨‍🏫 Profesor | Raydelto Hernández Perera |
+| 🏫 Institución | Instituto Tecnológico de Las Américas (ITLA) |
+| 📅 Período académico | 2017-C2 |
+| 🎯 Tipo de proyecto | Proyecto final |
+
+---
+
+## 👨‍💻 Autor
+
+**Francis Jairo Matías Rosario**  
+[GitHub](https://github.com/Jairo0811)
