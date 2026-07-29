@@ -1,6 +1,12 @@
 <div align="center">
 
-# 🎟️ Eventix
+<p align="center">
+  <img
+    src="docs/images/eventix-logo.png"
+    alt="Logo de Eventix"
+    width="520"
+  />
+</p>
 
 ### Transforma tus eventos. Conecta experiencias.
 
