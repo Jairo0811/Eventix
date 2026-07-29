@@ -4,7 +4,7 @@
   <img
     src="docs/images/eventix-logo.png"
     alt="Logo de Eventix"
-    width="420"
+    width="920"
   />
 </p>
 
