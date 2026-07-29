@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Error interno')}"></head>
+<body class="d-flex align-items-center justify-content-center py-5">
+<main class="container text-center" style="max-width: 620px;">
+    <div class="content-card p-5">
+        <p class="text-danger fw-bold">ERROR 500</p>
+        <h1 class="page-title mb-3">Algo no salió como esperábamos</h1>
+        <p class="text-secondary mb-4"
+           th:text="${message ?: 'El equipo de Eventix podrá revisar el registro técnico del error.'}">
+            No fue posible completar la operación.
+        </p>
+        <a class="btn btn-primary" th:href="@{/dashboard}">Volver al dashboard</a>
+    </div>
+</main>
+</body>
+</html>

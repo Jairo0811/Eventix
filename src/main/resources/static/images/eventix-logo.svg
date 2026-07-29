@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" role="img" aria-labelledby="title description">
+  <title id="title">Eventix</title>
+  <desc id="description">Símbolo de boleta y nombre Eventix en verde y turquesa.</desc>
+  <defs>
+    <linearGradient id="eventixGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14B8A6"/>
+      <stop offset="0.55" stop-color="#22C55E"/>
+      <stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(12 15)">
+    <path fill="url(#eventixGradient)" d="M12 8h76a8 8 0 0 1 8 8v17a14 14 0 0 0 0 28v17a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8V61a14 14 0 0 0 0-28V16a8 8 0 0 1 8-8Z"/>
+    <path fill="#061923" d="M36 27h39v10H47v11h24v9H47v12h29v10H36Z"/>
+    <path stroke="#061923" stroke-width="4" stroke-linecap="round" stroke-dasharray="4 8" d="M24 18v58"/>
+  </g>
+  <text x="125" y="78" fill="#F8FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="61" font-weight="800" letter-spacing="-2">Eventix</text>
+</svg>
+

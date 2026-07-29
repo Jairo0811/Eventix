@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle de usuario')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('users')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small" th:href="@{/users}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+                Volver a usuarios
+            </a>
+            <h1 class="page-title mt-2" th:text="${user.fullName()}">Usuario</h1>
+            <p class="page-subtitle" th:text="${user.email}">correo@eventix.local</p>
+        </div>
+        <a class="btn btn-primary" th:href="@{/users/{id}/edit(id=${user.id})}">
+            <i class="bi bi-pencil me-2" aria-hidden="true"></i>
+            Editar usuario
+        </a>
+    </div>
+
+    <div class="alert alert-warning" role="alert" th:if="${user.mustChangePassword}">
+        <i class="bi bi-key-fill me-2" aria-hidden="true"></i>
+        Este usuario deberá cambiar su contraseña en el próximo inicio de sesión.
+    </div>
+
+    <div class="alert alert-success" role="alert" th:if="${temporaryPassword}">
+        <p class="fw-semibold mb-2">Contraseña temporal generada</p>
+        <div class="temporary-password" th:text="${temporaryPassword}">Temporal123*</div>
+        <p class="small mb-0 mt-2">
+            Cópiala ahora y compártela por un canal seguro. No volverá a mostrarse.
+        </p>
+    </div>
+
+    <section class="content-card mb-4">
+        <div class="row g-4">
+            <div class="col-md-6 col-xl-4">
+                <div class="detail-label">Nombre completo</div>
+                <div class="detail-value" th:text="${user.fullName()}">Nombre</div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="detail-label">Nombre de usuario</div>
+                <div class="detail-value" th:text="${user.username}">usuario</div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="detail-label">Teléfono</div>
+                <div class="detail-value" th:text="${user.phone != null ? user.phone : '—'}">—</div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="detail-label">Rol</div>
+                <div class="detail-value" th:text="${user.roleName.displayName}">Administrador</div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="detail-label">Estado</div>
+                <div>
+                    <span class="badge-status"
+                          th:classappend="${user.status.name() == 'ACTIVE'} ? ' badge-active' : (${user.status.name() == 'LOCKED'} ? ' badge-locked' : ' badge-inactive')"
+                          th:text="${user.status.displayName}">
+                        Activo
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="detail-label">Último acceso</div>
+                <div class="detail-value"
+                     th:text="${user.lastLoginAt != null ? #temporals.format(user.lastLoginAt, 'dd/MM/yyyy HH:mm') : 'Nunca'}">
+                    Nunca
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="detail-label">Creado</div>
+                <div class="detail-value"
+                     th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}">Fecha</div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="detail-label">Creado por</div>
+                <div class="detail-value" th:text="${user.createdBy}">system</div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="detail-label">Última actualización</div>
+                <div class="detail-value"
+                     th:text="${#temporals.format(user.updatedAt, 'dd/MM/yyyy HH:mm')}">Fecha</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-card">
+        <h2 class="h5 fw-bold mb-3">Acciones de seguridad</h2>
+        <div class="d-flex flex-wrap gap-2">
+            <form th:action="@{/users/{id}/reset-password(id=${user.id})}"
+                  method="post"
+                  data-confirm="Se invalidará la contraseña actual y se generará una temporal.">
+                <button class="btn btn-outline-primary" type="submit">
+                    <i class="bi bi-key me-2" aria-hidden="true"></i>
+                    Restablecer contraseña
+                </button>
+            </form>
+
+            <form th:if="${user.status.name() != 'ACTIVE'}"
+                  th:action="@{/users/{id}/activate(id=${user.id})}"
+                  method="post">
+                <button class="btn btn-outline-success" type="submit">
+                    <i class="bi bi-person-check me-2" aria-hidden="true"></i>
+                    Activar usuario
+                </button>
+            </form>
+
+            <form th:if="${user.status.name() == 'ACTIVE'}"
+                  th:action="@{/users/{id}/deactivate(id=${user.id})}"
+                  method="post"
+                  data-confirm="El usuario perderá acceso a Eventix.">
+                <button class="btn btn-outline-danger" type="submit">
+                    <i class="bi bi-person-dash me-2" aria-hidden="true"></i>
+                    Desactivar usuario
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

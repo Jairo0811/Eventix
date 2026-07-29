@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<aside class="app-sidebar" th:fragment="sidebar(activePage)">
+    <a th:href="@{/dashboard}" aria-label="Ir al dashboard">
+        <img class="sidebar-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
+    </a>
+
+    <p class="sidebar-label">Principal</p>
+    <nav class="nav flex-column sidebar-nav" aria-label="Navegación principal">
+        <a class="nav-link"
+           th:classappend="${activePage == 'dashboard'} ? ' active'"
+           th:href="@{/dashboard}">
+            <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i>
+            Dashboard
+        </a>
+        <a class="nav-link"
+           sec:authorize="hasRole('ADMINISTRATOR')"
+           th:classappend="${activePage == 'users'} ? ' active'"
+           th:href="@{/users}">
+            <i class="bi bi-people-fill" aria-hidden="true"></i>
+            Usuarios
+        </a>
+    </nav>
+
+    <p class="sidebar-label">Próximas fases</p>
+    <nav class="nav flex-column sidebar-nav" aria-label="Módulos próximos">
+        <span class="nav-link opacity-50" aria-disabled="true">
+            <i class="bi bi-calendar-event" aria-hidden="true"></i>
+            Eventos
+        </span>
+        <span class="nav-link opacity-50" aria-disabled="true">
+            <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+            Boletas
+        </span>
+        <span class="nav-link opacity-50" aria-disabled="true">
+            <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
+            Control de acceso
+        </span>
+    </nav>
+</aside>
+</html>
+

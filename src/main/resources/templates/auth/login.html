@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Iniciar sesión')}"></head>
+<body>
+<main class="auth-page">
+    <section class="auth-visual" aria-label="Presentación de Eventix">
+        <div class="auth-visual-content">
+            <img class="auth-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
+            <h2 class="auth-tagline">Transforma tus eventos.<br>Conecta experiencias.</h2>
+            <p class="auth-copy">
+                Administra eventos, reservaciones, ventas y accesos desde una plataforma
+                segura diseñada para crecer contigo.
+            </p>
+        </div>
+    </section>
+
+    <section class="auth-panel">
+        <div class="auth-form">
+            <div class="d-lg-none bg-dark rounded-4 p-3 mb-4 text-center">
+                <img class="auth-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
+            </div>
+
+            <p class="text-success fw-semibold mb-2">Bienvenido de nuevo</p>
+            <h1>Inicia sesión</h1>
+            <p class="text-secondary mb-4">Accede al panel de administración de Eventix.</p>
+
+            <div class="alert alert-danger" role="alert" th:if="${param.error}">
+                <i class="bi bi-exclamation-circle me-2" aria-hidden="true"></i>
+                Correo, usuario o contraseña incorrectos.
+            </div>
+            <div class="alert alert-success" role="alert" th:if="${param.logout}">
+                Tu sesión se cerró correctamente.
+            </div>
+            <div class="alert alert-warning" role="alert" th:if="${param.expired}">
+                Tu sesión expiró. Inicia sesión nuevamente.
+            </div>
+            <div class="alert alert-success" role="alert" th:if="${param.passwordChanged}">
+                Contraseña actualizada. Ya puedes iniciar sesión.
+            </div>
+
+            <form th:action="@{/login}" method="post" novalidate>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="username">Correo o usuario</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="bi bi-person" aria-hidden="true"></i>
+                        </span>
+                        <input class="form-control"
+                               id="username"
+                               name="username"
+                               type="text"
+                               autocomplete="username"
+                               autofocus
+                               required>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold" for="password">Contraseña</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="bi bi-lock" aria-hidden="true"></i>
+                        </span>
+                        <input class="form-control"
+                               id="password"
+                               name="password"
+                               type="password"
+                               autocomplete="current-password"
+                               required>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-lg w-100" type="submit">
+                    Entrar a Eventix
+                    <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+                </button>
+            </form>
+
+            <p class="text-secondary small text-center mt-4 mb-0">
+                Acceso exclusivo para personal autorizado.
+            </p>
+        </div>
+    </section>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
+

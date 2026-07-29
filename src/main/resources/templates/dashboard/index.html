@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Dashboard')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <p class="text-success fw-semibold mb-1">Panel principal</p>
+            <h1 class="page-title" th:text="|Hola, ${principal.fullName}|">Hola</h1>
+            <p class="page-subtitle">Este es el estado actual de tu espacio Eventix.</p>
+        </div>
+        <span class="badge rounded-pill text-bg-dark px-3 py-2"
+              th:text="${principal.roleName}">ROL</span>
+    </div>
+
+    <section sec:authorize="hasRole('ADMINISTRATOR')" aria-labelledby="user-metrics-title">
+        <h2 class="visually-hidden" id="user-metrics-title">Indicadores de usuarios</h2>
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <article class="metric-card">
+                    <div class="metric-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></div>
+                    <div class="metric-label">Total de usuarios</div>
+                    <div class="metric-value" th:text="${summary.totalUsers}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card">
+                    <div class="metric-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></div>
+                    <div class="metric-label">Usuarios activos</div>
+                    <div class="metric-value" th:text="${summary.activeUsers}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card">
+                    <div class="metric-icon"><i class="bi bi-person-dash-fill" aria-hidden="true"></i></div>
+                    <div class="metric-label">Usuarios inactivos</div>
+                    <div class="metric-value" th:text="${summary.inactiveUsers}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card">
+                    <div class="metric-icon"><i class="bi bi-person-lock" aria-hidden="true"></i></div>
+                    <div class="metric-label">Usuarios bloqueados</div>
+                    <div class="metric-value" th:text="${summary.lockedUsers}">0</div>
+                </article>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                    <h2 class="h5 fw-bold mb-1">Administración de usuarios</h2>
+                    <p class="text-secondary mb-0">
+                        Crea cuentas, asigna roles y controla el acceso a la plataforma.
+                    </p>
+                </div>
+                <a class="btn btn-primary" th:href="@{/users}">
+                    Gestionar usuarios
+                    <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-card" sec:authorize="!hasRole('ADMINISTRATOR')">
+        <div class="d-flex align-items-start gap-3">
+            <div class="metric-icon flex-shrink-0">
+                <i class="bi bi-stars" aria-hidden="true"></i>
+            </div>
+            <div>
+                <h2 class="h5 fw-bold">Tu espacio está listo</h2>
+                <p class="text-secondary mb-0">
+                    Los módulos disponibles para tu rol aparecerán aquí a medida que avance
+                    la implementación por fases.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

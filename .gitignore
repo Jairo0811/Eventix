@@ -1,0 +1,15 @@
+target/
+.idea/
+.project
+.classpath
+.settings/
+nbproject/private/
+.env
+logs/
+uploads/
+*.log
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+

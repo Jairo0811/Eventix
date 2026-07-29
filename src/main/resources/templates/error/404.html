@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Página no encontrada')}"></head>
+<body class="d-flex align-items-center justify-content-center py-5">
+<main class="container text-center" style="max-width: 620px;">
+    <div class="content-card p-5">
+        <p class="text-info fw-bold">ERROR 404</p>
+        <h1 class="page-title mb-3">No encontramos lo que buscas</h1>
+        <p class="text-secondary mb-4"
+           th:text="${message ?: 'La página o el recurso solicitado no existe.'}">
+            El recurso no existe.
+        </p>
+        <a class="btn btn-primary" th:href="@{/dashboard}">Volver al dashboard</a>
+    </div>
+</main>
+</body>
+</html>
+

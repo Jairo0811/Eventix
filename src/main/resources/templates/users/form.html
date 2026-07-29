@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Usuario')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('users')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small" th:href="@{/users}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+                Volver a usuarios
+            </a>
+            <h1 class="page-title mt-2"
+                th:text="${formMode == 'create' ? 'Crear usuario' : 'Editar usuario'}">
+                Usuario
+            </h1>
+            <p class="page-subtitle">Completa los datos de acceso y asigna el rol correspondiente.</p>
+        </div>
+    </div>
+
+    <section class="content-card mx-auto" style="max-width: 900px;">
+        <form th:action="${formMode == 'create'} ? @{/users} : @{/users/{id}(id=${userId})}"
+              th:object="${userForm}"
+              method="post"
+              novalidate>
+            <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors()}">
+                <p class="mb-0"
+                   th:each="error : ${#fields.globalErrors()}"
+                   th:text="${error}">Revisa el formulario.</p>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="firstName">Nombre</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="firstName"
+                           th:field="*{firstName}"
+                           type="text"
+                           maxlength="80">
+                    <div class="invalid-feedback" th:errors="*{firstName}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="lastName">Apellido</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="lastName"
+                           th:field="*{lastName}"
+                           type="text"
+                           maxlength="80">
+                    <div class="invalid-feedback" th:errors="*{lastName}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="email">Correo electrónico</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="email"
+                           th:field="*{email}"
+                           type="email"
+                           maxlength="160">
+                    <div class="invalid-feedback" th:errors="*{email}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="username">Nombre de usuario</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="username"
+                           th:field="*{username}"
+                           type="text"
+                           maxlength="60">
+                    <div class="invalid-feedback" th:errors="*{username}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="phone">Teléfono</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="phone"
+                           th:field="*{phone}"
+                           type="tel"
+                           maxlength="30">
+                    <div class="invalid-feedback" th:errors="*{phone}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="roleName">Rol</label>
+                    <select class="form-select"
+                            th:errorclass="is-invalid"
+                            id="roleName"
+                            th:field="*{roleName}">
+                        <option value="">Selecciona un rol</option>
+                        <option th:each="role : ${roles}"
+                                th:value="${role}"
+                                th:text="${role.displayName}">
+                            Administrador
+                        </option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{roleName}"></div>
+                </div>
+
+                <div class="col-md-6" th:if="${formMode == 'create'}">
+                    <label class="form-label fw-semibold" for="password">Contraseña temporal</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="password"
+                           th:field="*{password}"
+                           type="password"
+                           autocomplete="new-password">
+                    <div class="invalid-feedback" th:errors="*{password}"></div>
+                    <div class="form-text">
+                        El usuario deberá cambiarla cuando inicie sesión por primera vez.
+                    </div>
+                </div>
+
+                <div class="col-md-6" th:if="${formMode == 'edit'}">
+                    <label class="form-label fw-semibold" for="status">Estado</label>
+                    <select class="form-select"
+                            th:errorclass="is-invalid"
+                            id="status"
+                            th:field="*{status}">
+                        <option th:each="statusOption : ${statuses}"
+                                th:value="${statusOption}"
+                                th:text="${statusOption.displayName}">
+                            Activo
+                        </option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{status}"></div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <div class="d-flex flex-wrap justify-content-end gap-2">
+                <a class="btn btn-light" th:href="@{/users}">Cancelar</a>
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>
+                    <span th:text="${formMode == 'create' ? 'Crear usuario' : 'Guardar cambios'}">
+                        Guardar
+                    </span>
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

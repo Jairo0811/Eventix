@@ -1,0 +1,16 @@
+spring:
+  thymeleaf:
+    cache: true
+
+server:
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: true
+
+logging:
+  level:
+    root: INFO
+    com.jairomatias.eventix: INFO
+
