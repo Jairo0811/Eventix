@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/ITLA-2017--C2-0057B8?style=for-the-badge" alt="ITLA 2017-C2">
 </p>
 
-Plataforma web desarrollada en Java para gestionar eventos, usuarios, reservaciones, ventas de entradas, boletas digitales y control de acceso.
+**Eventix** es una plataforma web empresarial desarrollada con **Java 21, Spring Boot y Microsoft SQL Server**, diseñada para la administración de eventos, usuarios, reservaciones, ventas de entradas, boletas digitales y control de acceso.
 
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -128,16 +128,17 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 
 <div align="center">
 
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg" alt="MySQL" title="MySQL 8" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg" alt="Microsoft SQL Server" title="Microsoft SQL Server 2022" width="52" height="52" />
 
 </div>
 
 | Área | Tecnología |
 |---|---|
-| Motor relacional | MySQL 8 |
-| Migraciones | Flyway |
+| Motor relacional | Microsoft SQL Server 2022 o SQL Server Express |
+| Driver JDBC | Microsoft JDBC Driver for SQL Server |
+| Migraciones | Flyway SQL Server |
 | ORM | Hibernate |
-| Base para pruebas | H2 en modo compatible con MySQL |
+| Base para pruebas | H2 |
 
 ## 🧪 Pruebas y calidad
 
@@ -176,7 +177,7 @@ flowchart LR
     Security --> Controller["Controller"]
     Controller --> Service["Service Layer"]
     Service --> Repository["Repository"]
-  Repository --> Database[(SQL Server 2022)]
+    Repository --> Database[(SQL Server 2022)]
     Flyway["Flyway"] --> Database
 ```
 
@@ -241,14 +242,20 @@ Instala y verifica:
 
 - JDK 21.
 - Maven 3.6.3 o superior.
-- Microsoft SQL Server 2022 o SQL Server Express
+- Microsoft SQL Server 2022 o SQL Server Express.
+- SQL Server Management Studio o Azure Data Studio.
 - Git.
 
 ```bash
 java -version
 mvn -version
-mysql --version
 git --version
+```
+
+Para verificar SQL Server desde una terminal con `sqlcmd` instalado:
+
+```bash
+sqlcmd -?
 ```
 
 ### 2. Clonar el repositorio
@@ -258,21 +265,54 @@ git clone https://github.com/Jairo0811/Eventix.git
 cd Eventix
 ```
 
-### 3. Crear la base de datos
+### 3. Crear la base de datos y el usuario técnico
 
-Ejecuta en MySQL:
+Ejecuta el siguiente script en SQL Server Management Studio con una cuenta administradora:
 
 ```sql
-CREATE DATABASE eventix
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
+USE master;
+GO
 
-CREATE USER 'eventix'@'localhost' IDENTIFIED BY 'una_contraseña_segura';
-GRANT ALL PRIVILEGES ON eventix.* TO 'eventix'@'localhost';
-FLUSH PRIVILEGES;
+IF DB_ID(N'EventixDb') IS NULL
+BEGIN
+    CREATE DATABASE EventixDb;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.server_principals
+    WHERE name = N'eventix_app'
+)
+BEGIN
+    CREATE LOGIN eventix_app
+    WITH PASSWORD = N'Eventix2026*',
+         CHECK_POLICY = ON,
+         CHECK_EXPIRATION = OFF;
+END;
+GO
+
+USE EventixDb;
+GO
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.database_principals
+    WHERE name = N'eventix_app'
+)
+BEGIN
+    CREATE USER eventix_app
+    FOR LOGIN eventix_app;
+END;
+GO
+
+ALTER ROLE db_datareader ADD MEMBER eventix_app;
+ALTER ROLE db_datawriter ADD MEMBER eventix_app;
+ALTER ROLE db_ddladmin ADD MEMBER eventix_app;
+GO
 ```
 
-Flyway crea automáticamente las tablas y los datos iniciales al iniciar la aplicación.
+Flyway crea automáticamente las tablas, restricciones, roles y el usuario administrador al iniciar la aplicación por primera vez.
 
 ### 4. Configurar variables de entorno
 
@@ -280,28 +320,30 @@ Usa `.env.example` como referencia. No publiques credenciales reales.
 
 | Variable | Requerida | Ejemplo |
 |---|---:|---|
-| `DB_URL` | Sí | `jdbc:mysql://localhost:3306/eventix` |
-| `DB_USERNAME` | Sí | `eventix` |
-| `DB_PASSWORD` | Sí | `una_contraseña_segura` |
+| `DB_URL` | Sí | `jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true` |
+| `DB_USERNAME` | Sí | `eventix_app` |
+| `DB_PASSWORD` | Sí | `Eventix2026*` |
 | `APP_PORT` | No | `8080` |
 | `APP_BASE_URL` | No | `http://localhost:8080` |
 | `MAIL_USERNAME` | Fase futura | vacío |
 | `MAIL_PASSWORD` | Fase futura | vacío |
 
+> `trustServerCertificate=true` se utiliza únicamente para facilitar el desarrollo local. En producción debe configurarse un certificado válido.
+
 #### PowerShell
 
 ```powershell
-$env:DB_URL = "jdbc:mysql://localhost:3306/eventix"
-$env:DB_USERNAME = "eventix"
-$env:DB_PASSWORD = "una_contraseña_segura"
+$env:DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true"
+$env:DB_USERNAME = "eventix_app"
+$env:DB_PASSWORD = "Eventix2026*"
 ```
 
 #### Bash, Linux o macOS
 
 ```bash
-export DB_URL=jdbc:mysql://localhost:3306/eventix
-export DB_USERNAME=eventix
-export DB_PASSWORD=una_contraseña_segura
+export DB_URL='jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true'
+export DB_USERNAME='eventix_app'
+export DB_PASSWORD='Eventix2026*'
 ```
 
 ### 5. Ejecutar las pruebas
@@ -368,11 +410,14 @@ java -jar target/eventix-0.1.0-SNAPSHOT.jar
 
 ### 10. Problemas frecuentes
 
-- **Error de conexión a MySQL:** verifica `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` y que el servicio MySQL esté iniciado.
+- **Error de conexión a SQL Server:** verifica `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, el puerto `1433`, el protocolo TCP/IP y que el servicio de SQL Server esté iniciado.
+- **Login rechazado:** confirma que SQL Server permita autenticación mixta y que exista el login `eventix_app`.
+- **Certificado no confiable:** para desarrollo local conserva `encrypt=true;trustServerCertificate=true`; en producción instala un certificado válido.
+- **Instancia SQL Server Express:** puede requerir una URL con `instanceName=SQLEXPRESS` o un puerto TCP asignado explícitamente.
 - **Puerto 8080 ocupado:** define otro puerto con `APP_PORT`.
 - **Versión incorrecta de Java:** confirma que `java -version` y `mvn -version` utilizan JDK 21.
 - **Dependencias sin descargar:** ejecuta `mvn -U clean verify`.
-- **Migraciones fallidas:** verifica que el usuario de MySQL tenga permisos sobre la base `eventix`.
+- **Migraciones fallidas:** verifica que `eventix_app` tenga permisos `db_ddladmin`, `db_datareader` y `db_datawriter` sobre `EventixDb`.
 
 ---
 
