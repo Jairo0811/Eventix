@@ -1,10 +1,44 @@
-INSERT INTO roles (id, name, description) VALUES
-    (1, 'ADMINISTRATOR', 'Acceso completo a la administración de Eventix.'),
-    (2, 'OPERATOR', 'Operación de clientes, reservaciones, ventas y pagos.'),
-    (3, 'ORGANIZER', 'Gestión y consulta de eventos propios.'),
-    (4, 'ACCESS_STAFF', 'Validación de boletas y control de acceso.');
+SET IDENTITY_INSERT roles ON;
+GO
 
-INSERT INTO users (
+INSERT INTO roles
+(
+    id,
+    name,
+    description
+)
+VALUES
+(
+    1,
+    'ADMINISTRATOR',
+    'Acceso completo a la administración de Eventix.'
+),
+(
+    2,
+    'OPERATOR',
+    'Operación de clientes, reservaciones, ventas y pagos.'
+),
+(
+    3,
+    'ORGANIZER',
+    'Gestión y consulta de eventos propios.'
+),
+(
+    4,
+    'ACCESS_STAFF',
+    'Validación de boletas y control de acceso.'
+);
+GO
+
+SET IDENTITY_INSERT roles OFF;
+GO
+
+
+SET IDENTITY_INSERT users ON;
+GO
+
+INSERT INTO users
+(
     id,
     first_name,
     last_name,
@@ -21,21 +55,38 @@ INSERT INTO users (
     created_by,
     updated_by,
     version
-) VALUES (
+)
+VALUES
+(
     1,
     'Administrador',
     'Eventix',
     'admin@eventix.local',
     'admin',
+
     '$2b$12$LKYb4TTYExP1wmxhLqfF0.g.rol1KiBx0qm86U3Bp/MvCR3lI59Am',
+
     NULL,
+
     1,
+
     'ACTIVE',
-    TRUE,
+
+    1,
+
     NULL,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP,
+
+    SYSDATETIME(),
+
+    SYSDATETIME(),
+
     'flyway',
+
     'flyway',
+
     0
 );
+GO
+
+SET IDENTITY_INSERT users OFF;
+GO

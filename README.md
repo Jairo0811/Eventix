@@ -17,7 +17,7 @@ Plataforma web desarrollada en Java para gestionar eventos, usuarios, reservacio
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)](https://spring.io/projects/spring-security)
-[![MySQL](https://img.shields.io/badge/MySQL_8-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![SQL Server](https://img.shields.io/badge/SQL_Server_2022-CC2927?style=for-the-badge&logo=microsoftsqlserver&logoColor=white)](https://www.microsoft.com/sql-server)
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)](https://www.thymeleaf.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
@@ -176,7 +176,7 @@ flowchart LR
     Security --> Controller["Controller"]
     Controller --> Service["Service Layer"]
     Service --> Repository["Repository"]
-    Repository --> Database[("MySQL 8")]
+  Repository --> Database[(SQL Server 2022)]
     Flyway["Flyway"] --> Database
 ```
 
@@ -241,7 +241,7 @@ Instala y verifica:
 
 - JDK 21.
 - Maven 3.6.3 o superior.
-- MySQL 8.
+- Microsoft SQL Server 2022 o SQL Server Express
 - Git.
 
 ```bash
