@@ -30,6 +30,20 @@ Plataforma web desarrollada en Java para gestionar eventos, usuarios, reservacio
 
 ---
 
+## 🧭 Continuidad académica
+
+Programación II fue la primera de tres asignaturas cursadas con el profesor **Raydelto Hernández Perera**, dentro de una evolución progresiva en el desarrollo de software:
+
+| Orden | Asignatura | Proyecto | Período |
+|---:|---|---|---|
+| 1 | Programación II | **Eventix** | 2017-C2 |
+| 2 | Estructuras de Datos | [Aerolinea](https://github.com/Jairo0811/Aerolinea) | 2018-C1 |
+| 3 | Programación WEB | [ITLA Crush](https://github.com/Jairo0811/ITLAcrushReact) | 2018-C2 |
+
+Estos proyectos representan una secuencia académica enfocada en programación, estructuras de datos y desarrollo web. Actualmente están siendo preservados y modernizados como parte del portafolio profesional.
+
+---
+
 ## 📌 Descripción
 
 **Eventix** es una aplicación web creada como evolución profesional de un proyecto final de la asignatura **Programación II** del Instituto Tecnológico de Las Américas (ITLA).
@@ -337,106 +351,3 @@ java -jar target/eventix-0.1.0-SNAPSHOT.jar
 ```bash
 mvn clean verify
 ```
-
-Las pruebas usan una base H2 efímera en modo compatible con MySQL.
-
----
-
-## 💻 IDE compatibles
-
-<div align="center">
-
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/eclipse/eclipse-original.svg" alt="Eclipse" title="Eclipse IDE" width="58" height="58" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/netbeans/netbeans-original.svg" alt="Apache NetBeans" title="Apache NetBeans" width="58" height="58" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/intellij/intellij-original.svg" alt="IntelliJ IDEA" title="IntelliJ IDEA" width="58" height="58" />
-
-</div>
-
-### Eclipse o Spring Tools Suite
-
-1. Ve a **File → Import**.
-2. Selecciona **Maven → Existing Maven Projects**.
-3. Elige la carpeta que contiene `pom.xml`.
-4. Ejecuta **Maven → Update Project**.
-5. Configura las variables de entorno.
-6. Ejecuta `EventixApplication` como **Spring Boot App** o **Java Application**.
-
-### Apache NetBeans
-
-1. Ve a **File → Open Project**.
-2. Abre la carpeta que contiene `pom.xml`.
-3. Espera a que Maven descargue las dependencias.
-4. Configura las variables de entorno.
-5. Ejecuta `EventixApplication`.
-
-### IntelliJ IDEA
-
-1. Selecciona **Open**.
-2. Abre el archivo `pom.xml`.
-3. Importa el proyecto como Maven.
-4. Selecciona JDK 21.
-5. Configura las variables de entorno.
-6. Ejecuta `EventixApplication`.
-
-El repositorio no depende de archivos exclusivos de una IDE.
-
----
-
-## 🛡️ Seguridad implementada
-
-- BCrypt con factor de costo 12.
-- CSRF activo en formularios.
-- Migración de sesión tras autenticación.
-- Cookie de sesión `HttpOnly` y `SameSite=Lax`.
-- Cookie `Secure` en el perfil de producción.
-- Sesión de 30 minutos.
-- Una sesión concurrente por usuario.
-- Cierre de sesión con invalidación y eliminación de `JSESSIONID`.
-- Estados de usuario activo, inactivo o bloqueado.
-- Cambio obligatorio de contraseña temporal.
-- Contraseñas temporales generadas con `SecureRandom`.
-- Mensajes que no revelan si un usuario existe.
-- Páginas 400, 403, 404 y 500 sin exposición de stack traces.
-
----
-
-## 🧭 Roadmap
-
-| Fase | Alcance | Estado |
-|---|---|---|
-| 1 | Arquitectura, configuración, base de datos, seguridad, layout, login y usuarios | ✅ Implementada |
-| 2 | Categorías, lugares, organizadores, eventos, tipos de boletas e inventario | 🚧 Próxima |
-| 3 | Clientes, reservaciones, expiración automática y cancelaciones | ⏳ Pendiente |
-| 4 | Ventas, pagos, boletas, PDF y QR | ⏳ Pendiente |
-| 5 | Control de acceso, auditoría y notificaciones | ⏳ Pendiente |
-| 6 | Dashboard completo, estadísticas, reportes y exportaciones | ⏳ Pendiente |
-| 7 | QA integral, Docker, diagramas y preparación de publicación | ⏳ Pendiente |
-
----
-
-## 🎓 Información académica
-
-| Información | Detalle |
-|---|---|
-| 👨‍🎓 Estudiante | Francis Jairo Matías Rosario |
-| 🆔 Matrícula | 2015-2984 |
-| 📖 Asignatura | Programación 2 (SOF-004) |
-| 👨‍🏫 Profesor | Raydelto Hernández Perera |
-| 🏫 Institución | Instituto Tecnológico de Las Américas (ITLA) |
-| 📅 Período académico | 2017-C2 |
-| 🎯 Tipo de proyecto | Proyecto final |
-
----
-
-## 👨‍💻 Autor
-
-**Jairo Matías**  
-Desarrollador de Software
-
-- GitHub: [@Jairo0811](https://github.com/Jairo0811)
-
----
-
-## 📄 Licencia
-
-El repositorio permanece privado durante el desarrollo. La licencia será definida antes de una publicación pública.
