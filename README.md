@@ -8,7 +8,7 @@
   />
 </p>
 
-### Transforma tus eventos. Conecta experiencias.
+
 
 <p align="center">
   <img src="https://img.shields.io/badge/ITLA-2017--C2-0057B8?style=for-the-badge" alt="ITLA 2017-C2">
