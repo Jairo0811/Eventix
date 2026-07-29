@@ -56,36 +56,91 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 
 ---
 
-## 🧱 Stack tecnológico
+# 🧱 Stack tecnológico
+
+## ⚙️ Backend
 
 <div align="center">
 
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg" alt="Spring Boot" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg" alt="MySQL" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/hibernate/hibernate-original.svg" alt="Hibernate" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/maven/maven-original.svg" alt="Maven" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML5" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS3" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg" alt="Bootstrap" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" alt="Git" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" title="Java 21" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg" alt="Spring" title="Spring Boot, Spring MVC, Spring Security y Spring Data JPA" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/hibernate/hibernate-original.svg" alt="Hibernate" title="Hibernate ORM" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/maven/maven-original.svg" alt="Maven" title="Apache Maven" width="52" height="52" />
 
 </div>
 
 | Área | Tecnología |
 |---|---|
 | Lenguaje | Java 21 LTS |
-| Backend | Spring Boot 3.5.16, Spring MVC, Spring Security |
-| Persistencia | Spring Data JPA, Hibernate, MySQL 8 |
+| Framework | Spring Boot 3.5.16 |
+| Aplicación web | Spring MVC |
+| Seguridad | Spring Security, BCrypt y CSRF |
+| Persistencia | Spring Data JPA e Hibernate |
 | Migraciones | Flyway |
-| Vistas | Thymeleaf, HTML5, CSS3, JavaScript |
-| UI | Bootstrap 5, Bootstrap Icons, SweetAlert2 |
 | Mapeo | MapStruct |
-| Pruebas | JUnit 5, Spring Boot Test, MockMvc, Spring Security Test, H2 |
-| Construcción | Maven |
-| Control de versiones | Git y GitHub |
+| Construcción | Apache Maven |
+
+## 🎨 Frontend
+
+<div align="center">
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML5" title="HTML5" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS3" title="CSS3" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" title="JavaScript" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg" alt="Bootstrap" title="Bootstrap 5" width="52" height="52" />
+<img src="https://www.thymeleaf.org/images/thymeleaf.png" alt="Thymeleaf" title="Thymeleaf" width="52" height="52" />
+
+</div>
+
+| Área | Tecnología |
+|---|---|
+| Motor de plantillas | Thymeleaf |
+| Estructura | HTML5 |
+| Estilos | CSS3 y Bootstrap 5 |
+| Interactividad | JavaScript |
+| Componentes visuales | Bootstrap Icons |
+| Alertas | SweetAlert2 |
+| Diseño | Interfaz responsiva con identidad verde de Eventix |
+
+## 🗄️ Base de datos
+
+<div align="center">
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg" alt="MySQL" title="MySQL 8" width="52" height="52" />
+
+</div>
+
+| Área | Tecnología |
+|---|---|
+| Motor relacional | MySQL 8 |
+| Migraciones | Flyway |
+| ORM | Hibernate |
+| Base para pruebas | H2 en modo compatible con MySQL |
+
+## 🧪 Pruebas y calidad
+
+| Área | Tecnología |
+|---|---|
+| Pruebas unitarias | JUnit 5 |
+| Pruebas de integración | Spring Boot Test y MockMvc |
+| Seguridad | Spring Security Test |
+| Base de datos de pruebas | H2 |
+| Integración continua | GitHub Actions con Java 21 |
+
+## 🛠️ Herramientas de desarrollo
+
+<div align="center">
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" alt="Git" title="Git" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub" title="GitHub" width="52" height="52" />
+
+</div>
+
+| Área | Tecnología |
+|---|---|
+| Control de versiones | Git |
+| Repositorio y CI | GitHub y GitHub Actions |
+| Gestión de dependencias | Maven |
 
 ---
 
@@ -206,8 +261,6 @@ Flyway crea las tablas y los datos iniciales al iniciar la aplicación. Hibernat
 
 Usa `.env.example` como referencia. No publiques credenciales reales.
 
-Variables disponibles:
-
 | Variable | Requerida | Ejemplo |
 |---|---:|---|
 | `DB_URL` | Sí en producción | `jdbc:mysql://localhost:3306/eventix` |
@@ -236,11 +289,7 @@ export DB_PASSWORD=una_contraseña_segura
 mvn spring-boot:run
 ```
 
-Luego abre:
-
-```text
-http://localhost:8080
-```
+Abre `http://localhost:8080`.
 
 ---
 
@@ -287,9 +336,9 @@ Las pruebas usan una base H2 efímera en modo compatible con MySQL.
 
 <div align="center">
 
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/eclipse/eclipse-original.svg" alt="Eclipse" width="58" height="58" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/netbeans/netbeans-original.svg" alt="Apache NetBeans" width="58" height="58" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/intellij/intellij-original.svg" alt="IntelliJ IDEA" width="58" height="58" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/eclipse/eclipse-original.svg" alt="Eclipse" title="Eclipse IDE" width="58" height="58" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/netbeans/netbeans-original.svg" alt="Apache NetBeans" title="Apache NetBeans" width="58" height="58" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/intellij/intellij-original.svg" alt="IntelliJ IDEA" title="IntelliJ IDEA" width="58" height="58" />
 
 </div>
 
