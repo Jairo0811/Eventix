@@ -67,6 +67,40 @@
                 </a>
             </div>
         </div>
+
+        <h2 class="h5 fw-bold mt-4 mb-3">Estado de los eventos</h2>
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Total</div>
+                    <div class="metric-value" th:text="${summary.totalEvents}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Borradores</div>
+                    <div class="metric-value" th:text="${summary.draftEvents}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Publicados</div>
+                    <div class="metric-value" th:text="${summary.publishedEvents}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Cancelados</div>
+                    <div class="metric-value" th:text="${summary.cancelledEvents}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Finalizados</div>
+                    <div class="metric-value" th:text="${summary.finishedEvents}">0</div>
+                </article>
+            </div>
+        </div>
     </section>
 
     <section class="content-card" sec:authorize="!hasRole('ADMINISTRATOR')">
@@ -76,10 +110,14 @@
             </div>
             <div>
                 <h2 class="h5 fw-bold">Tu espacio está listo</h2>
-                <p class="text-secondary mb-0">
-                    Los módulos disponibles para tu rol aparecerán aquí a medida que avance
-                    la implementación por fases.
+                <p class="text-secondary mb-3">
+                    Consulta la agenda disponible y administra tus eventos si tienes
+                    el rol de organizador.
                 </p>
+                <a class="btn btn-primary" th:href="@{/events}">
+                    Ir a eventos
+                    <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+                </a>
             </div>
         </div>
     </section>

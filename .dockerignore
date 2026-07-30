@@ -1,0 +1,8 @@
+.git
+.github
+.idea
+.vscode
+nbproject/private
+target
+*.iml
+*.log

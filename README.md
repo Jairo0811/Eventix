@@ -25,7 +25,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 
-> Estado actual: **En desarrollo. La Fase 1 está completada; los módulos operativos de eventos, reservaciones, ventas, boletas y acceso continúan pendientes.**
+> Estado actual: **En desarrollo. Las fases 1 y 2 están completadas: seguridad, usuarios, categorías y gestión integral de eventos.**
 
 </div>
 
@@ -80,6 +80,17 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 - Pruebas de integración sobre SQL Server real mediante Testcontainers.
 - Interfaz responsiva con identidad visual verde de Eventix.
 - Pruebas automatizadas de autenticación, autorización y seguridad.
+- CRUD completo de eventos.
+- Categorías administrables con activación y desactivación.
+- Estados de evento: borrador, publicado, cancelado y finalizado.
+- Programación de inicio y finalización, lugar, dirección y capacidad.
+- Asignación de organizador responsable.
+- Portada mediante URL segura HTTP/HTTPS.
+- Eventos gratuitos o de pago con precio base en pesos dominicanos.
+- Reglas de transición de estado, fechas, precio y eliminación.
+- Búsqueda, filtros por estado/categoría y paginación.
+- Autorización por rol y propiedad del evento.
+- Panel responsivo de eventos con identidad visual de Eventix.
 
 ---
 
@@ -210,9 +221,9 @@ La autorización se aplica en dos niveles:
 | Patrón | Ubicación | Propósito |
 |---|---|---|
 | MVC | Controladores y plantillas Thymeleaf | Separar entrada HTTP, modelo y presentación. |
-| Repository | Repositorios de usuarios y roles | Abstraer la persistencia JPA. |
-| Service Layer | Servicios de usuarios y dashboard | Centralizar reglas, transacciones y permisos. |
-| Mapper | `UserMapper` con MapStruct | Evitar exponer entidades JPA a las vistas. |
+| Repository | Repositorios de usuarios, categorías y eventos | Abstraer la persistencia JPA. |
+| Service Layer | Servicios de usuarios, categorías, eventos y dashboard | Centralizar reglas, transacciones y permisos. |
+| Mapper | `UserMapper` y `EventMapper` con MapStruct | Evitar exponer entidades JPA a las vistas. |
 | Strategy | Planificado para precios, pagos y cancelaciones | Resolver reglas variables de negocio. |
 | Domain Events | Planificado para ventas, reservas y boletas | Desacoplar procesos entre módulos. |
 
@@ -225,8 +236,10 @@ src/
 ├── main/
 │   ├── java/com/jairomatias/eventix/
 │   │   ├── auth/
+│   │   ├── category/
 │   │   ├── config/
 │   │   ├── dashboard/
+│   │   ├── event/
 │   │   ├── role/
 │   │   ├── security/
 │   │   ├── shared/
@@ -248,7 +261,7 @@ src/
 
 ## 🚦 Estado del proyecto
 
-**Estado general: 🚧 En desarrollo — Fase 1 completada**
+**Estado general: 🚧 En desarrollo — Fases 1 y 2 completadas**
 
 ### Completado
 
@@ -259,10 +272,15 @@ src/
 - [x] Migraciones con Flyway.
 - [x] Integración con SQL Server.
 - [x] Pruebas automatizadas y Testcontainers.
+- [x] Gestión completa de eventos.
+- [x] Categorías de eventos.
+- [x] Estados y validaciones del ciclo de vida.
+- [x] Búsqueda, filtros y paginación de eventos.
+- [x] Autorización de eventos por rol y propiedad.
+- [x] Ejecución reproducible con Docker Compose.
 
 ### Pendiente
 
-- [ ] Gestión completa de eventos.
 - [ ] Reservaciones.
 - [ ] Ventas de entradas.
 - [ ] Boletas digitales y códigos QR.
@@ -310,4 +328,156 @@ cd Eventix
 
 ### 3. Crear la base de datos y el usuario técnico
 
-Consulta la configuración incluida en el repositorio para preparar SQL Server, ejecutar las migraciones y arrancar la aplicación en el perfil correspondiente.
+Ejecuta [`EventixDb.sql`](EventixDb.sql) con una cuenta administradora de SQL Server. El script crea:
+
+- la base de datos `EventixDb`;
+- el inicio de sesión `eventix_app`;
+- el usuario técnico;
+- los permisos necesarios para JPA y Flyway.
+
+Las tablas y los datos iniciales se crean únicamente mediante las migraciones:
+
+```text
+V1__create_security_schema.sql
+V2__seed_roles_and_administrator.sql
+V3__create_event_management_schema.sql
+```
+
+### 4. Configurar la conexión
+
+Los valores predeterminados son exclusivamente para desarrollo local. Para usar otros valores:
+
+#### PowerShell
+
+```powershell
+$env:DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true"
+$env:DB_USERNAME = "eventix_app"
+$env:DB_PASSWORD = "tu_contraseña_segura"
+```
+
+#### Bash
+
+```bash
+export DB_URL='jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true'
+export DB_USERNAME='eventix_app'
+export DB_PASSWORD='tu_contraseña_segura'
+```
+
+### 5. Ejecutar las pruebas
+
+Docker debe estar iniciado porque Testcontainers levanta SQL Server 2022:
+
+```bash
+mvn clean test
+```
+
+Para ejecutar también todas las verificaciones del ciclo Maven:
+
+```bash
+mvn clean verify
+```
+
+El perfil `test` no utiliza H2 ni una emulación: conecta Flyway, Hibernate y las pruebas de integración a un contenedor efímero real de SQL Server.
+
+### 6. Iniciar la aplicación con Maven
+
+```bash
+mvn spring-boot:run
+```
+
+Abre [http://localhost:8080](http://localhost:8080).
+
+### 7. Iniciar toda la plataforma con Docker
+
+El archivo `compose.yaml` levanta SQL Server 2022, prepara `EventixDb`, construye la aplicación con Java 21 y espera la salud de cada servicio:
+
+#### PowerShell
+
+```powershell
+$env:MSSQL_SA_PASSWORD = "define-una-clave-segura"
+$env:EVENTIX_DB_PASSWORD = "define-otra-clave-segura"
+docker compose up --build
+```
+
+#### Bash
+
+```bash
+export MSSQL_SA_PASSWORD='define-una-clave-segura'
+export EVENTIX_DB_PASSWORD='define-otra-clave-segura'
+docker compose up --build
+```
+
+Las variables son obligatorias y no deben guardarse en el repositorio.
+
+Para detener la plataforma:
+
+```bash
+docker compose down
+```
+
+Para eliminar también el volumen de desarrollo:
+
+```bash
+docker compose down -v
+```
+
+### 8. Credenciales iniciales
+
+| Campo | Valor |
+|---|---|
+| Correo | `admin@eventix.local` |
+| Usuario | `admin` |
+| Contraseña temporal | Definida en la migración de datos iniciales para desarrollo local. |
+
+Eventix solicita cambiar la contraseña en el primer acceso.
+
+### 9. Ejecutar desde Apache NetBeans
+
+1. Configura **JDK 21** como plataforma Java.
+2. Abre `File > Open Project`.
+3. Selecciona la carpeta que contiene `pom.xml`.
+4. Espera a que NetBeans resuelva las dependencias Maven.
+5. Inicia Docker Desktop si ejecutarás pruebas.
+6. Usa `Run Project` para ejecutar `spring-boot:run`.
+7. Usa `Test Project` para ejecutar la suite.
+
+El archivo `nbactions.xml` incluido define las acciones de ejecutar, depurar, probar y reconstruir.
+
+### 10. Roles y permisos de eventos
+
+| Rol | Acceso |
+|---|---|
+| `ADMINISTRATOR` | Administra categorías y todos los eventos. |
+| `ORGANIZER` | Crea y administra únicamente sus propios eventos. |
+| `OPERATOR` | Consulta eventos publicados o finalizados. |
+| `ACCESS_STAFF` | Consulta eventos publicados o finalizados. |
+
+### 11. Problemas frecuentes
+
+- **Testcontainers no encuentra Docker:** abre Docker Desktop y ejecuta `docker version`.
+- **Java incorrecto en Maven:** `java -version` y `mvn -version` deben mostrar Java 21.
+- **Flyway detecta un checksum distinto:** no edites migraciones aplicadas; crea una migración nueva.
+- **SQL Server no responde:** revisa el puerto 1433 y ejecuta `docker compose ps`.
+- **NetBeans usa otro JDK:** cambia la plataforma Java del proyecto a JDK 21.
+- **Puerto 8080 ocupado:** define `APP_PORT` o ejecuta `APP_PORT=8081 docker compose up`.
+
+---
+
+## 🎓 Información académica
+
+| Información | Detalle |
+|---|---|
+| 👨‍🎓 Estudiante | Francis Jairo Matías Rosario |
+| 🆔 Matrícula | 2015-2984 |
+| 📖 Asignatura | Programación 2 (SOF-004) |
+| 👨‍🏫 Profesor | Raydelto Hernández Perera |
+| 🏫 Institución | Instituto Tecnológico de Las Américas (ITLA) |
+| 📅 Período académico | 2017-C2 |
+| 🎯 Tipo de proyecto | Proyecto final |
+
+---
+
+## 👨‍💻 Autor
+
+**Francis Jairo Matías Rosario**
+[GitHub](https://github.com/Jairo0811)

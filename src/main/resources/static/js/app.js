@@ -36,5 +36,25 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
-});
 
+    const priceType = document.querySelector("[data-event-price-type]");
+    const priceField = document.querySelector("[data-event-price-field]");
+    const priceInput = priceField?.querySelector("input");
+
+    const updatePriceVisibility = () => {
+        if (!priceType || !priceField || !priceInput) {
+            return;
+        }
+
+        const freeEvent = priceType.value === "true";
+        priceField.classList.toggle("d-none", freeEvent);
+        priceInput.disabled = freeEvent;
+
+        if (freeEvent) {
+            priceInput.value = "0.00";
+        }
+    };
+
+    priceType?.addEventListener("change", updatePriceVisibility);
+    updatePriceVisibility();
+});
