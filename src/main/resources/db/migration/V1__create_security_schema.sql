@@ -1,3 +1,12 @@
+/* ================================================================
+   EVENTIX
+   V1 - Creación del esquema de seguridad
+
+   Compatible con:
+   - Microsoft SQL Server
+   - H2 en MODE=MSSQLServer
+   ================================================================ */
+
 CREATE TABLE roles
 (
     id BIGINT IDENTITY(1,1) NOT NULL,
@@ -10,9 +19,20 @@ CREATE TABLE roles
         PRIMARY KEY (id),
 
     CONSTRAINT UQ_roles_name
-        UNIQUE (name)
+        UNIQUE (name),
+
+    CONSTRAINT CK_roles_name
+        CHECK
+        (
+            name IN
+            (
+                'ADMINISTRATOR',
+                'OPERATOR',
+                'ORGANIZER',
+                'ACCESS_STAFF'
+            )
+        )
 );
-GO
 
 CREATE TABLE users
 (
@@ -32,42 +52,41 @@ CREATE TABLE users
 
     role_id BIGINT NOT NULL,
 
-    status NVARCHAR(20) NOT NULL,
+    status NVARCHAR(20) NOT NULL
+        DEFAULT 'ACTIVE',
 
     must_change_password BIT NOT NULL
-        CONSTRAINT DF_users_must_change_password
         DEFAULT 1,
 
     last_login_at DATETIME2(6) NULL,
 
     created_at DATETIME2(6) NOT NULL
-        CONSTRAINT DF_users_created_at
-        DEFAULT SYSDATETIME(),
+        DEFAULT CURRENT_TIMESTAMP,
 
     updated_at DATETIME2(6) NOT NULL
-        CONSTRAINT DF_users_updated_at
-        DEFAULT SYSDATETIME(),
+        DEFAULT CURRENT_TIMESTAMP,
 
-    created_by NVARCHAR(120) NOT NULL,
+    created_by NVARCHAR(120) NOT NULL
+        DEFAULT 'SYSTEM',
 
-    updated_by NVARCHAR(120) NOT NULL,
+    updated_by NVARCHAR(120) NOT NULL
+        DEFAULT 'SYSTEM',
 
     version BIGINT NOT NULL
-        CONSTRAINT DF_users_version
         DEFAULT 0,
 
     CONSTRAINT PK_users
         PRIMARY KEY (id),
+
+    CONSTRAINT FK_users_role
+        FOREIGN KEY (role_id)
+        REFERENCES roles(id),
 
     CONSTRAINT UQ_users_email
         UNIQUE (email),
 
     CONSTRAINT UQ_users_username
         UNIQUE (username),
-
-    CONSTRAINT FK_users_role
-        FOREIGN KEY (role_id)
-        REFERENCES roles(id),
 
     CONSTRAINT CK_users_status
         CHECK
@@ -80,16 +99,18 @@ CREATE TABLE users
             )
         )
 );
-GO
 
 CREATE INDEX IX_users_status
-ON users(status);
-GO
+    ON users(status);
 
 CREATE INDEX IX_users_role_id
-ON users(role_id);
-GO
+    ON users(role_id);
 
 CREATE INDEX IX_users_name
-ON users(last_name, first_name);
-GO
+    ON users(last_name, first_name);
+
+CREATE INDEX IX_users_last_login_at
+    ON users(last_login_at);
+
+CREATE INDEX IX_users_created_at
+    ON users(created_at);

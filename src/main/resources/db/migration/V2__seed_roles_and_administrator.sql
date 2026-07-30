@@ -1,45 +1,58 @@
-SET IDENTITY_INSERT roles ON;
-GO
+/* ================================================================
+   EVENTIX
+   V2 - Roles y administrador inicial
+
+   Usuario: admin
+   Correo: admin@eventix.local
+   Contraseña temporal: Admin123*
+   ================================================================ */
 
 INSERT INTO roles
 (
-    id,
     name,
     description
 )
 VALUES
 (
-    1,
     'ADMINISTRATOR',
     'Acceso completo a la administración de Eventix.'
-),
+);
+
+INSERT INTO roles
 (
-    2,
+    name,
+    description
+)
+VALUES
+(
     'OPERATOR',
     'Operación de clientes, reservaciones, ventas y pagos.'
-),
+);
+
+INSERT INTO roles
 (
-    3,
+    name,
+    description
+)
+VALUES
+(
     'ORGANIZER',
     'Gestión y consulta de eventos propios.'
-),
+);
+
+INSERT INTO roles
 (
-    4,
+    name,
+    description
+)
+VALUES
+(
     'ACCESS_STAFF',
     'Validación de boletas y control de acceso.'
 );
-GO
-
-SET IDENTITY_INSERT roles OFF;
-GO
-
-
-SET IDENTITY_INSERT users ON;
-GO
 
 INSERT INTO users
 (
-    id,
     first_name,
     last_name,
     email,
@@ -56,37 +69,21 @@ INSERT INTO users
     updated_by,
     version
 )
-VALUES
-(
-    1,
+SELECT
     'Administrador',
     'Eventix',
     'admin@eventix.local',
     'admin',
-
     '$2b$12$LKYb4TTYExP1wmxhLqfF0.g.rol1KiBx0qm86U3Bp/MvCR3lI59Am',
-
     NULL,
-
-    1,
-
+    id,
     'ACTIVE',
-
     1,
-
     NULL,
-
-    SYSDATETIME(),
-
-    SYSDATETIME(),
-
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP,
     'flyway',
-
     'flyway',
-
     0
-);
-GO
-
-SET IDENTITY_INSERT users OFF;
-GO
+FROM roles
+WHERE name = 'ADMINISTRATOR';
