@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "agent/**"
+      - "feature/**"
   pull_request:
     branches:
       - main
@@ -16,7 +17,7 @@ jobs:
   verify:
     name: Build and test
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -32,3 +33,8 @@ jobs:
       - name: Verify with Maven
         run: mvn --batch-mode --no-transfer-progress clean verify
 
+      - name: Show Docker diagnostics after failure
+        if: failure()
+        run: |
+          docker version
+          docker info

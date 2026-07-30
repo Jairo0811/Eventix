@@ -1,0 +1,74 @@
+name: eventix
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-CU20-ubuntu-22.04
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Define MSSQL_SA_PASSWORD}
+    ports:
+      - "${SQLSERVER_PORT:-1433}:1433"
+    volumes:
+      - eventix-sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          SQLCMD=/opt/mssql-tools18/bin/sqlcmd;
+          [ -x "$$SQLCMD" ] || SQLCMD=/opt/mssql-tools/bin/sqlcmd;
+          "$$SQLCMD" -S localhost -U sa -P "$$MSSQL_SA_PASSWORD"
+          -C -b -Q "SELECT 1"
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+
+  sqlserver-configure:
+    image: mcr.microsoft.com/mssql/server:2022-CU20-ubuntu-22.04
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Define MSSQL_SA_PASSWORD}
+      EVENTIX_DB_PASSWORD: ${EVENTIX_DB_PASSWORD:?Define EVENTIX_DB_PASSWORD}
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        SQLCMD=/opt/mssql-tools18/bin/sqlcmd
+        [ -x "$$SQLCMD" ] || SQLCMD=/opt/mssql-tools/bin/sqlcmd
+        "$$SQLCMD" -S sqlserver -U sa -P "$$MSSQL_SA_PASSWORD" \
+          -C -b -v EVENTIX_DB_PASSWORD="$$EVENTIX_DB_PASSWORD" \
+          -i /scripts/EventixDb.docker.sql
+    volumes:
+      - ./docker/EventixDb.docker.sql:/scripts/EventixDb.docker.sql:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: >-
+        jdbc:sqlserver://sqlserver:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true
+      DB_USERNAME: eventix_app
+      DB_PASSWORD: ${EVENTIX_DB_PASSWORD:?Define EVENTIX_DB_PASSWORD}
+      APP_BASE_URL: http://localhost:8080
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      sqlserver-configure:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -q --spider http://localhost:8080/login
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  eventix-sqlserver-data:
