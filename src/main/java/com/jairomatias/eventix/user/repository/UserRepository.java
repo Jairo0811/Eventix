@@ -1,6 +1,7 @@
 package com.jairomatias.eventix.user.repository;
 
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countByStatus(UserStatus status);
 
     long countByRole_NameAndStatus(RoleName roleName, UserStatus status);
+
+    List<User> findAllByRole_NameAndStatusOrderByLastNameAscFirstNameAsc(
+            RoleName roleName,
+            UserStatus status);
 
     @Query(
             value = """

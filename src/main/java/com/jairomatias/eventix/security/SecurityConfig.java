@@ -4,6 +4,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -67,6 +68,22 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/users/**")
                         .hasRole("ADMINISTRATOR")
+                        .requestMatchers("/categories/**")
+                        .hasRole("ADMINISTRATOR")
+                        .requestMatchers(
+                                "/events/new",
+                                "/events/*/edit")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "ORGANIZER")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/events/**")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "ORGANIZER")
+                        .requestMatchers("/events/**")
+                        .authenticated()
                         .anyRequest()
                         .authenticated())
                 .formLogin(form -> form
