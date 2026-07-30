@@ -22,14 +22,23 @@
             <i class="bi bi-people-fill" aria-hidden="true"></i>
             Usuarios
         </a>
+        <a class="nav-link"
+           th:classappend="${activePage == 'events'} ? ' active'"
+           th:href="@{/events}">
+            <i class="bi bi-calendar-event-fill" aria-hidden="true"></i>
+            Eventos
+        </a>
+        <a class="nav-link"
+           sec:authorize="hasRole('ADMINISTRATOR')"
+           th:classappend="${activePage == 'categories'} ? ' active'"
+           th:href="@{/categories}">
+            <i class="bi bi-tags-fill" aria-hidden="true"></i>
+            Categorías
+        </a>
     </nav>
 
     <p class="sidebar-label">Próximas fases</p>
     <nav class="nav flex-column sidebar-nav" aria-label="Módulos próximos">
-        <span class="nav-link opacity-50" aria-disabled="true">
-            <i class="bi bi-calendar-event" aria-hidden="true"></i>
-            Eventos
-        </span>
         <span class="nav-link opacity-50" aria-disabled="true">
             <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
             Boletas
@@ -41,4 +50,3 @@
     </nav>
 </aside>
 </html>
-

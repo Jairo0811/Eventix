@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Evento')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('events')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small" th:href="@{/events}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+                Volver a eventos
+            </a>
+            <h1 class="page-title mt-2"
+                th:text="${formMode == 'create'
+                         ? 'Crear evento'
+                         : 'Editar evento'}">
+                Evento
+            </h1>
+            <p class="page-subtitle">
+                Define la programación, el responsable y las condiciones de acceso.
+            </p>
+        </div>
+    </div>
+
+    <section class="content-card mx-auto" style="max-width: 1040px;">
+        <form th:action="${formMode == 'create'}
+                         ? @{/events}
+                         : @{/events/{id}(id=${eventId})}"
+              th:object="${eventForm}"
+              method="post"
+              novalidate>
+
+            <div class="alert alert-danger"
+                 role="alert"
+                 th:if="${#fields.hasGlobalErrors()}">
+                <p class="mb-0"
+                   th:each="error : ${#fields.globalErrors()}"
+                   th:text="${error}">
+                    Revisa el formulario.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <h2 class="form-section-title">Información principal</h2>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold" for="title">Título</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="title"
+                           th:field="*{title}"
+                           type="text"
+                           maxlength="160"
+                           autocomplete="off">
+                    <div class="invalid-feedback" th:errors="*{title}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" for="categoryId">Categoría</label>
+                    <select class="form-select"
+                            th:errorclass="is-invalid"
+                            id="categoryId"
+                            th:field="*{categoryId}">
+                        <option value="">Selecciona una categoría</option>
+                        <option th:each="category : ${categories}"
+                                th:value="${category.id}"
+                                th:text="${category.name}">
+                            Conferencia
+                        </option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{categoryId}"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold" for="description">Descripción</label>
+                    <textarea class="form-control"
+                              th:errorclass="is-invalid"
+                              id="description"
+                              th:field="*{description}"
+                              rows="5"
+                              maxlength="5000"></textarea>
+                    <div class="invalid-feedback" th:errors="*{description}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="status">Estado</label>
+                    <select class="form-select"
+                            th:errorclass="is-invalid"
+                            id="status"
+                            th:field="*{status}">
+                        <option th:each="statusOption : ${statuses}"
+                                th:value="${statusOption}"
+                                th:text="${statusOption.displayName}">
+                            Borrador
+                        </option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{status}"></div>
+                    <div class="form-text">
+                        Las transiciones inválidas se bloquean automáticamente.
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="organizerId">
+                        Organizador responsable
+                    </label>
+                    <select class="form-select"
+                            th:if="${administrator}"
+                            th:errorclass="is-invalid"
+                            id="organizerId"
+                            th:field="*{organizerId}">
+                        <option value="">Selecciona un organizador</option>
+                        <option th:each="organizer : ${organizers}"
+                                th:value="${organizer.id}"
+                                th:text="|${organizer.fullName} · ${organizer.email}|">
+                            Organizador
+                        </option>
+                    </select>
+                    <input th:unless="${administrator}"
+                           id="organizerId"
+                           th:field="*{organizerId}"
+                           type="hidden">
+                    <div class="organizer-readonly"
+                         th:if="${!administrator and !organizers.isEmpty()}">
+                        <i class="bi bi-person-check-fill" aria-hidden="true"></i>
+                        <span th:text="${organizers[0].fullName}">Organizador</span>
+                    </div>
+                    <div class="invalid-feedback d-block"
+                         th:errors="*{organizerId}"></div>
+                </div>
+
+                <div class="col-12"><hr></div>
+                <div class="col-12">
+                    <h2 class="form-section-title">Fecha y ubicación</h2>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="startAt">Inicio</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="startAt"
+                           th:field="*{startAt}"
+                           type="datetime-local">
+                    <div class="invalid-feedback" th:errors="*{startAt}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="endAt">Finalización</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="endAt"
+                           th:field="*{endAt}"
+                           type="datetime-local">
+                    <div class="invalid-feedback" th:errors="*{endAt}"></div>
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label fw-semibold" for="venue">Lugar</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="venue"
+                           th:field="*{venue}"
+                           type="text"
+                           maxlength="160"
+                           placeholder="Centro de Convenciones">
+                    <div class="invalid-feedback" th:errors="*{venue}"></div>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold" for="capacity">Capacidad</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="capacity"
+                           th:field="*{capacity}"
+                           type="number"
+                           min="1"
+                           max="1000000">
+                    <div class="invalid-feedback" th:errors="*{capacity}"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold" for="address">Dirección</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="address"
+                           th:field="*{address}"
+                           type="text"
+                           maxlength="300">
+                    <div class="invalid-feedback" th:errors="*{address}"></div>
+                </div>
+
+                <div class="col-12"><hr></div>
+                <div class="col-12">
+                    <h2 class="form-section-title">Portada y precio</h2>
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label fw-semibold" for="coverImageUrl">
+                        URL de la portada
+                    </label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="coverImageUrl"
+                           th:field="*{coverImageUrl}"
+                           type="url"
+                           maxlength="500"
+                           placeholder="https://...">
+                    <div class="invalid-feedback" th:errors="*{coverImageUrl}"></div>
+                    <div class="form-text">
+                        Admite una imagen pública mediante HTTP o HTTPS.
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold" for="freeEvent">Tipo</label>
+                    <select class="form-select"
+                            id="freeEvent"
+                            th:field="*{freeEvent}"
+                            data-event-price-type>
+                        <option th:value="true">Gratis</option>
+                        <option th:value="false">De pago</option>
+                    </select>
+                </div>
+                <div class="col-md-3" data-event-price-field>
+                    <label class="form-label fw-semibold" for="basePrice">
+                        Precio base (RD$)
+                    </label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="basePrice"
+                           th:field="*{basePrice}"
+                           type="number"
+                           min="0"
+                           step="0.01">
+                    <div class="invalid-feedback" th:errors="*{basePrice}"></div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <div class="d-flex flex-wrap justify-content-end gap-2">
+                <a class="btn btn-light" th:href="@{/events}">Cancelar</a>
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>
+                    <span th:text="${formMode == 'create'
+                                   ? 'Crear evento'
+                                   : 'Guardar cambios'}">
+                        Guardar
+                    </span>
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

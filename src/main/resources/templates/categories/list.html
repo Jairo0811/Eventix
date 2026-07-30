@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Categorías')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('categories')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <p class="text-success fw-semibold mb-1">Configuración de eventos</p>
+            <h1 class="page-title">Categorías</h1>
+            <p class="page-subtitle">
+                Organiza los eventos mediante categorías reutilizables.
+            </p>
+        </div>
+        <a class="btn btn-primary" th:href="@{/categories/new}">
+            <i class="bi bi-plus-circle-fill me-2" aria-hidden="true"></i>
+            Nueva categoría
+        </a>
+    </div>
+
+    <section class="content-card">
+        <form class="row g-3 mb-4" method="get" th:action="@{/categories}">
+            <div class="col-12 col-md-7">
+                <label class="form-label" for="term">Buscar</label>
+                <input class="form-control"
+                       id="term"
+                       name="term"
+                       type="search"
+                       th:value="${term}"
+                       placeholder="Nombre o descripción">
+            </div>
+            <div class="col-8 col-md-3">
+                <label class="form-label" for="active">Estado</label>
+                <select class="form-select" id="active" name="active">
+                    <option value="">Todas</option>
+                    <option value="true"
+                            th:selected="${selectedActive == true}">
+                        Activas
+                    </option>
+                    <option value="false"
+                            th:selected="${selectedActive == false}">
+                        Inactivas
+                    </option>
+                </select>
+            </div>
+            <div class="col-4 col-md-2 d-flex align-items-end">
+                <button class="btn btn-outline-primary w-100" type="submit">
+                    Filtrar
+                </button>
+            </div>
+        </form>
+
+        <div class="table-responsive" th:if="${categories.hasContent()}">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Categoría</th>
+                    <th scope="col">Descripción</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col" class="text-end">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="category : ${categories.content}">
+                    <td class="fw-semibold" th:text="${category.name}">
+                        Categoría
+                    </td>
+                    <td class="text-secondary"
+                        th:text="${category.description != null
+                                 ? category.description
+                                 : 'Sin descripción'}">
+                        Descripción
+                    </td>
+                    <td>
+                        <span class="badge-status"
+                              th:classappend="${category.active
+                                               ? ' badge-active'
+                                               : ' badge-inactive'}"
+                              th:text="${category.active ? 'Activa' : 'Inactiva'}">
+                            Activa
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-light"
+                           th:href="@{/categories/{id}/edit(id=${category.id})}"
+                           aria-label="Editar categoría">
+                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                        </a>
+                        <form class="d-inline"
+                              th:if="${category.active}"
+                              th:action="@{/categories/{id}/deactivate(id=${category.id})}"
+                              method="post"
+                              data-confirm="La categoría dejará de estar disponible para eventos nuevos.">
+                            <button class="btn btn-sm btn-light"
+                                    type="submit"
+                                    aria-label="Desactivar categoría">
+                                <i class="bi bi-toggle-on" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                        <form class="d-inline"
+                              th:unless="${category.active}"
+                              th:action="@{/categories/{id}/activate(id=${category.id})}"
+                              method="post">
+                            <button class="btn btn-sm btn-light"
+                                    type="submit"
+                                    aria-label="Activar categoría">
+                                <i class="bi bi-toggle-off" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:unless="${categories.hasContent()}">
+            <i class="bi bi-tags fs-1 d-block mb-3" aria-hidden="true"></i>
+            <h2 class="h5 text-dark">No encontramos categorías</h2>
+            <p class="mb-0">Cambia los filtros o crea una categoría.</p>
+        </div>
+
+        <nav class="d-flex justify-content-between align-items-center mt-4"
+             aria-label="Paginación de categorías"
+             th:if="${categories.totalPages > 1}">
+            <span class="text-secondary small"
+                  th:text="|Página ${categories.number + 1} de ${categories.totalPages}|">
+                Página 1
+            </span>
+            <div class="btn-group">
+                <a class="btn btn-sm btn-outline-secondary"
+                   th:classappend="${categories.first} ? ' disabled'"
+                   th:href="@{/categories(
+                        term=${term},
+                        active=${selectedActive},
+                        page=${categories.number - 1})}">
+                    Anterior
+                </a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   th:classappend="${categories.last} ? ' disabled'"
+                   th:href="@{/categories(
+                        term=${term},
+                        active=${selectedActive},
+                        page=${categories.number + 1})}">
+                    Siguiente
+                </a>
+            </div>
+        </nav>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
