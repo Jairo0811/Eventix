@@ -14,6 +14,7 @@
 
 **Eventix** es una plataforma web empresarial desarrollada con **Java 21, Spring Boot y Microsoft SQL Server**, diseñada para la administración de eventos, usuarios, reservaciones, ventas de entradas, boletas digitales y control de acceso.
 
+[![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-2563EB?style=for-the-badge)](#-estado-del-proyecto)
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)](https://spring.io/projects/spring-security)
@@ -24,7 +25,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 
-> Estado actual: **Fase 1 completada — arquitectura, seguridad, interfaz, gestión de usuarios y migración a SQL Server.**
+> Estado actual: **En desarrollo. La Fase 1 está completada; los módulos operativos de eventos, reservaciones, ventas, boletas y acceso continúan pendientes.**
 
 </div>
 
@@ -245,6 +246,31 @@ src/
 
 ---
 
+## 🚦 Estado del proyecto
+
+**Estado general: 🚧 En desarrollo — Fase 1 completada**
+
+### Completado
+
+- [x] Arquitectura base.
+- [x] Seguridad y autenticación.
+- [x] Gestión de usuarios y roles iniciales.
+- [x] Dashboard por rol.
+- [x] Migraciones con Flyway.
+- [x] Integración con SQL Server.
+- [x] Pruebas automatizadas y Testcontainers.
+
+### Pendiente
+
+- [ ] Gestión completa de eventos.
+- [ ] Reservaciones.
+- [ ] Ventas de entradas.
+- [ ] Boletas digitales y códigos QR.
+- [ ] Control de acceso.
+- [ ] Reportes y estadísticas.
+
+---
+
 ## 🚀 Clonar y probar Eventix
 
 ### 1. Requisitos previos
@@ -284,204 +310,4 @@ cd Eventix
 
 ### 3. Crear la base de datos y el usuario técnico
 
-Ejecuta el siguiente script en SQL Server Management Studio con una cuenta administradora:
-
-```sql
-USE master;
-GO
-
-IF DB_ID(N'EventixDb') IS NULL
-BEGIN
-    CREATE DATABASE EventixDb;
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT 1
-    FROM sys.server_principals
-    WHERE name = N'eventix_app'
-)
-BEGIN
-    CREATE LOGIN eventix_app
-    WITH PASSWORD = N'Eventix2026*',
-         CHECK_POLICY = ON,
-         CHECK_EXPIRATION = OFF;
-END;
-GO
-
-USE EventixDb;
-GO
-
-IF NOT EXISTS (
-    SELECT 1
-    FROM sys.database_principals
-    WHERE name = N'eventix_app'
-)
-BEGIN
-    CREATE USER eventix_app
-    FOR LOGIN eventix_app;
-END;
-GO
-
-ALTER ROLE db_datareader ADD MEMBER eventix_app;
-ALTER ROLE db_datawriter ADD MEMBER eventix_app;
-ALTER ROLE db_ddladmin ADD MEMBER eventix_app;
-GO
-```
-
-Flyway crea automáticamente las tablas, restricciones, roles y el usuario administrador al iniciar la aplicación por primera vez.
-
-### 4. Configurar variables de entorno
-
-Usa `.env.example` como referencia. No publiques credenciales reales.
-
-| Variable | Requerida | Ejemplo |
-|---|---:|---|
-| `DB_URL` | Sí | `jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true` |
-| `DB_USERNAME` | Sí | `eventix_app` |
-| `DB_PASSWORD` | Sí | `Eventix2026*` |
-| `APP_PORT` | No | `8080` |
-| `APP_BASE_URL` | No | `http://localhost:8080` |
-| `MAIL_USERNAME` | Fase futura | vacío |
-| `MAIL_PASSWORD` | Fase futura | vacío |
-
-> `trustServerCertificate=true` se utiliza únicamente para facilitar el desarrollo local. En producción debe configurarse un certificado válido.
-
-#### PowerShell
-
-```powershell
-$env:DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true"
-$env:DB_USERNAME = "eventix_app"
-$env:DB_PASSWORD = "Eventix2026*"
-```
-
-#### Bash, Linux o macOS
-
-```bash
-export DB_URL='jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true'
-export DB_USERNAME='eventix_app'
-export DB_PASSWORD='Eventix2026*'
-```
-
-### 5. Ejecutar las pruebas
-
-Asegúrate de que Docker Desktop esté iniciado y que el motor responda:
-
-```bash
-docker version
-docker ps
-```
-
-Luego ejecuta:
-
-```bash
-mvn clean verify
-```
-
-Durante la primera ejecución, Testcontainers descargará una imagen de Microsoft SQL Server y levantará un contenedor temporal. Flyway aplicará las mismas migraciones utilizadas por la aplicación y el contenedor se eliminará al finalizar las pruebas.
-
-### 6. Iniciar la aplicación
-
-```bash
-mvn spring-boot:run
-```
-
-Abre:
-
-```text
-http://localhost:8080
-```
-
-### 7. Credenciales iniciales
-
-| Campo | Valor |
-|---|---|
-| Correo | `admin@eventix.local` |
-| Usuario | `admin` |
-| Contraseña temporal | `Admin123*` |
-
-El sistema obliga a cambiar la contraseña temporal en el primer inicio de sesión.
-
-> Estas credenciales son exclusivamente para desarrollo local.
-
-### 8. Ejecutar como archivo JAR
-
-```bash
-mvn clean package -DskipTests
-java -jar target/eventix-0.1.0-SNAPSHOT.jar
-```
-
-> `-DskipTests` permite generar el JAR cuando Docker Desktop no está disponible. Para validar completamente el proyecto utiliza `mvn clean verify` con Docker activo.
-
-### 9. Abrir en un IDE
-
-#### Eclipse o Spring Tools
-
-1. Abre `File > Import`.
-2. Selecciona `Maven > Existing Maven Projects`.
-3. Elige la carpeta clonada de Eventix.
-4. Espera la descarga de dependencias.
-5. Ejecuta `EventixApplication` como `Spring Boot App` o `Java Application`.
-
-#### Apache NetBeans
-
-1. Abre `File > Open Project`.
-2. Selecciona la carpeta que contiene `pom.xml`.
-3. Espera la resolución de dependencias Maven.
-4. Ejecuta `EventixApplication`.
-
-#### IntelliJ IDEA
-
-1. Abre `File > Open`.
-2. Selecciona la carpeta del repositorio.
-3. Importa el proyecto como Maven.
-4. Configura JDK 21.
-5. Ejecuta `EventixApplication`.
-
-### 10. Problemas frecuentes
-
-- **Error de conexión a SQL Server:** verifica `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, el puerto `1433`, el protocolo TCP/IP y que el servicio de SQL Server esté iniciado.
-- **Login rechazado:** confirma que SQL Server permita autenticación mixta y que exista el login `eventix_app`.
-- **Certificado no confiable:** para desarrollo local conserva `encrypt=true;trustServerCertificate=true`; en producción instala un certificado válido.
-- **Instancia SQL Server Express:** puede requerir una URL con `instanceName=SQLEXPRESS` o un puerto TCP asignado explícitamente.
-- **Docker muestra `Virtualization support not detected`:** habilita la virtualización en BIOS/UEFI. En placas ASUS con procesadores AMD normalmente se encuentra en `Advanced > CPU Configuration > SVM Mode`.
-- **Testcontainers no encuentra Docker:** confirma que Docker Desktop esté abierto y que `docker version` muestre secciones `Client` y `Server`.
-- **Primera ejecución de pruebas lenta:** Testcontainers debe descargar inicialmente la imagen de SQL Server; las ejecuciones posteriores reutilizan las capas descargadas.
-- **Puerto 8080 ocupado:** define otro puerto con `APP_PORT`.
-- **Versión incorrecta de Java:** confirma que `java -version` y `mvn -version` utilizan JDK 21.
-- **Dependencias sin descargar:** ejecuta `mvn -U clean verify`.
-- **Migraciones fallidas:** verifica que `eventix_app` tenga permisos `db_ddladmin`, `db_datareader` y `db_datawriter` sobre `EventixDb`.
-
----
-
-## 🗺️ Hoja de ruta
-
-| Fase | Alcance | Estado |
-|---|---|---|
-| 1 | Arquitectura, seguridad, dashboard y usuarios | ✅ Completada |
-| 1.1 | SQL Server, Flyway y pruebas con Testcontainers | 🚧 En configuración |
-| 2 | Gestión de eventos y organizadores | ⏳ Pendiente |
-| 3 | Reservaciones, ventas y pagos | ⏳ Pendiente |
-| 4 | Boletas digitales, QR y control de acceso | ⏳ Pendiente |
-| 5 | Reportes, estadísticas y preparación para producción | ⏳ Pendiente |
-
----
-
-## 🎓 Información académica
-
-| Información | Detalle |
-|---|---|
-| 👨‍🎓 Estudiante | Francis Jairo Matías Rosario |
-| 🆔 Matrícula | 2015-2984 |
-| 📖 Asignatura | Programación 2 (SOF-004) |
-| 👨‍🏫 Profesor | Raydelto Hernández Perera |
-| 🏫 Institución | Instituto Tecnológico de Las Américas (ITLA) |
-| 📅 Período académico | 2017-C2 |
-| 🎯 Tipo de proyecto | Proyecto final |
-
----
-
-## 👨‍💻 Autor
-
-**Francis Jairo Matías Rosario**  
-[GitHub](https://github.com/Jairo0811)
+Consulta la configuración incluida en el repositorio para preparar SQL Server, ejecutar las migraciones y arrancar la aplicación en el perfil correspondiente.
