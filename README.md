@@ -18,11 +18,13 @@
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)](https://spring.io/projects/spring-security)
 [![SQL Server](https://img.shields.io/badge/SQL_Server_2022-CC2927?style=for-the-badge&logo=microsoftsqlserver&logoColor=white)](https://www.microsoft.com/sql-server)
+[![Docker](https://img.shields.io/badge/Docker_Desktop-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/products/docker-desktop/)
+[![Testcontainers](https://img.shields.io/badge/Testcontainers-SQL_Server-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://testcontainers.com/)
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)](https://www.thymeleaf.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 
-> Estado actual: **Fase 1 completada — arquitectura, seguridad, interfaz y gestión de usuarios.**
+> Estado actual: **Fase 1 completada — arquitectura, seguridad, interfaz, gestión de usuarios y migración a SQL Server.**
 
 </div>
 
@@ -73,6 +75,8 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 - Restablecimiento seguro de contraseña.
 - Auditoría técnica mediante JPA Auditing.
 - Migraciones de base de datos con Flyway.
+- Microsoft SQL Server como motor principal.
+- Pruebas de integración sobre SQL Server real mediante Testcontainers.
 - Interfaz responsiva con identidad visual verde de Eventix.
 - Pruebas automatizadas de autenticación, autorización y seguridad.
 
@@ -138,7 +142,7 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 | Driver JDBC | Microsoft JDBC Driver for SQL Server |
 | Migraciones | Flyway SQL Server |
 | ORM | Hibernate |
-| Base para pruebas | H2 |
+| Base para pruebas | SQL Server 2022 en Testcontainers |
 
 ## 🧪 Pruebas y calidad
 
@@ -147,7 +151,8 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 | Pruebas unitarias | JUnit 5 |
 | Pruebas de integración | Spring Boot Test y MockMvc |
 | Seguridad | Spring Security Test |
-| Base de datos de pruebas | H2 |
+| Base de datos de pruebas | Microsoft SQL Server 2022 mediante Testcontainers |
+| Aislamiento de pruebas | Contenedor efímero por ejecución |
 | Integración continua | GitHub Actions con Java 21 |
 
 ## 🛠️ Herramientas de desarrollo
@@ -156,6 +161,7 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" alt="Git" title="Git" width="52" height="52" />
 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub" title="GitHub" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker" title="Docker Desktop y Testcontainers" width="52" height="52" />
 
 </div>
 
@@ -164,6 +170,7 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 | Control de versiones | Git |
 | Repositorio y CI | GitHub y GitHub Actions |
 | Gestión de dependencias | Maven |
+| Contenedores de prueba | Docker Desktop y Testcontainers |
 
 ---
 
@@ -179,6 +186,9 @@ flowchart LR
     Service --> Repository["Repository"]
     Repository --> Database[(SQL Server 2022)]
     Flyway["Flyway"] --> Database
+    Tests["JUnit · MockMvc"] --> Container["Testcontainers"]
+    Container --> TestDatabase[(SQL Server 2022 efímero)]
+    Flyway --> TestDatabase
 ```
 
 Flujo principal:
@@ -228,7 +238,8 @@ src/
 │       ├── application-dev.yml
 │       └── application-prod.yml
 └── test/
-    ├── java/
+    ├── java/com/jairomatias/eventix/
+    │   └── config/TestcontainersConfiguration.java
     └── resources/application-test.yml
 ```
 
@@ -245,11 +256,15 @@ Instala y verifica:
 - Microsoft SQL Server 2022 o SQL Server Express.
 - SQL Server Management Studio o Azure Data Studio.
 - Git.
+- Docker Desktop para ejecutar las pruebas de integración con Testcontainers.
+- Virtualización habilitada en BIOS/UEFI (`SVM Mode` en equipos AMD o `Intel Virtualization Technology` en equipos Intel).
 
 ```bash
 java -version
 mvn -version
 git --version
+docker version
+docker ps
 ```
 
 Para verificar SQL Server desde una terminal con `sqlcmd` instalado:
@@ -257,6 +272,8 @@ Para verificar SQL Server desde una terminal con `sqlcmd` instalado:
 ```bash
 sqlcmd -?
 ```
+
+> Docker Desktop no es obligatorio para iniciar la aplicación en desarrollo, pero sí para ejecutar la suite de integración basada en Testcontainers.
 
 ### 2. Clonar el repositorio
 
@@ -348,9 +365,20 @@ export DB_PASSWORD='Eventix2026*'
 
 ### 5. Ejecutar las pruebas
 
+Asegúrate de que Docker Desktop esté iniciado y que el motor responda:
+
+```bash
+docker version
+docker ps
+```
+
+Luego ejecuta:
+
 ```bash
 mvn clean verify
 ```
+
+Durante la primera ejecución, Testcontainers descargará una imagen de Microsoft SQL Server y levantará un contenedor temporal. Flyway aplicará las mismas migraciones utilizadas por la aplicación y el contenedor se eliminará al finalizar las pruebas.
 
 ### 6. Iniciar la aplicación
 
@@ -379,9 +407,11 @@ El sistema obliga a cambiar la contraseña temporal en el primer inicio de sesi�
 ### 8. Ejecutar como archivo JAR
 
 ```bash
-mvn clean package
+mvn clean package -DskipTests
 java -jar target/eventix-0.1.0-SNAPSHOT.jar
 ```
+
+> `-DskipTests` permite generar el JAR cuando Docker Desktop no está disponible. Para validar completamente el proyecto utiliza `mvn clean verify` con Docker activo.
 
 ### 9. Abrir en un IDE
 
@@ -414,10 +444,26 @@ java -jar target/eventix-0.1.0-SNAPSHOT.jar
 - **Login rechazado:** confirma que SQL Server permita autenticación mixta y que exista el login `eventix_app`.
 - **Certificado no confiable:** para desarrollo local conserva `encrypt=true;trustServerCertificate=true`; en producción instala un certificado válido.
 - **Instancia SQL Server Express:** puede requerir una URL con `instanceName=SQLEXPRESS` o un puerto TCP asignado explícitamente.
+- **Docker muestra `Virtualization support not detected`:** habilita la virtualización en BIOS/UEFI. En placas ASUS con procesadores AMD normalmente se encuentra en `Advanced > CPU Configuration > SVM Mode`.
+- **Testcontainers no encuentra Docker:** confirma que Docker Desktop esté abierto y que `docker version` muestre secciones `Client` y `Server`.
+- **Primera ejecución de pruebas lenta:** Testcontainers debe descargar inicialmente la imagen de SQL Server; las ejecuciones posteriores reutilizan las capas descargadas.
 - **Puerto 8080 ocupado:** define otro puerto con `APP_PORT`.
 - **Versión incorrecta de Java:** confirma que `java -version` y `mvn -version` utilizan JDK 21.
 - **Dependencias sin descargar:** ejecuta `mvn -U clean verify`.
 - **Migraciones fallidas:** verifica que `eventix_app` tenga permisos `db_ddladmin`, `db_datareader` y `db_datawriter` sobre `EventixDb`.
+
+---
+
+## 🗺️ Hoja de ruta
+
+| Fase | Alcance | Estado |
+|---|---|---|
+| 1 | Arquitectura, seguridad, dashboard y usuarios | ✅ Completada |
+| 1.1 | SQL Server, Flyway y pruebas con Testcontainers | 🚧 En configuración |
+| 2 | Gestión de eventos y organizadores | ⏳ Pendiente |
+| 3 | Reservaciones, ventas y pagos | ⏳ Pendiente |
+| 4 | Boletas digitales, QR y control de acceso | ⏳ Pendiente |
+| 5 | Reportes, estadísticas y preparación para producción | ⏳ Pendiente |
 
 ---
 
