@@ -27,23 +27,34 @@ public class SecurityConfig {
         this.forcePasswordChangeFilter = forcePasswordChangeFilter;
     }
 
+    /**
+     * Se declara static para que Spring pueda crear el codificador sin
+     * instanciar previamente SecurityConfig, evitando dependencias circulares.
+     */
     @Bean
-    PasswordEncoder passwordEncoder() {
+    static PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 
     @Bean
-    DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+    DaoAuthenticationProvider authenticationProvider(
+            PasswordEncoder passwordEncoder) {
+
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider(userDetailsService);
+
         provider.setPasswordEncoder(passwordEncoder);
         provider.setHideUserNotFoundExceptions(true);
+
         return provider;
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            DaoAuthenticationProvider authenticationProvider) throws Exception {
+            DaoAuthenticationProvider authenticationProvider)
+            throws Exception {
+
         http
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(authorize -> authorize
@@ -54,8 +65,10 @@ public class SecurityConfig {
                                 "/images/**",
                                 "/error/**")
                         .permitAll()
-                        .requestMatchers("/users/**").hasRole("ADMINISTRATOR")
-                        .anyRequest().authenticated())
+                        .requestMatchers("/users/**")
+                        .hasRole("ADMINISTRATOR")
+                        .anyRequest()
+                        .authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .usernameParameter("username")
@@ -70,16 +83,18 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll())
                 .sessionManagement(session -> session
-                        .sessionFixation(fixation -> fixation.migrateSession())
+                        .sessionFixation(fixation ->
+                                fixation.migrateSession())
                         .invalidSessionUrl("/login?expired")
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false))
                 .exceptionHandling(exceptions -> exceptions
                         .accessDeniedPage("/access-denied"))
                 .csrf(withDefaults())
-                .addFilterAfter(forcePasswordChangeFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterAfter(
+                        forcePasswordChangeFilter,
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
-

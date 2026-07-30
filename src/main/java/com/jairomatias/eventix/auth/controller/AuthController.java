@@ -1,7 +1,7 @@
 package com.jairomatias.eventix.auth.controller;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,9 +29,13 @@ public class AuthController {
 
     @GetMapping("/login")
     public String login(Authentication authentication) {
-        return authentication != null
+        boolean authenticated =
+                authentication != null
                 && authentication.isAuthenticated()
-                && !(authentication instanceof AnonymousAuthenticationToken)
+                && !(authentication
+                        instanceof AnonymousAuthenticationToken);
+
+        return authenticated
                 ? "redirect:/dashboard"
                 : "auth/login";
     }
@@ -39,36 +43,57 @@ public class AuthController {
     @GetMapping("/auth/change-password")
     public String changePasswordForm(Model model) {
         if (!model.containsAttribute("changePasswordForm")) {
-            model.addAttribute("changePasswordForm", new ChangePasswordForm());
+            model.addAttribute(
+                    "changePasswordForm",
+                    new ChangePasswordForm());
         }
+
         return "auth/change-password";
     }
 
     @PostMapping("/auth/change-password")
     public String changePassword(
-            @Valid @ModelAttribute("changePasswordForm") ChangePasswordForm form,
+            @Valid
+            @ModelAttribute("changePasswordForm")
+            ChangePasswordForm form,
             BindingResult bindingResult,
             Authentication authentication,
             HttpServletRequest request,
             HttpServletResponse response) {
-        if (!form.getNewPassword().equals(form.getConfirmPassword())) {
+
+        if (!form.getNewPassword().equals(
+                form.getConfirmPassword())) {
+
             bindingResult.rejectValue(
                     "confirmPassword",
                     "password.mismatch",
                     "Las contraseñas no coinciden.");
         }
+
         if (bindingResult.hasErrors()) {
             return "auth/change-password";
         }
 
         try {
-            userService.changeOwnPassword(authentication.getName(), form);
+            userService.changeOwnPassword(
+                    authentication.getName(),
+                    form);
         } catch (BusinessRuleException exception) {
-            bindingResult.reject("password.change", exception.getMessage());
+            bindingResult.reject(
+                    "password.change",
+                    exception.getMessage());
+
             return "auth/change-password";
         }
 
-        new SecurityContextLogoutHandler().logout(request, response, authentication);
+        SecurityContextLogoutHandler logoutHandler =
+                new SecurityContextLogoutHandler();
+
+        logoutHandler.logout(
+                request,
+                response,
+                authentication);
+
         return "redirect:/login?passwordChanged";
     }
 
