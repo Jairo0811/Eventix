@@ -24,6 +24,7 @@ import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.mapper.EventMapper;
 import com.jairomatias.eventix.event.repository.EventRepository;
+import com.jairomatias.eventix.reservation.repository.ReservationRepository;
 import com.jairomatias.eventix.role.entity.RoleName;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
@@ -43,6 +44,7 @@ public class DefaultEventService implements EventService {
     private final EventCategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final EventMapper eventMapper;
+    private final ReservationRepository reservationRepository;
     private final Clock clock;
 
     @Autowired
@@ -50,12 +52,14 @@ public class DefaultEventService implements EventService {
             EventRepository eventRepository,
             EventCategoryRepository categoryRepository,
             UserRepository userRepository,
-            EventMapper eventMapper) {
+            EventMapper eventMapper,
+            ReservationRepository reservationRepository) {
         this(
                 eventRepository,
                 categoryRepository,
                 userRepository,
                 eventMapper,
+                reservationRepository,
                 Clock.systemDefaultZone());
     }
 
@@ -64,11 +68,13 @@ public class DefaultEventService implements EventService {
             EventCategoryRepository categoryRepository,
             UserRepository userRepository,
             EventMapper eventMapper,
+            ReservationRepository reservationRepository,
             Clock clock) {
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.eventMapper = eventMapper;
+        this.reservationRepository = reservationRepository;
         this.clock = clock;
     }
 
@@ -152,7 +158,7 @@ public class DefaultEventService implements EventService {
             String authenticatedLogin) {
 
         User actor = findActor(authenticatedLogin);
-        Event event = findEntity(id);
+        Event event = findEntityForUpdate(id);
         ensureCanManage(event, actor);
         return eventMapper.toForm(event);
     }
@@ -227,6 +233,7 @@ public class DefaultEventService implements EventService {
         User organizer = resolveOrganizer(form, actor);
 
         validateBusinessRules(form, event.getStatus());
+        validateReservationConstraints(event, form);
 
         event.update(
                 form.getTitle().trim(),
@@ -252,7 +259,7 @@ public class DefaultEventService implements EventService {
             String authenticatedLogin) {
 
         User actor = findActor(authenticatedLogin);
-        Event event = findEntity(id);
+        Event event = findEntityForUpdate(id);
         ensureCanManage(event, actor);
 
         if (event.getStatus() != EventStatus.DRAFT
@@ -260,6 +267,11 @@ public class DefaultEventService implements EventService {
             throw new BusinessRuleException(
                     "Solo se pueden eliminar eventos "
                     + "en borrador o cancelados.");
+        }
+
+        if (reservationRepository.existsByEvent_Id(event.getId())) {
+            throw new BusinessRuleException(
+                    "No se puede eliminar un evento con historial de reservaciones.");
         }
 
         eventRepository.delete(event);
@@ -408,6 +420,37 @@ public class DefaultEventService implements EventService {
         return eventRepository.findDetailedById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "El evento solicitado no existe."));
+    }
+
+    private Event findEntityForUpdate(Long id) {
+        return eventRepository.findDetailedByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "El evento solicitado no existe."));
+    }
+
+    private void validateReservationConstraints(
+            Event event,
+            EventForm form) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        long occupiedSeats = reservationRepository.sumOccupiedSeats(
+                event.getId(),
+                now);
+
+        if (form.getCapacity() < occupiedSeats) {
+            throw new BusinessRuleException(
+                    "La capacidad no puede ser menor que los "
+                            + occupiedSeats
+                            + " cupos actualmente ocupados.");
+        }
+
+        boolean cancelling = event.getStatus() != EventStatus.CANCELLED
+                && form.getStatus() == EventStatus.CANCELLED;
+        if (cancelling && reservationRepository.existsActiveByEvent(
+                event.getId(),
+                now)) {
+            throw new BusinessRuleException(
+                    "Cancela primero las reservaciones activas del evento.");
+        }
     }
 
     private User findActor(String login) {

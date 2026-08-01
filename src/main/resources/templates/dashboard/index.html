@@ -101,6 +101,45 @@
                 </article>
             </div>
         </div>
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-4 mb-3">
+            <h2 class="h5 fw-bold mb-0">Estado de las reservaciones</h2>
+            <a class="btn btn-sm btn-outline-primary" th:href="@{/reservations}">
+                Gestionar reservaciones
+            </a>
+        </div>
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Total</div>
+                    <div class="metric-value" th:text="${summary.totalReservations}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Pendientes</div>
+                    <div class="metric-value text-warning" th:text="${summary.pendingReservations}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Confirmadas</div>
+                    <div class="metric-value text-success" th:text="${summary.confirmedReservations}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Canceladas</div>
+                    <div class="metric-value" th:text="${summary.cancelledReservations}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Expiradas</div>
+                    <div class="metric-value" th:text="${summary.expiredReservations}">0</div>
+                </article>
+            </div>
+        </div>
     </section>
 
     <section class="content-card" sec:authorize="!hasRole('ADMINISTRATOR')">

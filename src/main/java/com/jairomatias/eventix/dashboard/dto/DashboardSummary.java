@@ -9,5 +9,10 @@ public record DashboardSummary(
         long draftEvents,
         long publishedEvents,
         long cancelledEvents,
-        long finishedEvents) {
+        long finishedEvents,
+        long totalReservations,
+        long pendingReservations,
+        long confirmedReservations,
+        long cancelledReservations,
+        long expiredReservations) {
 }

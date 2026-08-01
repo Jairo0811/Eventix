@@ -16,10 +16,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.jairomatias.eventix.category.service.EventCategoryService;
+import com.jairomatias.eventix.event.dto.EventDetailsView;
 import com.jairomatias.eventix.event.dto.EventForm;
 import com.jairomatias.eventix.event.dto.EventListItem;
 import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.service.EventService;
+import com.jairomatias.eventix.reservation.service.ReservationService;
+import com.jairomatias.eventix.security.UserPrincipal;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 
 import jakarta.validation.Valid;
@@ -32,12 +35,15 @@ public class EventController {
 
     private final EventService eventService;
     private final EventCategoryService categoryService;
+    private final ReservationService reservationService;
 
     public EventController(
             EventService eventService,
-            EventCategoryService categoryService) {
+            EventCategoryService categoryService,
+            ReservationService reservationService) {
         this.eventService = eventService;
         this.categoryService = categoryService;
+        this.reservationService = reservationService;
     }
 
     @ModelAttribute("statuses")
@@ -138,11 +144,32 @@ public class EventController {
             Authentication authentication,
             Model model) {
 
-        model.addAttribute(
-                "event",
-                eventService.findById(
-                        id,
-                        authentication.getName()));
+        EventDetailsView event = eventService.findById(
+                id,
+                authentication.getName());
+        model.addAttribute("event", event);
+
+        boolean administratorOrOperator =
+                authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals(
+                        "ROLE_ADMINISTRATOR")
+                        || authority.getAuthority().equals("ROLE_OPERATOR"));
+        boolean organizerOwnsEvent = authentication.getPrincipal()
+                instanceof UserPrincipal principal
+                && "ORGANIZER".equals(principal.getRoleName())
+                && event.organizerId().equals(principal.getId());
+        boolean canViewReservations = administratorOrOperator
+                || organizerOwnsEvent;
+        boolean canManageReservations = administratorOrOperator;
+        model.addAttribute("canViewReservations", canViewReservations);
+        model.addAttribute("canManageReservations", canManageReservations);
+        if (canViewReservations) {
+            model.addAttribute(
+                    "reservationMetrics",
+                    reservationService.getEventMetrics(
+                            id,
+                            authentication.getName()));
+        }
         return "events/detail";
     }
 

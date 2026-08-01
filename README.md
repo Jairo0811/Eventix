@@ -25,7 +25,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 
-> Estado actual: **En desarrollo. Las fases 1 y 2 están completadas: seguridad, usuarios, categorías y gestión integral de eventos.**
+> Estado actual: **En desarrollo. Las fases 1, 2 y 3 están completadas: seguridad, usuarios, eventos y reservaciones con control de disponibilidad.**
 
 </div>
 
@@ -49,7 +49,7 @@ Estos proyectos representan una secuencia académica enfocada en programación, 
 
 **Eventix** es una aplicación web creada como evolución profesional de un proyecto final de la asignatura **Programación II** del Instituto Tecnológico de Las Américas (ITLA).
 
-Su objetivo es ofrecer una base sólida para administrar eventos y, en fases posteriores, incorporar reservaciones, ventas, boletas digitales, códigos QR, control de acceso, reportes y estadísticas.
+Su objetivo es ofrecer una base sólida para administrar eventos y reservaciones y, en fases posteriores, incorporar ventas, boletas digitales, códigos QR, control de acceso, reportes y estadísticas.
 
 La solución fue construida como un **monolito modular por dominio**, con separación clara entre controladores, servicios, repositorios, entidades, DTO y vistas.
 
@@ -91,6 +91,16 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 - Búsqueda, filtros por estado/categoría y paginación.
 - Autorización por rol y propiedad del evento.
 - Panel responsivo de eventos con identidad visual de Eventix.
+- CRUD operativo de reservaciones con historial permanente.
+- Estados de reservación: pendiente, confirmada, cancelada y expirada.
+- Retención temporal de cupos con duración configurable.
+- Liberación automática de inventario al vencer una reservación.
+- Prevención transaccional de sobreventa mediante bloqueo pesimista.
+- Prevención de reservaciones activas duplicadas por evento y correo.
+- Confirmación y cancelación con motivo obligatorio.
+- Búsqueda, filtros, paginación y detalle de reservaciones.
+- Métricas de asistentes, pendientes, disponibilidad y ocupación por evento.
+- Autorización diferenciada para administradores, operadores y organizadores.
 
 ---
 
@@ -221,9 +231,9 @@ La autorización se aplica en dos niveles:
 | Patrón | Ubicación | Propósito |
 |---|---|---|
 | MVC | Controladores y plantillas Thymeleaf | Separar entrada HTTP, modelo y presentación. |
-| Repository | Repositorios de usuarios, categorías y eventos | Abstraer la persistencia JPA. |
-| Service Layer | Servicios de usuarios, categorías, eventos y dashboard | Centralizar reglas, transacciones y permisos. |
-| Mapper | `UserMapper` y `EventMapper` con MapStruct | Evitar exponer entidades JPA a las vistas. |
+| Repository | Repositorios de usuarios, categorías, eventos y reservaciones | Abstraer la persistencia JPA. |
+| Service Layer | Servicios de usuarios, categorías, eventos, reservaciones y dashboard | Centralizar reglas, transacciones y permisos. |
+| Mapper | Mapeadores de usuarios, eventos y reservaciones con MapStruct | Evitar exponer entidades JPA a las vistas. |
 | Strategy | Planificado para precios, pagos y cancelaciones | Resolver reglas variables de negocio. |
 | Domain Events | Planificado para ventas, reservas y boletas | Desacoplar procesos entre módulos. |
 
@@ -241,6 +251,7 @@ src/
 │   │   ├── dashboard/
 │   │   ├── event/
 │   │   ├── role/
+│   │   ├── reservation/
 │   │   ├── security/
 │   │   ├── shared/
 │   │   └── user/
@@ -261,7 +272,7 @@ src/
 
 ## 🚦 Estado del proyecto
 
-**Estado general: 🚧 En desarrollo — Fases 1 y 2 completadas**
+**Estado general: 🚧 En desarrollo — Fases 1, 2 y 3 completadas**
 
 ### Completado
 
@@ -278,10 +289,15 @@ src/
 - [x] Búsqueda, filtros y paginación de eventos.
 - [x] Autorización de eventos por rol y propiedad.
 - [x] Ejecución reproducible con Docker Compose.
+- [x] Gestión integral de reservaciones.
+- [x] Estados, historial y cancelaciones justificadas.
+- [x] Disponibilidad en tiempo real y prevención de sobreventa.
+- [x] Retenciones temporales y expiración automática.
+- [x] Vista de asistentes y ocupación por evento.
+- [x] Autorización de reservaciones por rol y propiedad del evento.
 
 ### Pendiente
 
-- [ ] Reservaciones.
 - [ ] Ventas de entradas.
 - [ ] Boletas digitales y códigos QR.
 - [ ] Control de acceso.
@@ -335,17 +351,28 @@ Ejecuta [`EventixDb.sql`](EventixDb.sql) con una cuenta administradora de SQL Se
 - el usuario técnico;
 - los permisos necesarios para JPA y Flyway.
 
+El script usa modo SQLCMD y exige una contraseña técnica de al menos 12 caracteres. Desde una terminal:
+
+```powershell
+sqlcmd -S localhost -E `
+  -v EVENTIX_DB_PASSWORD="define-una-clave-segura" `
+  -i EventixDb.sql
+```
+
+En SQL Server Management Studio, activa **Query > SQLCMD Mode**, define `EVENTIX_DB_PASSWORD` en una consulta no guardada y ejecuta el script. No escribas la contraseña dentro de `EventixDb.sql`.
+
 Las tablas y los datos iniciales se crean únicamente mediante las migraciones:
 
 ```text
 V1__create_security_schema.sql
 V2__seed_roles_and_administrator.sql
 V3__create_event_management_schema.sql
+V4__create_reservations_schema.sql
 ```
 
 ### 4. Configurar la conexión
 
-Los valores predeterminados son exclusivamente para desarrollo local. Para usar otros valores:
+La URL y el usuario predeterminados son exclusivamente para desarrollo local. `DB_PASSWORD` es obligatoria en todos los entornos y nunca debe guardarse en el repositorio:
 
 #### PowerShell
 
@@ -452,7 +479,32 @@ El archivo `nbactions.xml` incluido define las acciones de ejecutar, depurar, pr
 | `OPERATOR` | Consulta eventos publicados o finalizados. |
 | `ACCESS_STAFF` | Consulta eventos publicados o finalizados. |
 
-### 11. Problemas frecuentes
+### 11. Roles y permisos de reservaciones
+
+| Rol | Acceso |
+|---|---|
+| `ADMINISTRATOR` | Administra todas las reservaciones y consulta métricas globales. |
+| `OPERATOR` | Crea, edita, confirma y cancela reservaciones. |
+| `ORGANIZER` | Consulta asistentes, pendientes y ocupación de sus propios eventos. |
+| `ACCESS_STAFF` | Sin acceso en esta fase; la validación de boletas se implementará con control de acceso. |
+
+La retención predeterminada es de 15 minutos. Puede configurarse sin modificar código:
+
+#### PowerShell
+
+```powershell
+$env:RESERVATION_HOLD_DURATION = "PT15M"
+$env:RESERVATION_EXPIRATION_SCAN_INTERVAL = "PT1M"
+```
+
+#### Bash
+
+```bash
+export RESERVATION_HOLD_DURATION='PT15M'
+export RESERVATION_EXPIRATION_SCAN_INTERVAL='PT1M'
+```
+
+### 12. Problemas frecuentes
 
 - **Testcontainers no encuentra Docker:** abre Docker Desktop y ejecuta `docker version`.
 - **Java incorrecto en Maven:** `java -version` y `mvn -version` deben mostrar Java 21.

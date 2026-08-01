@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Reservaciones')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('reservations')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <p class="text-success fw-semibold mb-1">Cupos y asistentes</p>
+            <h1 class="page-title">Reservaciones</h1>
+            <p class="page-subtitle">
+                Controla solicitudes, confirmaciones, vencimientos y disponibilidad.
+            </p>
+        </div>
+        <a class="btn btn-primary"
+           th:if="${canManage}"
+           th:href="@{/reservations/new}">
+            <i class="bi bi-journal-plus me-2" aria-hidden="true"></i>
+            Nueva reservación
+        </a>
+    </div>
+
+    <section class="row g-3 mb-4" th:if="${metrics != null}">
+        <div class="col-6 col-xl-3">
+            <article class="metric-card reservation-metric">
+                <div class="metric-label mt-0">Capacidad</div>
+                <div class="metric-value" th:text="${metrics.capacity}">0</div>
+            </article>
+        </div>
+        <div class="col-6 col-xl-3">
+            <article class="metric-card reservation-metric">
+                <div class="metric-label mt-0">Pendientes</div>
+                <div class="metric-value text-warning" th:text="${metrics.pendingSeats}">0</div>
+            </article>
+        </div>
+        <div class="col-6 col-xl-3">
+            <article class="metric-card reservation-metric">
+                <div class="metric-label mt-0">Confirmadas</div>
+                <div class="metric-value text-success" th:text="${metrics.confirmedSeats}">0</div>
+            </article>
+        </div>
+        <div class="col-6 col-xl-3">
+            <article class="metric-card reservation-metric">
+                <div class="metric-label mt-0">Disponibles</div>
+                <div class="metric-value" th:text="${metrics.availableSeats}">0</div>
+                <div class="progress mt-2" role="progressbar"
+                     th:attr="aria-valuenow=${metrics.occupancyPercentage}"
+                     aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-success"
+                         th:style="|width: ${metrics.occupancyPercentage}%|"
+                         th:text="|${metrics.occupancyPercentage}%|">0%</div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="content-card">
+        <form class="row g-3 mb-4" method="get" th:action="@{/reservations}">
+            <div class="col-12 col-xl-4">
+                <label class="form-label" for="term">Buscar</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                    </span>
+                    <input class="form-control"
+                           id="term"
+                           name="term"
+                           type="search"
+                           th:value="${term}"
+                           placeholder="Referencia, asistente, correo o evento">
+                </div>
+            </div>
+            <div class="col-6 col-xl-3">
+                <label class="form-label" for="status">Estado</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    <option th:each="statusOption : ${statuses}"
+                            th:value="${statusOption}"
+                            th:text="${statusOption.displayName}"
+                            th:selected="${statusOption == selectedStatus}">
+                        Pendiente
+                    </option>
+                </select>
+            </div>
+            <div class="col-6 col-xl-4">
+                <label class="form-label" for="eventId">Evento</label>
+                <select class="form-select" id="eventId" name="eventId">
+                    <option value="">Todos</option>
+                    <option th:each="event : ${events}"
+                            th:value="${event.id}"
+                            th:text="${event.title}"
+                            th:selected="${event.id == selectedEventId}">
+                        Evento
+                    </option>
+                </select>
+            </div>
+            <div class="col-12 col-xl-1 d-flex align-items-end">
+                <button class="btn btn-outline-primary w-100"
+                        type="submit" aria-label="Aplicar filtros">
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
+                </button>
+            </div>
+        </form>
+
+        <div class="table-responsive" th:if="${reservations.hasContent()}">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Referencia</th>
+                    <th scope="col">Asistente</th>
+                    <th scope="col">Evento</th>
+                    <th scope="col">Entradas</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Registro</th>
+                    <th scope="col" class="text-end">Acción</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="reservation : ${reservations.content}">
+                    <td>
+                        <code class="reservation-reference"
+                              th:text="${reservation.referenceCode}">RES-...</code>
+                    </td>
+                    <td>
+                        <strong class="d-block" th:text="${reservation.attendeeFullName}">
+                            Asistente
+                        </strong>
+                        <span class="text-secondary small"
+                              th:text="${reservation.attendeeEmail}">correo</span>
+                    </td>
+                    <td>
+                        <a class="text-decoration-none fw-semibold"
+                           th:href="@{/events/{id}(id=${reservation.eventId})}"
+                           th:text="${reservation.eventTitle}">Evento</a>
+                    </td>
+                    <td th:text="${reservation.quantity}">1</td>
+                    <td>
+                        <span class="badge-status"
+                              th:classappend="| badge-reservation-${#strings.toLowerCase(reservation.status.name())}|"
+                              th:text="${reservation.status.displayName}">
+                            Pendiente
+                        </span>
+                    </td>
+                    <td class="text-secondary small"
+                        th:text="${#temporals.format(reservation.createdAt, 'dd/MM/yyyy HH:mm')}">
+                        fecha
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-light"
+                           th:href="@{/reservations/{id}(id=${reservation.id})}"
+                           aria-label="Ver reservación">
+                            <i class="bi bi-eye" aria-hidden="true"></i>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:unless="${reservations.hasContent()}">
+            <i class="bi bi-journal-x fs-1 d-block mb-3" aria-hidden="true"></i>
+            <h2 class="h5 text-dark">No encontramos reservaciones</h2>
+            <p class="mb-0">Cambia los filtros o registra una nueva solicitud.</p>
+        </div>
+
+        <nav class="d-flex justify-content-between align-items-center mt-4"
+             aria-label="Paginación de reservaciones"
+             th:if="${reservations.totalPages > 1}">
+            <span class="text-secondary small"
+                  th:text="|Página ${reservations.number + 1} de ${reservations.totalPages}|">
+                Página 1
+            </span>
+            <div class="btn-group">
+                <a class="btn btn-sm btn-outline-secondary"
+                   th:classappend="${reservations.first} ? ' disabled'"
+                   th:href="@{/reservations(term=${term},status=${selectedStatus},eventId=${selectedEventId},page=${reservations.number - 1})}">
+                    Anterior
+                </a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   th:classappend="${reservations.last} ? ' disabled'"
+                   th:href="@{/reservations(term=${term},status=${selectedStatus},eventId=${selectedEventId},page=${reservations.number + 1})}">
+                    Siguiente
+                </a>
+            </div>
+        </nav>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
