@@ -27,6 +27,7 @@ import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.mapper.EventMapper;
 import com.jairomatias.eventix.event.repository.EventRepository;
+import com.jairomatias.eventix.reservation.repository.ReservationRepository;
 import com.jairomatias.eventix.role.entity.Role;
 import com.jairomatias.eventix.role.entity.RoleName;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
@@ -54,6 +55,9 @@ class DefaultEventServiceTest {
     private EventMapper eventMapper;
 
     @Mock
+    private ReservationRepository reservationRepository;
+
+    @Mock
     private User organizer;
 
     @Mock
@@ -75,6 +79,7 @@ class DefaultEventServiceTest {
                 categoryRepository,
                 userRepository,
                 eventMapper,
+                reservationRepository,
                 clock);
     }
 
@@ -138,7 +143,7 @@ class DefaultEventServiceTest {
 
         Event event = org.mockito.Mockito.mock(Event.class);
         when(event.getOrganizer()).thenReturn(otherOrganizer);
-        when(eventRepository.findDetailedById(8L))
+        when(eventRepository.findDetailedByIdForUpdate(8L))
                 .thenReturn(Optional.of(event));
 
         assertThatThrownBy(() ->
