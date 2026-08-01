@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Configurar tipo de entrada')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('events')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small"
+               th:href="@{/events/{id}/ticket-types(id=${event.id})}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+                Volver a tipos de entrada
+            </a>
+            <h1 class="page-title mt-2"
+                th:text="${formMode == 'create'} ? 'Nuevo tipo de entrada' : 'Editar tipo de entrada'">
+                Tipo de entrada
+            </h1>
+            <p class="page-subtitle" th:text="${event.title}">Evento</p>
+        </div>
+    </div>
+
+    <form class="content-card"
+          th:object="${ticketTypeForm}"
+          th:action="${formMode == 'create'}
+                     ? @{/events/{eventId}/ticket-types(eventId=${event.id})}
+                     : @{/events/{eventId}/ticket-types/{id}(eventId=${event.id},id=${ticketTypeId})}"
+          method="post">
+        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+            <p class="mb-0" th:each="error : ${#fields.globalErrors()}"
+               th:text="${error}">Error</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label" for="category">Categoría</label>
+                <select class="form-select" id="category" th:field="*{category}">
+                    <option th:each="category : ${ticketTypeCategories}"
+                            th:value="${category}"
+                            th:text="${category.displayName}">General</option>
+                </select>
+                <div class="invalid-feedback d-block"
+                     th:errors="*{category}"></div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="name">Nombre visible</label>
+                <input class="form-control" id="name" type="text"
+                       maxlength="80" th:field="*{name}"
+                       placeholder="Ej.: VIP Front Stage">
+                <div class="invalid-feedback d-block" th:errors="*{name}"></div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="price">Precio en DOP</label>
+                <input class="form-control" id="price" type="number"
+                       min="0" step="0.01" th:field="*{price}">
+                <div class="form-text">Cortesía y eventos gratuitos usan 0.00.</div>
+                <div class="invalid-feedback d-block" th:errors="*{price}"></div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="capacity">Cupo máximo</label>
+                <input class="form-control" id="capacity" type="number"
+                       min="1" th:max="${event.capacity}" th:field="*{capacity}">
+                <div class="form-text" th:text="|Capacidad total del evento: ${event.capacity}.|">
+                    Capacidad
+                </div>
+                <div class="invalid-feedback d-block" th:errors="*{capacity}"></div>
+            </div>
+            <div class="col-12" th:if="${formMode == 'edit'}">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" id="active" type="checkbox"
+                           th:field="*{active}">
+                    <label class="form-check-label" for="active">
+                        Disponible para nuevas ventas
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+            <a class="btn btn-light"
+               th:href="@{/events/{id}/ticket-types(id=${event.id})}">Cancelar</a>
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>
+                Guardar tipo
+            </button>
+        </div>
+    </form>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Nueva venta')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('sales')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small" th:href="@{/sales}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+                Volver a ventas
+            </a>
+            <h1 class="page-title mt-2">Nueva venta</h1>
+            <p class="page-subtitle">Convierte una reservación confirmada en una venta trazable.</p>
+        </div>
+    </div>
+
+    <section class="content-card mb-4">
+        <h2 class="h5 fw-bold mb-3">1. Selecciona la reservación</h2>
+        <form class="row g-3 align-items-end" method="get" th:action="@{/sales/new}">
+            <div class="col-lg-10">
+                <label class="form-label" for="reservationId">Reservación confirmada sin venta</label>
+                <select class="form-select" id="reservationId" name="reservationId" required>
+                    <option value="">Selecciona una reservación</option>
+                    <option th:each="reservation : ${reservations}"
+                            th:value="${reservation.id}"
+                            th:selected="${reservation.id == selectedReservationId}"
+                            th:text="|${reservation.referenceCode} · ${reservation.eventTitle} · ${reservation.attendeeName} · ${reservation.quantity} entrada(s)|">
+                        Reservación
+                    </option>
+                </select>
+            </div>
+            <div class="col-lg-2 d-grid">
+                <button class="btn btn-outline-primary" type="submit">Cargar</button>
+            </div>
+        </form>
+        <p class="text-secondary small mt-3 mb-0" th:if="${reservations.isEmpty()}">
+            No hay reservaciones confirmadas disponibles. Confirma primero una reservación pendiente.
+        </p>
+    </section>
+
+    <form class="content-card"
+          th:if="${selectedReservationId != null}"
+          th:object="${saleForm}"
+          th:action="@{/sales}"
+          method="post">
+        <input type="hidden" th:field="*{reservationId}">
+        <h2 class="h5 fw-bold mb-1">2. Distribuye los tipos de entrada</h2>
+        <p class="text-secondary mb-4">
+            La suma de cantidades debe coincidir exactamente con la reservación.
+        </p>
+
+        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+            <p class="mb-0" th:each="error : ${#fields.globalErrors()}"
+               th:text="${error}">Error</p>
+        </div>
+
+        <div class="alert alert-warning" th:if="${ticketTypes.isEmpty()}">
+            Este evento no tiene tipos de entrada activos con disponibilidad. Configúralos desde el detalle del evento.
+        </div>
+
+        <div class="row g-3" th:if="${!ticketTypes.isEmpty()}">
+            <div class="col-12" th:each="line, stat : *{items}">
+                <div class="sale-line row g-3 align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label"
+                               th:for="|ticketType-${stat.index}|"
+                               th:text="|Tipo ${stat.index + 1}|">Tipo</label>
+                        <select class="form-select"
+                                th:id="|ticketType-${stat.index}|"
+                                th:field="*{items[__${stat.index}__].ticketTypeId}">
+                            <option value="">Sin utilizar</option>
+                            <option th:each="ticketType : ${ticketTypes}"
+                                    th:value="${ticketType.id}"
+                                    th:text="|${ticketType.name} · RD$ ${#numbers.formatDecimal(ticketType.price, 1, 'COMMA', 2, 'POINT')} · ${ticketType.availableQuantity} disponibles|">
+                                Tipo
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label"
+                               th:for="|quantity-${stat.index}|">Cantidad</label>
+                        <input class="form-control"
+                               th:id="|quantity-${stat.index}|"
+                               type="number" min="0" max="100"
+                               th:field="*{items[__${stat.index}__].quantity}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-end gap-2 mt-4"
+             th:if="${!ticketTypes.isEmpty()}">
+            <a class="btn btn-light" th:href="@{/sales}">Cancelar</a>
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-cart-check me-2" aria-hidden="true"></i>
+                Crear venta
+            </button>
+        </div>
+    </form>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

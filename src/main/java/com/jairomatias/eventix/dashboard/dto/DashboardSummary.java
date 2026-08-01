@@ -14,5 +14,10 @@ public record DashboardSummary(
         long pendingReservations,
         long confirmedReservations,
         long cancelledReservations,
-        long expiredReservations) {
+        long expiredReservations,
+        long totalSales,
+        long pendingSales,
+        long paidSales,
+        long refundedSales,
+        long cancelledSales) {
 }
