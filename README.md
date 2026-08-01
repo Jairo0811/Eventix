@@ -351,6 +351,16 @@ Ejecuta [`EventixDb.sql`](EventixDb.sql) con una cuenta administradora de SQL Se
 - el usuario técnico;
 - los permisos necesarios para JPA y Flyway.
 
+El script usa modo SQLCMD y exige una contraseña técnica de al menos 12 caracteres. Desde una terminal:
+
+```powershell
+sqlcmd -S localhost -E `
+  -v EVENTIX_DB_PASSWORD="define-una-clave-segura" `
+  -i EventixDb.sql
+```
+
+En SQL Server Management Studio, activa **Query > SQLCMD Mode**, define `EVENTIX_DB_PASSWORD` en una consulta no guardada y ejecuta el script. No escribas la contraseña dentro de `EventixDb.sql`.
+
 Las tablas y los datos iniciales se crean únicamente mediante las migraciones:
 
 ```text

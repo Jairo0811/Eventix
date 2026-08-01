@@ -9,6 +9,8 @@
    - Asignar permisos para JPA y Flyway.
 
    Las tablas y datos iniciales son administrados por Flyway.
+
+   Requiere la variable SQLCMD EVENTIX_DB_PASSWORD.
    ================================================================ */
 
 USE master;
@@ -43,11 +45,23 @@ IF NOT EXISTS
     WHERE name = N'eventix_app'
 )
 BEGIN
-    CREATE LOGIN eventix_app
-    WITH
-        PASSWORD = N'Eventix2026*',
-        CHECK_POLICY = ON,
-        CHECK_EXPIRATION = OFF;
+    DECLARE @eventix_db_password NVARCHAR(128) =
+        N'$(EVENTIX_DB_PASSWORD)';
+
+    IF @eventix_db_password = N'$' + N'(EVENTIX_DB_PASSWORD)'
+        OR LEN(@eventix_db_password) < 12
+    BEGIN
+        THROW 50001,
+            'Define EVENTIX_DB_PASSWORD con al menos 12 caracteres.',
+            1;
+    END;
+
+    DECLARE @create_login_sql NVARCHAR(MAX) =
+        N'CREATE LOGIN eventix_app WITH PASSWORD = '
+        + QUOTENAME(@eventix_db_password, '''')
+        + N', CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;';
+
+    EXEC sys.sp_executesql @create_login_sql;
 END;
 GO
 
