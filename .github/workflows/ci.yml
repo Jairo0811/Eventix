@@ -30,22 +30,23 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Verify with Maven
-        run: mvn --batch-mode --no-transfer-progress clean verify
-
       - name: Generate ephemeral Docker credentials
         run: |
           echo "MSSQL_SA_PASSWORD=Sa$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
           echo "EVENTIX_DB_PASSWORD=Ev$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
 
+      - name: Verify with Maven
+        run: mvn --batch-mode --no-transfer-progress clean verify
+
       - name: Start Eventix with Docker Compose
+        id: start_eventix
         run: docker compose up --detach --build --wait --wait-timeout 300
 
       - name: Verify Eventix login page
         run: curl --fail --silent --show-error http://localhost:8080/login
 
       - name: Show Docker diagnostics after failure
-        if: failure()
+        if: ${{ failure() && steps.start_eventix.outcome != 'skipped' }}
         run: |
           docker version
           docker info
@@ -53,5 +54,5 @@ jobs:
           docker compose logs --no-color
 
       - name: Stop Docker Compose
-        if: always()
+        if: ${{ always() && steps.start_eventix.outcome != 'skipped' }}
         run: docker compose down --volumes --remove-orphans

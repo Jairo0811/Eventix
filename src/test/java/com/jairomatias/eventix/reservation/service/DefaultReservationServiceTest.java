@@ -86,7 +86,7 @@ class DefaultReservationServiceTest {
 
     @Test
     void createsPendingReservationWithConfiguredExpiration() {
-        prepareOperator();
+        prepareActor();
         preparePublishedEvent(100);
         when(reservationRepository.sumOccupiedSeats(8L, NOW))
                 .thenReturn(92L);
@@ -123,7 +123,7 @@ class DefaultReservationServiceTest {
 
     @Test
     void rejectsReservationThatWouldOversellEvent() {
-        prepareOperator();
+        prepareActor();
         preparePublishedEvent(100);
         when(reservationRepository.sumOccupiedSeats(8L, NOW))
                 .thenReturn(95L);
@@ -137,7 +137,7 @@ class DefaultReservationServiceTest {
 
     @Test
     void rejectsDuplicateActiveReservationForSameEmailAndEvent() {
-        prepareOperator();
+        prepareActor();
         preparePublishedEvent(100);
         when(reservationRepository.existsActiveDuplicate(
                 8L,
@@ -178,13 +178,17 @@ class DefaultReservationServiceTest {
     }
 
     private void prepareOperator() {
+        prepareActor();
+        when(operator.getRole()).thenReturn(operatorRole);
+        when(operatorRole.getName()).thenReturn(RoleName.OPERATOR);
+    }
+
+    private void prepareActor() {
         when(userRepository
                 .findByEmailIgnoreCaseOrUsernameIgnoreCase(
                         OPERATOR_LOGIN,
                         OPERATOR_LOGIN))
                 .thenReturn(Optional.of(operator));
-        when(operator.getRole()).thenReturn(operatorRole);
-        when(operatorRole.getName()).thenReturn(RoleName.OPERATOR);
     }
 
     private void preparePublishedEvent(int capacity) {
