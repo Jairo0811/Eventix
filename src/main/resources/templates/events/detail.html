@@ -135,6 +135,62 @@
         </div>
     </div>
 
+    <section class="content-card mt-4" th:if="${canViewReservations}">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+            <div>
+                <h2 class="h5 fw-bold mb-1">Ocupación y reservaciones</h2>
+                <p class="text-secondary mb-0">
+                    Disponibilidad actualizada con las retenciones vigentes.
+                </p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-light"
+                   th:href="@{/reservations(eventId=${event.id})}">
+                    Ver asistentes
+                </a>
+                <a class="btn btn-primary"
+                   th:if="${canManageReservations and event.status.name() == 'PUBLISHED'}"
+                   th:href="@{/reservations/new(eventId=${event.id})}">
+                    <i class="bi bi-journal-plus me-2" aria-hidden="true"></i>
+                    Reservar entradas
+                </a>
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-6 col-lg-3">
+                <div class="reservation-stat">
+                    <span>Capacidad</span>
+                    <strong th:text="${reservationMetrics.capacity}">0</strong>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="reservation-stat">
+                    <span>Pendientes</span>
+                    <strong class="text-warning" th:text="${reservationMetrics.pendingSeats}">0</strong>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="reservation-stat">
+                    <span>Confirmadas</span>
+                    <strong class="text-success" th:text="${reservationMetrics.confirmedSeats}">0</strong>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="reservation-stat">
+                    <span>Disponibles</span>
+                    <strong th:text="${reservationMetrics.availableSeats}">0</strong>
+                </div>
+            </div>
+        </div>
+        <div class="progress mt-3" role="progressbar"
+             th:attr="aria-valuenow=${reservationMetrics.occupancyPercentage}"
+             aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar bg-success"
+                 th:style="|width: ${reservationMetrics.occupancyPercentage}%|"
+                 th:text="|${reservationMetrics.occupancyPercentage}% ocupado|">0%</div>
+        </div>
+    </section>
+
     <footer th:replace="~{fragments/footer :: footer}"></footer>
 </main>
 

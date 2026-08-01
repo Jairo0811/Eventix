@@ -84,6 +84,23 @@ public class SecurityConfig {
                                 "ORGANIZER")
                         .requestMatchers("/events/**")
                         .authenticated()
+                        .requestMatchers(
+                                "/reservations/new",
+                                "/reservations/*/edit")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "OPERATOR")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/reservations/**")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "OPERATOR")
+                        .requestMatchers("/reservations/**")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "OPERATOR",
+                                "ORGANIZER")
                         .anyRequest()
                         .authenticated())
                 .formLogin(form -> form

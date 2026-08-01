@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle de reservación')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('reservations')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small" th:href="@{/reservations}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+                Volver a reservaciones
+            </a>
+            <h1 class="page-title mt-2">Detalle de reservación</h1>
+            <p class="page-subtitle">
+                Referencia
+                <code class="reservation-reference"
+                      th:text="${reservation.referenceCode}">RES-...</code>
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2"
+             th:if="${canManage and reservation.status.name() == 'PENDING'}">
+            <a class="btn btn-outline-primary"
+               th:href="@{/reservations/{id}/edit(id=${reservation.id})}">
+                <i class="bi bi-pencil me-2" aria-hidden="true"></i>
+                Editar
+            </a>
+            <form th:action="@{/reservations/{id}/confirm(id=${reservation.id})}"
+                  method="post"
+                  data-confirm="La reservación quedará confirmada y conservará sus cupos.">
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+                    Confirmar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <section class="content-card mb-4 reservation-status-panel">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <span class="badge-status fs-6"
+                      th:classappend="| badge-reservation-${#strings.toLowerCase(reservation.status.name())}|"
+                      th:text="${reservation.status.displayName}">Pendiente</span>
+                <p class="text-secondary mb-0 mt-2"
+                   th:if="${reservation.status.name() == 'PENDING'}">
+                    Los cupos están retenidos mientras la reservación permanezca vigente.
+                </p>
+            </div>
+            <div class="reservation-countdown text-end"
+                 th:if="${reservation.status.name() == 'PENDING'}"
+                 th:attr="data-reservation-expires-at=${reservation.expiresAt}">
+                <div class="detail-label">Tiempo restante</div>
+                <strong data-countdown-value>Calculando…</strong>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <section class="content-card h-100">
+                <h2 class="h5 fw-bold mb-4">Asistente</h2>
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="user-avatar reservation-avatar">
+                        <i class="bi bi-person-fill" aria-hidden="true"></i>
+                    </span>
+                    <div>
+                        <strong class="d-block fs-5"
+                                th:text="${reservation.attendeeFullName}">Asistente</strong>
+                        <span class="text-secondary" th:text="${reservation.attendeeEmail}">correo</span>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-sm-6">
+                        <p class="detail-label">Teléfono</p>
+                        <p class="detail-value mb-0" th:text="${reservation.attendeePhone}">teléfono</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="detail-label">Cantidad de entradas</p>
+                        <p class="detail-value mb-0" th:text="${reservation.quantity}">1</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="detail-label">Registrada por</p>
+                        <p class="detail-value mb-0" th:text="${reservation.reservedByName}">usuario</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="detail-label">Fecha de registro</p>
+                        <p class="detail-value mb-0"
+                           th:text="${#temporals.format(reservation.createdAt, 'dd/MM/yyyy HH:mm')}">fecha</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="col-lg-5">
+            <section class="content-card h-100">
+                <h2 class="h5 fw-bold mb-4">Evento</h2>
+                <a class="h6 text-decoration-none d-block mb-3"
+                   th:href="@{/events/{id}(id=${reservation.eventId})}"
+                   th:text="${reservation.eventTitle}">Evento</a>
+                <p class="detail-label">Fecha de inicio</p>
+                <p class="detail-value"
+                   th:text="${#temporals.format(reservation.eventStartAt, 'EEEE, dd MMMM yyyy · hh:mm a')}">
+                    fecha
+                </p>
+                <hr>
+                <dl class="mb-0">
+                    <dt class="detail-label">Vencimiento de retención</dt>
+                    <dd th:text="${#temporals.format(reservation.expiresAt, 'dd/MM/yyyy HH:mm')}">fecha</dd>
+                    <dt class="detail-label mt-3" th:if="${reservation.confirmedAt != null}">Confirmada</dt>
+                    <dd th:if="${reservation.confirmedAt != null}"
+                        th:text="${#temporals.format(reservation.confirmedAt, 'dd/MM/yyyy HH:mm')}">fecha</dd>
+                    <dt class="detail-label mt-3" th:if="${reservation.cancelledAt != null}">Cancelada</dt>
+                    <dd th:if="${reservation.cancelledAt != null}"
+                        th:text="${#temporals.format(reservation.cancelledAt, 'dd/MM/yyyy HH:mm')}">fecha</dd>
+                </dl>
+            </section>
+        </div>
+    </div>
+
+    <section class="content-card mt-4"
+             th:if="${reservation.cancellationReason != null}">
+        <h2 class="h5 fw-bold">Motivo de cancelación</h2>
+        <p class="mb-0 text-secondary" th:text="${reservation.cancellationReason}">Motivo</p>
+    </section>
+
+    <section class="content-card mt-4 border-danger-subtle"
+             th:if="${canManage and (reservation.status.name() == 'PENDING'
+                     or reservation.status.name() == 'CONFIRMED')}">
+        <h2 class="h5 fw-bold">Cancelar reservación</h2>
+        <p class="text-secondary">
+            La cancelación conserva el historial y libera los cupos inmediatamente.
+        </p>
+        <form class="row g-3"
+              th:action="@{/reservations/{id}/cancel(id=${reservation.id})}"
+              th:object="${cancellationForm}"
+              method="post"
+              data-confirm="La reservación será cancelada y sus cupos quedarán disponibles.">
+            <div class="col-12 col-lg-9">
+                <label class="form-label fw-semibold" for="reason">Motivo</label>
+                <textarea class="form-control"
+                          id="reason"
+                          th:field="*{reason}"
+                          rows="2"
+                          maxlength="500"
+                          required></textarea>
+            </div>
+            <div class="col-12 col-lg-3 d-flex align-items-end">
+                <button class="btn btn-outline-danger w-100" type="submit">
+                    <i class="bi bi-x-circle me-2" aria-hidden="true"></i>
+                    Cancelar reservación
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Reservación')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('reservations')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small" th:href="@{/reservations}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+                Volver a reservaciones
+            </a>
+            <h1 class="page-title mt-2"
+                th:text="${formMode == 'create'
+                         ? 'Crear reservación'
+                         : 'Editar reservación'}">
+                Reservación
+            </h1>
+            <p class="page-subtitle">
+                Registra al asistente y retén sus cupos de forma temporal.
+            </p>
+        </div>
+    </div>
+
+    <section class="content-card mx-auto" style="max-width: 900px;">
+        <form th:action="${formMode == 'create'}
+                         ? @{/reservations}
+                         : @{/reservations/{id}(id=${reservationId})}"
+              th:object="${reservationForm}"
+              method="post"
+              novalidate>
+            <div class="alert alert-danger"
+                 role="alert"
+                 th:if="${#fields.hasGlobalErrors()}">
+                <p class="mb-0"
+                   th:each="error : ${#fields.globalErrors()}"
+                   th:text="${error}">Revisa el formulario.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <h2 class="form-section-title">Evento y cupos</h2>
+                </div>
+                <div class="col-md-8" th:if="${formMode == 'create'}">
+                    <label class="form-label fw-semibold" for="eventId">Evento</label>
+                    <select class="form-select"
+                            th:errorclass="is-invalid"
+                            id="eventId"
+                            th:field="*{eventId}">
+                        <option value="">Selecciona un evento publicado</option>
+                        <option th:each="event : ${events}"
+                                th:value="${event.id}"
+                                th:text="|${event.title} · ${#temporals.format(event.startAt, 'dd/MM/yyyy HH:mm')}|">
+                            Evento
+                        </option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{eventId}"></div>
+                </div>
+                <div class="col-md-8" th:if="${formMode == 'edit'}">
+                    <label class="form-label fw-semibold">Evento</label>
+                    <input th:field="*{eventId}" type="hidden">
+                    <div class="organizer-readonly">
+                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                        <span th:each="event : ${events}"
+                              th:if="${event.id == reservationForm.eventId}"
+                              th:text="${event.title}">Evento</span>
+                    </div>
+                    <div class="form-text">El evento no puede cambiarse después de reservar.</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold" for="quantity">Entradas</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="quantity"
+                           th:field="*{quantity}"
+                           type="number"
+                           min="1"
+                           max="100">
+                    <div class="invalid-feedback" th:errors="*{quantity}"></div>
+                </div>
+
+                <div class="col-12"><hr></div>
+                <div class="col-12">
+                    <h2 class="form-section-title">Datos del asistente</h2>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="attendeeFirstName">Nombre</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="attendeeFirstName"
+                           th:field="*{attendeeFirstName}"
+                           type="text"
+                           maxlength="80"
+                           autocomplete="given-name">
+                    <div class="invalid-feedback" th:errors="*{attendeeFirstName}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="attendeeLastName">Apellido</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="attendeeLastName"
+                           th:field="*{attendeeLastName}"
+                           type="text"
+                           maxlength="80"
+                           autocomplete="family-name">
+                    <div class="invalid-feedback" th:errors="*{attendeeLastName}"></div>
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label fw-semibold" for="attendeeEmail">Correo</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="attendeeEmail"
+                           th:field="*{attendeeEmail}"
+                           type="email"
+                           maxlength="160"
+                           autocomplete="email">
+                    <div class="invalid-feedback" th:errors="*{attendeeEmail}"></div>
+                    <div class="form-text">
+                        El mismo correo no puede tener dos reservaciones activas para un evento.
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold" for="attendeePhone">Teléfono</label>
+                    <input class="form-control"
+                           th:errorclass="is-invalid"
+                           id="attendeePhone"
+                           th:field="*{attendeePhone}"
+                           type="tel"
+                           maxlength="30"
+                           autocomplete="tel">
+                    <div class="invalid-feedback" th:errors="*{attendeePhone}"></div>
+                </div>
+            </div>
+
+            <div class="alert alert-success mt-4 mb-0" th:if="${formMode == 'create'}">
+                <i class="bi bi-hourglass-split me-2" aria-hidden="true"></i>
+                La reservación iniciará como pendiente y sus cupos se liberarán automáticamente si vence.
+            </div>
+
+            <hr class="my-4">
+            <div class="d-flex flex-wrap justify-content-end gap-2">
+                <a class="btn btn-light" th:href="@{/reservations}">Cancelar</a>
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>
+                    <span th:text="${formMode == 'create'
+                                   ? 'Crear reservación'
+                                   : 'Guardar cambios'}">Guardar</span>
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

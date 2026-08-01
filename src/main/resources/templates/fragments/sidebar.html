@@ -29,6 +29,13 @@
             Eventos
         </a>
         <a class="nav-link"
+           sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')"
+           th:classappend="${activePage == 'reservations'} ? ' active'"
+           th:href="@{/reservations}">
+            <i class="bi bi-journal-check" aria-hidden="true"></i>
+            Reservaciones
+        </a>
+        <a class="nav-link"
            sec:authorize="hasRole('ADMINISTRATOR')"
            th:classappend="${activePage == 'categories'} ? ' active'"
            th:href="@{/categories}">
@@ -41,7 +48,7 @@
     <nav class="nav flex-column sidebar-nav" aria-label="Módulos próximos">
         <span class="nav-link opacity-50" aria-disabled="true">
             <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
-            Boletas
+            Ventas y boletas
         </span>
         <span class="nav-link opacity-50" aria-disabled="true">
             <i class="bi bi-qr-code-scan" aria-hidden="true"></i>

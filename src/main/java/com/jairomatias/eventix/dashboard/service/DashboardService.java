@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jairomatias.eventix.dashboard.dto.DashboardSummary;
 import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.repository.EventRepository;
+import com.jairomatias.eventix.reservation.entity.ReservationStatus;
+import com.jairomatias.eventix.reservation.repository.ReservationRepository;
 import com.jairomatias.eventix.user.entity.UserStatus;
 import com.jairomatias.eventix.user.repository.UserRepository;
 
@@ -15,12 +17,15 @@ public class DashboardService {
 
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
+    private final ReservationRepository reservationRepository;
 
     public DashboardService(
             UserRepository userRepository,
-            EventRepository eventRepository) {
+            EventRepository eventRepository,
+            ReservationRepository reservationRepository) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -35,6 +40,15 @@ public class DashboardService {
                 eventRepository.countByStatus(EventStatus.DRAFT),
                 eventRepository.countByStatus(EventStatus.PUBLISHED),
                 eventRepository.countByStatus(EventStatus.CANCELLED),
-                eventRepository.countByStatus(EventStatus.FINISHED));
+                eventRepository.countByStatus(EventStatus.FINISHED),
+                reservationRepository.count(),
+                reservationRepository.countByStatus(
+                        ReservationStatus.PENDING),
+                reservationRepository.countByStatus(
+                        ReservationStatus.CONFIRMED),
+                reservationRepository.countByStatus(
+                        ReservationStatus.CANCELLED),
+                reservationRepository.countByStatus(
+                        ReservationStatus.EXPIRED));
     }
 }
