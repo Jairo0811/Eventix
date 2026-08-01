@@ -36,6 +36,13 @@
             Reservaciones
         </a>
         <a class="nav-link"
+           sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')"
+           th:classappend="${activePage == 'sales'} ? ' active'"
+           th:href="@{/sales}">
+            <i class="bi bi-receipt-cutoff" aria-hidden="true"></i>
+            Ventas y pagos
+        </a>
+        <a class="nav-link"
            sec:authorize="hasRole('ADMINISTRATOR')"
            th:classappend="${activePage == 'categories'} ? ' active'"
            th:href="@{/categories}">
@@ -48,7 +55,7 @@
     <nav class="nav flex-column sidebar-nav" aria-label="Módulos próximos">
         <span class="nav-link opacity-50" aria-disabled="true">
             <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
-            Ventas y boletas
+            Boletas digitales
         </span>
         <span class="nav-link opacity-50" aria-disabled="true">
             <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
