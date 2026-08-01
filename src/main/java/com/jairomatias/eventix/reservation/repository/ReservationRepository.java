@@ -1,6 +1,7 @@
 package com.jairomatias.eventix.reservation.repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -62,6 +63,22 @@ public interface ReservationRepository
     @Query("SELECT r FROM Reservation r WHERE r.id = :id")
     Optional<Reservation> findDetailedByIdForUpdate(
             @Param("id") Long id);
+
+    @EntityGraph(attributePaths = {"event"})
+    @Query("""
+            SELECT r
+            FROM Reservation r
+            WHERE r.status = com.jairomatias.eventix.reservation.entity.ReservationStatus.CONFIRMED
+            AND r.event.startAt > :now
+            AND NOT EXISTS (
+                SELECT s.id
+                FROM Sale s
+                WHERE s.reservation.id = r.id
+            )
+            ORDER BY r.createdAt ASC
+            """)
+    List<Reservation> findConfirmedWithoutSale(
+            @Param("now") LocalDateTime now);
 
     @Query(
             value = """
