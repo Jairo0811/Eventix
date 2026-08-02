@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Ventas y pagos')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('sales')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <p class="text-success fw-semibold mb-1">Operación comercial</p>
+            <h1 class="page-title">Ventas y pagos</h1>
+            <p class="page-subtitle">Cobros simulados, reembolsos y trazabilidad por evento.</p>
+        </div>
+        <a class="btn btn-primary"
+           sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR')"
+           th:href="@{/sales/new}">
+            <i class="bi bi-cart-plus me-2" aria-hidden="true"></i>
+            Nueva venta
+        </a>
+    </div>
+
+    <section class="row g-3 mb-4" aria-label="Resumen de ventas">
+        <div class="col-6 col-xl"><article class="metric-card sale-metric">
+            <div class="metric-label">Ventas</div>
+            <div class="metric-value" th:text="${summary.totalSales}">0</div>
+        </article></div>
+        <div class="col-6 col-xl"><article class="metric-card sale-metric">
+            <div class="metric-label">Pendientes</div>
+            <div class="metric-value text-warning" th:text="${summary.pendingSales}">0</div>
+        </article></div>
+        <div class="col-6 col-xl"><article class="metric-card sale-metric">
+            <div class="metric-label">Pagadas</div>
+            <div class="metric-value text-success" th:text="${summary.paidSales}">0</div>
+        </article></div>
+        <div class="col-6 col-xl"><article class="metric-card sale-metric">
+            <div class="metric-label">Reembolsadas</div>
+            <div class="metric-value" th:text="${summary.refundedSales}">0</div>
+        </article></div>
+        <div class="col-12 col-xl"><article class="metric-card sale-metric">
+            <div class="metric-label">Ingreso neto</div>
+            <div class="metric-value"
+                 th:text="|RD$ ${#numbers.formatDecimal(summary.netRevenue, 1, 'COMMA', 2, 'POINT')}|">
+                RD$ 0.00
+            </div>
+        </article></div>
+    </section>
+
+    <form class="content-card mb-4" method="get" th:action="@{/sales}">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-5">
+                <label class="form-label" for="term">Buscar</label>
+                <input class="form-control" id="term" name="term" th:value="${term}"
+                       placeholder="Referencia, comprador, correo o evento">
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <label class="form-label" for="status">Estado</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    <option th:each="saleStatus : ${saleStatuses}"
+                            th:value="${saleStatus}"
+                            th:selected="${saleStatus == selectedStatus}"
+                            th:text="${saleStatus.displayName}">Estado</option>
+                </select>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <label class="form-label" for="eventId">Evento</label>
+                <select class="form-select" id="eventId" name="eventId">
+                    <option value="">Todos</option>
+                    <option th:each="event : ${events}"
+                            th:value="${event.id}"
+                            th:selected="${event.id == selectedEventId}"
+                            th:text="${event.title}">Evento</option>
+                </select>
+            </div>
+            <div class="col-md-4 col-lg-1 d-grid">
+                <button class="btn btn-outline-primary" type="submit" aria-label="Filtrar ventas">
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <section class="content-card">
+        <div class="table-responsive" th:if="${sales.hasContent()}">
+            <table class="table align-middle">
+                <thead><tr>
+                    <th>Venta</th><th>Evento</th><th>Comprador</th>
+                    <th>Estado</th><th>Total</th><th>Fecha</th><th></th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="sale : ${sales.content}">
+                    <td>
+                        <span class="sale-reference" th:text="${sale.referenceCode}">SAL-</span>
+                        <span class="d-block text-secondary small mt-1"
+                              th:text="|Reserva ${sale.reservationReference}|">Reserva</span>
+                    </td>
+                    <td th:text="${sale.eventTitle}">Evento</td>
+                    <td>
+                        <strong class="d-block" th:text="${sale.buyerName}">Nombre</strong>
+                        <span class="text-secondary small" th:text="${sale.buyerEmail}">Correo</span>
+                    </td>
+                    <td><span class="badge-status"
+                              th:classappend="| badge-sale-${#strings.toLowerCase(sale.status.name())}|"
+                              th:text="${sale.status.displayName}">Estado</span></td>
+                    <td class="fw-semibold"
+                        th:text="|RD$ ${#numbers.formatDecimal(sale.total, 1, 'COMMA', 2, 'POINT')}|">
+                        RD$ 0.00
+                    </td>
+                    <td th:text="${#temporals.format(sale.createdAt, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-primary"
+                       th:href="@{/sales/{id}(id=${sale.id})}">Ver</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty-state" th:if="${!sales.hasContent()}">
+            <i class="bi bi-receipt fs-1" aria-hidden="true"></i>
+            <h2 class="h5 mt-3">No hay ventas con esos filtros</h2>
+            <p>Las ventas creadas desde reservaciones confirmadas aparecerán aquí.</p>
+        </div>
+    </section>
+
+    <nav class="mt-4" th:if="${sales.totalPages > 1}" aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${sales.first} ? ' disabled'">
+                <a class="page-link" th:href="@{/sales(page=${sales.number - 1},term=${term},status=${selectedStatus},eventId=${selectedEventId})}">Anterior</a>
+            </li>
+            <li class="page-item disabled"><span class="page-link"
+                th:text="|Página ${sales.number + 1} de ${sales.totalPages}|">Página</span></li>
+            <li class="page-item" th:classappend="${sales.last} ? ' disabled'">
+                <a class="page-link" th:href="@{/sales(page=${sales.number + 1},term=${term},status=${selectedStatus},eventId=${selectedEventId})}">Siguiente</a>
+            </li>
+        </ul>
+    </nav>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

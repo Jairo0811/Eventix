@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Detalle de venta')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('sales')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <a class="text-decoration-none small" th:href="@{/sales}">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+            Volver a ventas
+        </a>
+        <a class="btn btn-outline-primary"
+           th:if="${sale.status.name() != 'PENDING'}"
+           th:href="@{/sales/{id}/receipt(id=${sale.id})}">
+            <i class="bi bi-printer me-2" aria-hidden="true"></i>
+            Ver comprobante
+        </a>
+    </div>
+
+    <section class="content-card sale-status-panel mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <span class="sale-reference" th:text="${sale.referenceCode}">SAL-</span>
+                <h1 class="page-title mt-3" th:text="${sale.eventTitle}">Evento</h1>
+                <p class="page-subtitle"
+                   th:text="|Reserva ${sale.reservationReference} · ${sale.buyerName}|">
+                    Reserva
+                </p>
+            </div>
+            <div class="text-end">
+                <span class="badge-status fs-6"
+                      th:classappend="| badge-sale-${#strings.toLowerCase(sale.status.name())}|"
+                      th:text="${sale.status.displayName}">Estado</span>
+                <div class="sale-total mt-2"
+                     th:text="|RD$ ${#numbers.formatDecimal(sale.total, 1, 'COMMA', 2, 'POINT')}|">
+                    RD$ 0.00
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <section class="content-card h-100">
+                <h2 class="h5 fw-bold mb-4">Entradas vendidas</h2>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead><tr><th>Tipo</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead>
+                        <tbody><tr th:each="item : ${sale.items}">
+                            <td th:text="${item.ticketTypeName}">General</td>
+                            <td th:text="${item.quantity}">1</td>
+                            <td th:text="|RD$ ${#numbers.formatDecimal(item.unitPrice, 1, 'COMMA', 2, 'POINT')}|">0</td>
+                            <td class="fw-semibold"
+                                th:text="|RD$ ${#numbers.formatDecimal(item.subtotal, 1, 'COMMA', 2, 'POINT')}|">0</td>
+                        </tr></tbody>
+                    </table>
+                </div>
+                <div class="border-top pt-3 mt-3 text-end">
+                    <span class="text-secondary me-3">Total</span>
+                    <strong class="fs-5"
+                            th:text="|RD$ ${#numbers.formatDecimal(sale.total, 1, 'COMMA', 2, 'POINT')}|">0</strong>
+                </div>
+            </section>
+        </div>
+        <div class="col-xl-4">
+            <section class="content-card h-100">
+                <h2 class="h5 fw-bold mb-4">Comprador</h2>
+                <p class="detail-label">Nombre</p>
+                <p class="detail-value" th:text="${sale.buyerName}">Nombre</p>
+                <p class="detail-label mt-3">Correo</p>
+                <p class="detail-value" th:text="${sale.buyerEmail}">Correo</p>
+                <p class="detail-label mt-3">Teléfono</p>
+                <p class="detail-value" th:text="${sale.buyerPhone}">Teléfono</p>
+                <p class="detail-label mt-3">Fecha del evento</p>
+                <p class="detail-value"
+                   th:text="${#temporals.format(sale.eventStartAt, 'dd/MM/yyyy HH:mm')}">Fecha</p>
+                <p class="detail-label mt-3">Procesada por</p>
+                <p class="detail-value mb-0" th:text="${sale.soldByName}">Usuario</p>
+            </section>
+        </div>
+    </div>
+
+    <section class="content-card mt-4"
+             sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR')"
+             th:if="${sale.status.name() == 'PENDING'}">
+        <h2 class="h5 fw-bold mb-1">Procesar pago simulado</h2>
+        <p class="text-secondary mb-4">
+            La interfaz Strategy permite sustituir esta simulación por Stripe, PayPal, Azul, CardNET, Qik o transferencia real.
+        </p>
+        <form class="row g-3 align-items-end" th:object="${paymentForm}"
+              th:action="@{/sales/{id}/payments(id=${sale.id})}" method="post">
+            <div class="col-md-5">
+                <label class="form-label" for="provider">Proveedor</label>
+                <select class="form-select" id="provider" th:field="*{provider}" required>
+                    <option value="">Selecciona</option>
+                    <option th:each="provider : ${paymentProviders}"
+                            th:value="${provider}"
+                            th:text="${provider.displayName}">Proveedor</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label" for="simulationOutcome">Resultado de demostración</label>
+                <select class="form-select" id="simulationOutcome"
+                        th:field="*{simulationOutcome}">
+                    <option th:each="outcome : ${simulationOutcomes}"
+                            th:value="${outcome}"
+                            th:text="${outcome.displayName}">Resultado</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button class="btn btn-primary" type="submit">Procesar</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="content-card mt-4"
+             sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR')"
+             th:if="${sale.status.name() == 'PENDING' || sale.status.name() == 'PAID'}">
+        <h2 class="h5 fw-bold mb-3"
+            th:text="${sale.status.name() == 'PAID'} ? 'Reembolsar venta' : 'Cancelar venta'">
+            Operación
+        </h2>
+        <form class="row g-3 align-items-end"
+              th:object="${saleActionForm}"
+              th:action="${sale.status.name() == 'PAID'}
+                         ? @{/sales/{id}/refund(id=${sale.id})}
+                         : @{/sales/{id}/cancel(id=${sale.id})}"
+              method="post"
+              th:attr="data-confirm=${sale.status.name() == 'PAID'
+                       ? 'Se registrará el reembolso y se liberarán los cupos.'
+                       : 'La venta será cancelada y se liberarán los cupos.'}">
+            <div class="col-lg-10">
+                <label class="form-label" for="reason">Motivo</label>
+                <input class="form-control" id="reason" maxlength="500"
+                       th:field="*{reason}" required>
+            </div>
+            <div class="col-lg-2 d-grid">
+                <button class="btn btn-outline-danger" type="submit"
+                        th:text="${sale.status.name() == 'PAID'} ? 'Reembolsar' : 'Cancelar'">
+                    Continuar
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <section class="content-card mt-4">
+        <h2 class="h5 fw-bold mb-4">Historial de transacciones</h2>
+        <div class="table-responsive" th:if="${!sale.payments.isEmpty()}">
+            <table class="table">
+                <thead><tr><th>Referencia</th><th>Tipo</th><th>Proveedor</th><th>Resultado</th><th>Fecha</th></tr></thead>
+                <tbody><tr th:each="payment : ${sale.payments}">
+                    <td><code th:text="${payment.transactionReference}">PAY-</code></td>
+                    <td th:text="${payment.transactionType.displayName}">Cobro</td>
+                    <td th:text="${payment.provider.displayName}">Proveedor</td>
+                    <td><span class="badge-status"
+                              th:classappend="${payment.status.name() == 'APPROVED'} ? ' badge-active' : ' badge-cancelled'"
+                              th:text="${payment.status.displayName}">Estado</span></td>
+                    <td th:text="${#temporals.format(payment.processedAt, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                </tr></tbody>
+            </table>
+        </div>
+        <p class="text-secondary mb-0" th:if="${sale.payments.isEmpty()}">
+            No hay intentos de pago registrados.
+        </p>
+    </section>
+
+    <div class="alert alert-light border mt-4" th:if="${sale.refundReason != null}">
+        <strong>Motivo del reembolso:</strong> <span th:text="${sale.refundReason}">Motivo</span>
+    </div>
+    <div class="alert alert-light border mt-4" th:if="${sale.cancellationReason != null}">
+        <strong>Motivo de cancelación:</strong> <span th:text="${sale.cancellationReason}">Motivo</span>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

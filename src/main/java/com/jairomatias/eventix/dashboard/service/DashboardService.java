@@ -9,6 +9,8 @@ import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.repository.EventRepository;
 import com.jairomatias.eventix.reservation.entity.ReservationStatus;
 import com.jairomatias.eventix.reservation.repository.ReservationRepository;
+import com.jairomatias.eventix.sale.entity.SaleStatus;
+import com.jairomatias.eventix.sale.repository.SaleRepository;
 import com.jairomatias.eventix.user.entity.UserStatus;
 import com.jairomatias.eventix.user.repository.UserRepository;
 
@@ -18,14 +20,17 @@ public class DashboardService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final ReservationRepository reservationRepository;
+    private final SaleRepository saleRepository;
 
     public DashboardService(
             UserRepository userRepository,
             EventRepository eventRepository,
-            ReservationRepository reservationRepository) {
+            ReservationRepository reservationRepository,
+            SaleRepository saleRepository) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.reservationRepository = reservationRepository;
+        this.saleRepository = saleRepository;
     }
 
     @Transactional(readOnly = true)
@@ -49,6 +54,11 @@ public class DashboardService {
                 reservationRepository.countByStatus(
                         ReservationStatus.CANCELLED),
                 reservationRepository.countByStatus(
-                        ReservationStatus.EXPIRED));
+                        ReservationStatus.EXPIRED),
+                saleRepository.count(),
+                saleRepository.countByStatus(SaleStatus.PENDING),
+                saleRepository.countByStatus(SaleStatus.PAID),
+                saleRepository.countByStatus(SaleStatus.REFUNDED),
+                saleRepository.countByStatus(SaleStatus.CANCELLED));
     }
 }

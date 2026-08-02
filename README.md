@@ -25,7 +25,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 
-> Estado actual: **En desarrollo. Las fases 1, 2 y 3 están completadas: seguridad, usuarios, eventos y reservaciones con control de disponibilidad.**
+> Estado actual: **En desarrollo. Las fases 1 a 4 están completadas: seguridad, usuarios, eventos, reservaciones, ventas y pagos simulados.**
 
 </div>
 
@@ -49,7 +49,7 @@ Estos proyectos representan una secuencia académica enfocada en programación, 
 
 **Eventix** es una aplicación web creada como evolución profesional de un proyecto final de la asignatura **Programación II** del Instituto Tecnológico de Las Américas (ITLA).
 
-Su objetivo es ofrecer una base sólida para administrar eventos y reservaciones y, en fases posteriores, incorporar ventas, boletas digitales, códigos QR, control de acceso, reportes y estadísticas.
+Su objetivo es ofrecer una base sólida para administrar eventos, reservaciones, ventas y pagos y, en fases posteriores, incorporar boletas digitales, códigos QR, control de acceso, reportes y estadísticas.
 
 La solución fue construida como un **monolito modular por dominio**, con separación clara entre controladores, servicios, repositorios, entidades, DTO y vistas.
 
@@ -101,6 +101,19 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 - Búsqueda, filtros, paginación y detalle de reservaciones.
 - Métricas de asistentes, pendientes, disponibilidad y ocupación por evento.
 - Autorización diferenciada para administradores, operadores y organizadores.
+- Configuración de tipos de entrada General, VIP, Preferencial, Estudiante, Cortesía y Personalizado.
+- Precios, cupos y activación por tipo de entrada y evento.
+- Ventas vinculadas de forma exclusiva a reservaciones confirmadas.
+- Distribución multirrenglón de entradas con precio histórico por venta.
+- Estados de venta: pendiente, pagada, reembolsada y cancelada.
+- Prevención transaccional de sobreasignación por evento y tipo de entrada.
+- Pagos y reembolsos simulados para Stripe, PayPal, Azul, CardNET, Qik y transferencia bancaria.
+- Pasarelas desacopladas mediante el patrón Strategy para integrar proveedores reales sin alterar el dominio de ventas.
+- Historial permanente de intentos aprobados y rechazados.
+- Cancelaciones y reembolsos justificados con liberación automática de cupos.
+- Dashboard comercial con estados e ingreso neto.
+- Comprobantes de venta imprimibles y exportables a PDF desde el navegador.
+- Autorización de ventas por rol y propiedad del evento.
 
 ---
 
@@ -231,11 +244,11 @@ La autorización se aplica en dos niveles:
 | Patrón | Ubicación | Propósito |
 |---|---|---|
 | MVC | Controladores y plantillas Thymeleaf | Separar entrada HTTP, modelo y presentación. |
-| Repository | Repositorios de usuarios, categorías, eventos y reservaciones | Abstraer la persistencia JPA. |
-| Service Layer | Servicios de usuarios, categorías, eventos, reservaciones y dashboard | Centralizar reglas, transacciones y permisos. |
+| Repository | Repositorios de usuarios, categorías, eventos, reservaciones, ventas y pagos | Abstraer la persistencia JPA. |
+| Service Layer | Servicios de usuarios, categorías, eventos, reservaciones, ventas, pagos y dashboard | Centralizar reglas, transacciones y permisos. |
 | Mapper | Mapeadores de usuarios, eventos y reservaciones con MapStruct | Evitar exponer entidades JPA a las vistas. |
-| Strategy | Planificado para precios, pagos y cancelaciones | Resolver reglas variables de negocio. |
-| Domain Events | Planificado para ventas, reservas y boletas | Desacoplar procesos entre módulos. |
+| Strategy | Pasarelas de pago bajo `PaymentGateway` | Sustituir la simulación por integraciones reales sin acoplar ventas al proveedor. |
+| Domain Events | Evento `SalePaidEvent` | Permitir que ticketing emita boletas al confirmarse una venta. |
 
 ---
 
@@ -250,8 +263,10 @@ src/
 │   │   ├── config/
 │   │   ├── dashboard/
 │   │   ├── event/
+│   │   ├── payment/
 │   │   ├── role/
 │   │   ├── reservation/
+│   │   ├── sale/
 │   │   ├── security/
 │   │   ├── shared/
 │   │   └── user/
@@ -272,7 +287,7 @@ src/
 
 ## 🚦 Estado del proyecto
 
-**Estado general: 🚧 En desarrollo — Fases 1, 2 y 3 completadas**
+**Estado general: 🚧 En desarrollo — Fases 1 a 4 completadas**
 
 ### Completado
 
@@ -295,10 +310,14 @@ src/
 - [x] Retenciones temporales y expiración automática.
 - [x] Vista de asistentes y ocupación por evento.
 - [x] Autorización de reservaciones por rol y propiedad del evento.
+- [x] Tipos de entrada, precios y cupos por evento.
+- [x] Ventas vinculadas a reservaciones confirmadas.
+- [x] Estados, historial, cancelaciones y reembolsos de ventas.
+- [x] Pagos simulados con arquitectura extensible por proveedor.
+- [x] Comprobantes y panel comercial.
 
 ### Pendiente
 
-- [ ] Ventas de entradas.
 - [ ] Boletas digitales y códigos QR.
 - [ ] Control de acceso.
 - [ ] Reportes y estadísticas.

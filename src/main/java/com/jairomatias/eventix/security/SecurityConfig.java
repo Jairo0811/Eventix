@@ -70,6 +70,10 @@ public class SecurityConfig {
                         .hasRole("ADMINISTRATOR")
                         .requestMatchers("/categories/**")
                         .hasRole("ADMINISTRATOR")
+                        .requestMatchers("/events/*/ticket-types/**")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "ORGANIZER")
                         .requestMatchers(
                                 "/events/new",
                                 "/events/*/edit")
@@ -97,6 +101,21 @@ public class SecurityConfig {
                                 "ADMINISTRATOR",
                                 "OPERATOR")
                         .requestMatchers("/reservations/**")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "OPERATOR",
+                                "ORGANIZER")
+                        .requestMatchers("/sales/new")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "OPERATOR")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/sales/**")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "OPERATOR")
+                        .requestMatchers("/sales/**")
                         .hasAnyRole(
                                 "ADMINISTRATOR",
                                 "OPERATOR",
