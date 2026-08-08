@@ -14,3 +14,6 @@ logging:
     root: INFO
     com.jairomatias.eventix: INFO
 
+eventix:
+  ticketing:
+    allow-ephemeral-signing-key: ${TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY:false}

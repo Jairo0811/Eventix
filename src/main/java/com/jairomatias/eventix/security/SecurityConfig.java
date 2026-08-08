@@ -1,7 +1,5 @@
 package com.jairomatias.eventix.security;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -66,6 +64,8 @@ public class SecurityConfig {
                                 "/images/**",
                                 "/error/**")
                         .permitAll()
+                        .requestMatchers("/api/wallet/apple/**")
+                        .permitAll()
                         .requestMatchers("/users/**")
                         .hasRole("ADMINISTRATOR")
                         .requestMatchers("/categories/**")
@@ -120,6 +120,24 @@ public class SecurityConfig {
                                 "ADMINISTRATOR",
                                 "OPERATOR",
                                 "ORGANIZER")
+                        .requestMatchers("/tickets/**")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "OPERATOR",
+                                "ORGANIZER")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/access-control/**")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "OPERATOR",
+                                "ACCESS_STAFF")
+                        .requestMatchers("/access-control/**")
+                        .hasAnyRole(
+                                "ADMINISTRATOR",
+                                "OPERATOR",
+                                "ORGANIZER",
+                                "ACCESS_STAFF")
                         .anyRequest()
                         .authenticated())
                 .formLogin(form -> form
@@ -143,7 +161,8 @@ public class SecurityConfig {
                         .maxSessionsPreventsLogin(false))
                 .exceptionHandling(exceptions -> exceptions
                         .accessDeniedPage("/access-denied"))
-                .csrf(withDefaults())
+                .csrf(csrf -> csrf.ignoringRequestMatchers(
+                        "/api/wallet/apple/**"))
                 .addFilterAfter(
                         forcePasswordChangeFilter,
                         UsernamePasswordAuthenticationFilter.class);

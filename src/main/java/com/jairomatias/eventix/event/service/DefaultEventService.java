@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,7 @@ import com.jairomatias.eventix.event.dto.EventDetailsView;
 import com.jairomatias.eventix.event.dto.EventForm;
 import com.jairomatias.eventix.event.dto.EventListItem;
 import com.jairomatias.eventix.event.dto.OrganizerOption;
+import com.jairomatias.eventix.event.event.EventChangedEvent;
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.mapper.EventMapper;
@@ -45,6 +47,7 @@ public class DefaultEventService implements EventService {
     private final UserRepository userRepository;
     private final EventMapper eventMapper;
     private final ReservationRepository reservationRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
     @Autowired
@@ -53,13 +56,15 @@ public class DefaultEventService implements EventService {
             EventCategoryRepository categoryRepository,
             UserRepository userRepository,
             EventMapper eventMapper,
-            ReservationRepository reservationRepository) {
+            ReservationRepository reservationRepository,
+            ApplicationEventPublisher eventPublisher) {
         this(
                 eventRepository,
                 categoryRepository,
                 userRepository,
                 eventMapper,
                 reservationRepository,
+                eventPublisher,
                 Clock.systemDefaultZone());
     }
 
@@ -69,12 +74,14 @@ public class DefaultEventService implements EventService {
             UserRepository userRepository,
             EventMapper eventMapper,
             ReservationRepository reservationRepository,
+            ApplicationEventPublisher eventPublisher,
             Clock clock) {
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.eventMapper = eventMapper;
         this.reservationRepository = reservationRepository;
+        this.eventPublisher = eventPublisher;
         this.clock = clock;
     }
 
@@ -249,6 +256,7 @@ public class DefaultEventService implements EventService {
                 normalizeNullable(form.getCoverImageUrl()),
                 Boolean.TRUE.equals(form.getFreeEvent()),
                 normalizedPrice(form));
+        eventPublisher.publishEvent(new EventChangedEvent(event.getId()));
     }
 
     @Override

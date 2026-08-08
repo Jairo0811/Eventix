@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle de boleta')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('tickets')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small" th:href="@{/tickets}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver a boletas
+            </a>
+            <h1 class="page-title mt-2">Boleta digital</h1>
+            <p class="page-subtitle" th:text="${ticket.eventTitle}">Evento</p>
+        </div>
+        <span class="badge-status fs-6"
+              th:classappend="| badge-ticket-${#strings.toLowerCase(ticket.status.name())}|"
+              th:text="${ticket.status.displayName}">Estado</span>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <section class="content-card h-100 ticket-detail-card">
+                <div class="d-flex flex-wrap justify-content-between gap-3">
+                    <div>
+                        <p class="detail-label">Código único</p>
+                        <code class="ticket-code fs-5" th:text="${ticket.uniqueCode}">EVX-</code>
+                    </div>
+                    <img class="ticket-qr" th:src="@{/tickets/{id}/qr(id=${ticket.id})}"
+                         alt="Código QR firmado de la boleta">
+                </div>
+                <div class="row g-4 mt-1">
+                    <div class="col-md-6"><p class="detail-label">Asistente</p><p class="detail-value" th:text="${ticket.attendeeName}">Nombre</p></div>
+                    <div class="col-md-6"><p class="detail-label">Correo</p><p class="detail-value" th:text="${ticket.attendeeEmail}">Correo</p></div>
+                    <div class="col-md-6"><p class="detail-label">Tipo / zona</p><p class="detail-value" th:text="${ticket.ticketTypeName}">General</p></div>
+                    <div class="col-md-6"><p class="detail-label">Fecha</p><p class="detail-value" th:text="${#temporals.format(ticket.eventStartAt, 'dd/MM/yyyy HH:mm')}">Fecha</p></div>
+                    <div class="col-md-6"><p class="detail-label">Lugar</p><p class="detail-value" th:text="${ticket.venue}">Lugar</p></div>
+                    <div class="col-md-6"><p class="detail-label">Organizador</p><p class="detail-value" th:text="${ticket.organizerName}">Organizador</p></div>
+                </div>
+            </section>
+        </div>
+        <div class="col-lg-5">
+            <section class="content-card h-100">
+                <h2 class="h5 fw-bold mb-4">Descargar y guardar</h2>
+                <div class="d-grid gap-2">
+                    <a class="btn btn-primary" th:href="@{/tickets/{id}/pdf(id=${ticket.id})}">
+                        <i class="bi bi-file-earmark-pdf me-2" aria-hidden="true"></i>Descargar PDF
+                    </a>
+                    <a class="btn btn-outline-dark" th:if="${ticket.googleWalletAvailable}"
+                       th:href="@{/tickets/{id}/wallet/google(id=${ticket.id})}">
+                        <i class="bi bi-wallet2 me-2" aria-hidden="true"></i>Agregar a Google Wallet
+                    </a>
+                    <a class="btn btn-dark" th:if="${ticket.appleWalletAvailable}"
+                       th:href="@{/tickets/{id}/wallet/apple(id=${ticket.id})}">
+                        <i class="bi bi-apple me-2" aria-hidden="true"></i>Agregar a Apple Wallet
+                    </a>
+                </div>
+                <p class="small text-secondary mt-3 mb-0"
+                   th:if="${!ticket.googleWalletAvailable || !ticket.appleWalletAvailable}">
+                    Los botones de wallet aparecen cuando sus credenciales están configuradas.
+                </p>
+                <hr>
+                <p class="detail-label">Código antifraude</p>
+                <code th:text="${ticket.antiFraudCode}">Código</code>
+                <p class="detail-label mt-3">Firma digital</p>
+                <p class="small mb-1" th:text="|Ed25519 · ${ticket.signatureKeyId}|">Firma</p>
+                <code th:text="|Huella ${ticket.signatureFingerprint}…|">Huella</code>
+                <p class="detail-label mt-3">Venta</p>
+                <a th:href="@{/sales/{id}(id=${ticket.saleId})}" th:text="${ticket.saleReference}">SAL-</a>
+            </section>
+        </div>
+    </div>
+
+    <div class="alert alert-danger mt-4" th:if="${ticket.cancellationReason != null}">
+        <strong>Motivo de cancelación:</strong> <span th:text="${ticket.cancellationReason}">Motivo</span>
+    </div>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

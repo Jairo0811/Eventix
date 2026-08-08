@@ -20,6 +20,16 @@ import jakarta.persistence.LockModeType;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
 
+    @Query("""
+            SELECT COALESCE(SUM(e.capacity), 0)
+            FROM Event e
+            WHERE (:eventId IS NULL OR e.id = :eventId)
+            AND (:organizerId IS NULL OR e.organizer.id = :organizerId)
+            """)
+    Long sumVisibleCapacity(
+            @Param("eventId") Long eventId,
+            @Param("organizerId") Long organizerId);
+
     long countByStatus(EventStatus status);
 
     @EntityGraph(attributePaths = {"category", "organizer"})

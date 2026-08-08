@@ -43,6 +43,20 @@
             Ventas y pagos
         </a>
         <a class="nav-link"
+           sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')"
+           th:classappend="${activePage == 'tickets'} ? ' active'"
+           th:href="@{/tickets}">
+            <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+            Boletas digitales
+        </a>
+        <a class="nav-link"
+           sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER', 'ACCESS_STAFF')"
+           th:classappend="${activePage == 'access'} ? ' active'"
+           th:href="@{/access-control}">
+            <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
+            Control de acceso
+        </a>
+        <a class="nav-link"
            sec:authorize="hasRole('ADMINISTRATOR')"
            th:classappend="${activePage == 'categories'} ? ' active'"
            th:href="@{/categories}">
@@ -51,16 +65,5 @@
         </a>
     </nav>
 
-    <p class="sidebar-label">Próximas fases</p>
-    <nav class="nav flex-column sidebar-nav" aria-label="Módulos próximos">
-        <span class="nav-link opacity-50" aria-disabled="true">
-            <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
-            Boletas digitales
-        </span>
-        <span class="nav-link opacity-50" aria-disabled="true">
-            <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
-            Control de acceso
-        </span>
-    </nav>
 </aside>
 </html>

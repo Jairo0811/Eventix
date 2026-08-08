@@ -25,7 +25,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 
-> Estado actual: **En desarrollo. Las fases 1 a 4 están completadas: seguridad, usuarios, eventos, reservaciones, ventas y pagos simulados.**
+> Estado actual: **En desarrollo. Las fases 1 a 5 están completadas: seguridad, usuarios, eventos, reservaciones, ventas, boletas digitales y control de acceso.**
 
 </div>
 
@@ -49,7 +49,7 @@ Estos proyectos representan una secuencia académica enfocada en programación, 
 
 **Eventix** es una aplicación web creada como evolución profesional de un proyecto final de la asignatura **Programación II** del Instituto Tecnológico de Las Américas (ITLA).
 
-Su objetivo es ofrecer una base sólida para administrar eventos, reservaciones, ventas y pagos y, en fases posteriores, incorporar boletas digitales, códigos QR, control de acceso, reportes y estadísticas.
+Su objetivo es ofrecer una base sólida para administrar eventos, reservaciones, ventas, pagos, boletas digitales y control de acceso y, en fases posteriores, incorporar reportes y estadísticas avanzadas.
 
 La solución fue construida como un **monolito modular por dominio**, con separación clara entre controladores, servicios, repositorios, entidades, DTO y vistas.
 
@@ -114,6 +114,17 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 - Dashboard comercial con estados e ingreso neto.
 - Comprobantes de venta imprimibles y exportables a PDF desde el navegador.
 - Autorización de ventas por rol y propiedad del evento.
+- Emisión idempotente de una boleta digital por cada unidad de una venta pagada.
+- PDF descargable y QR individual generado con Apache PDFBox y ZXing.
+- Firma Ed25519, huella SHA-256 y código antifraude por boleta.
+- Estados de boleta activa, utilizada, cancelada y vencida.
+- Revocación automática al reembolsar la venta o cancelar el evento.
+- Pases firmados para Apple Wallet y enlaces de guardado para Google Wallet cuando se configuran credenciales.
+- Sincronización de cambios con Google Wallet y servicio web PassKit/APNs para Apple Wallet.
+- Escáner web con cámara y entrada manual de respaldo.
+- Detección transaccional de primer acceso, reingreso autorizado, duplicado, cancelación, falsificación y vencimiento.
+- Bitácora de cada intento con fecha, usuario, dispositivo e IP, almacenando solo la huella del QR recibido.
+- Dashboard de capacidad, emitidas, asistentes, pendientes, rechazadas, duplicados y reingresos.
 
 ---
 
@@ -140,6 +151,8 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 | Migraciones | Flyway |
 | Mapeo | MapStruct |
 | Construcción | Apache Maven |
+| Documentos y QR | Apache PDFBox y ZXing |
+| Firmas y pases | Ed25519 y Bouncy Castle |
 
 ## 🎨 Frontend
 
@@ -248,7 +261,7 @@ La autorización se aplica en dos niveles:
 | Service Layer | Servicios de usuarios, categorías, eventos, reservaciones, ventas, pagos y dashboard | Centralizar reglas, transacciones y permisos. |
 | Mapper | Mapeadores de usuarios, eventos y reservaciones con MapStruct | Evitar exponer entidades JPA a las vistas. |
 | Strategy | Pasarelas de pago bajo `PaymentGateway` | Sustituir la simulación por integraciones reales sin acoplar ventas al proveedor. |
-| Domain Events | Evento `SalePaidEvent` | Permitir que ticketing emita boletas al confirmarse una venta. |
+| Domain Events | Eventos de venta, evento y pase | Emitir, revocar y sincronizar boletas sin acoplar los módulos. |
 
 ---
 
@@ -269,6 +282,7 @@ src/
 │   │   ├── sale/
 │   │   ├── security/
 │   │   ├── shared/
+│   │   ├── ticket/
 │   │   └── user/
 │   └── resources/
 │       ├── db/migration/
@@ -287,7 +301,7 @@ src/
 
 ## 🚦 Estado del proyecto
 
-**Estado general: 🚧 En desarrollo — Fases 1 a 4 completadas**
+**Estado general: 🚧 En desarrollo — Fases 1 a 5 completadas**
 
 ### Completado
 
@@ -315,11 +329,13 @@ src/
 - [x] Estados, historial, cancelaciones y reembolsos de ventas.
 - [x] Pagos simulados con arquitectura extensible por proveedor.
 - [x] Comprobantes y panel comercial.
+- [x] Boletas digitales con PDF, QR, código único y firma Ed25519.
+- [x] Google Wallet y Apple Wallet con actualización de pases.
+- [x] Control de acceso, reingresos, duplicados y bitácora antifraude.
+- [x] Dashboard operativo de asistencia y capacidad.
 
 ### Pendiente
 
-- [ ] Boletas digitales y códigos QR.
-- [ ] Control de acceso.
 - [ ] Reportes y estadísticas.
 
 ---
@@ -387,6 +403,8 @@ V1__create_security_schema.sql
 V2__seed_roles_and_administrator.sql
 V3__create_event_management_schema.sql
 V4__create_reservations_schema.sql
+V5__create_sales_and_payments_schema.sql
+V6__create_digital_ticketing_and_access_schema.sql
 ```
 
 ### 4. Configurar la conexión
@@ -505,7 +523,7 @@ El archivo `nbactions.xml` incluido define las acciones de ejecutar, depurar, pr
 | `ADMINISTRATOR` | Administra todas las reservaciones y consulta métricas globales. |
 | `OPERATOR` | Crea, edita, confirma y cancela reservaciones. |
 | `ORGANIZER` | Consulta asistentes, pendientes y ocupación de sus propios eventos. |
-| `ACCESS_STAFF` | Sin acceso en esta fase; la validación de boletas se implementará con control de acceso. |
+| `ACCESS_STAFF` | Opera el escáner y consulta la bitácora y el dashboard de acceso. |
 
 La retención predeterminada es de 15 minutos. Puede configurarse sin modificar código:
 
@@ -523,7 +541,13 @@ export RESERVATION_HOLD_DURATION='PT15M'
 export RESERVATION_EXPIRATION_SCAN_INTERVAL='PT1M'
 ```
 
-### 12. Problemas frecuentes
+### 12. Configurar boletas y wallets
+
+En desarrollo Eventix puede crear una clave Ed25519 efímera. En producción deben configurarse claves persistentes y deshabilitarse ese respaldo. Google Wallet y Apple Wallet son opcionales: si sus credenciales no están completas, la emisión PDF/QR continúa y los botones correspondientes no se muestran.
+
+Las variables, el formato de claves, el servicio web PassKit y la matriz de permisos están documentados en [Fase 5: boletas digitales y control de acceso](docs/phase-5-digital-ticketing.md).
+
+### 13. Problemas frecuentes
 
 - **Testcontainers no encuentra Docker:** abre Docker Desktop y ejecuta `docker version`.
 - **Java incorrecto en Maven:** `java -version` y `mvn -version` deben mostrar Java 21.

@@ -556,6 +556,77 @@ a:hover {
     font-weight: 800;
 }
 
+.ticket-metric,
+.access-metric {
+    min-height: 112px;
+}
+
+.ticket-code {
+    color: var(--eventix-primary-dark);
+    font-weight: 750;
+}
+
+.badge-ticket-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-ticket-used {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-ticket-cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-ticket-expired {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.ticket-qr {
+    background: white;
+    border: 1px solid var(--eventix-border);
+    border-radius: 0.75rem;
+    height: 190px;
+    width: 190px;
+}
+
+.scanner-video {
+    background: #020617;
+    border-radius: 0.85rem;
+    display: block;
+    margin: 1rem 0;
+    max-height: 320px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.scan-result {
+    border-width: 2px;
+}
+
+.scan-result-valid {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.scan-result-rejected {
+    background: #fff7f7;
+    border-color: #fecaca;
+}
+
+.scan-result-icon {
+    color: var(--eventix-primary-dark);
+    font-size: 3.5rem;
+}
+
+.scan-result-rejected .scan-result-icon {
+    color: var(--eventix-danger);
+}
+
 .sale-line {
     background: #f8fafc;
     border: 1px solid var(--eventix-border);
