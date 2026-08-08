@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +48,7 @@ public class DefaultAccessControlService implements AccessControlService {
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
+    @Autowired
     public DefaultAccessControlService(
             DigitalTicketRepository ticketRepository,
             TicketScanAttemptRepository attemptRepository,
