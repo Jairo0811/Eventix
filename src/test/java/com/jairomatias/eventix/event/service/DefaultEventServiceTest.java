@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -58,6 +59,9 @@ class DefaultEventServiceTest {
     private ReservationRepository reservationRepository;
 
     @Mock
+    private ApplicationEventPublisher eventPublisher;
+
+    @Mock
     private User organizer;
 
     @Mock
@@ -80,6 +84,7 @@ class DefaultEventServiceTest {
                 userRepository,
                 eventMapper,
                 reservationRepository,
+                eventPublisher,
                 clock);
     }
 

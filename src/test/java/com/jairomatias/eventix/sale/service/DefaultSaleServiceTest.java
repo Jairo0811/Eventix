@@ -45,6 +45,7 @@ import com.jairomatias.eventix.sale.entity.SaleStatus;
 import com.jairomatias.eventix.sale.entity.TicketType;
 import com.jairomatias.eventix.sale.entity.TicketTypeCategory;
 import com.jairomatias.eventix.sale.event.SalePaidEvent;
+import com.jairomatias.eventix.sale.event.SaleRefundedEvent;
 import com.jairomatias.eventix.sale.repository.SaleItemRepository;
 import com.jairomatias.eventix.sale.repository.SaleRepository;
 import com.jairomatias.eventix.sale.repository.TicketTypeRepository;
@@ -231,6 +232,9 @@ class DefaultSaleServiceTest {
                 .isEqualTo(ReservationStatus.CANCELLED);
         assertThat(sale.getRefundReason())
                 .isEqualTo("Solicitud del cliente");
+        verify(eventPublisher).publishEvent(new SaleRefundedEvent(
+                55L,
+                "Solicitud del cliente"));
     }
 
     private Reservation prepareSaleableReservation(int quantity) {
