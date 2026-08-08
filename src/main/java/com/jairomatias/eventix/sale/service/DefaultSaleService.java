@@ -50,6 +50,7 @@ import com.jairomatias.eventix.sale.entity.SaleItem;
 import com.jairomatias.eventix.sale.entity.SaleStatus;
 import com.jairomatias.eventix.sale.entity.TicketType;
 import com.jairomatias.eventix.sale.event.SalePaidEvent;
+import com.jairomatias.eventix.sale.event.SaleRefundedEvent;
 import com.jairomatias.eventix.sale.repository.SaleItemRepository;
 import com.jairomatias.eventix.sale.repository.SaleRepository;
 import com.jairomatias.eventix.sale.repository.TicketTypeRepository;
@@ -442,6 +443,9 @@ public class DefaultSaleService implements SaleService {
         }
         sale.markRefunded(reason, processedAt);
         cancelLinkedReservation(sale, reason, processedAt);
+        eventPublisher.publishEvent(new SaleRefundedEvent(
+                sale.getId(),
+                reason));
     }
 
     @Override

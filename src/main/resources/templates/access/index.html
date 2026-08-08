@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Control de acceso')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('access')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <p class="text-success fw-semibold mb-1">Operación en puerta</p>
+            <h1 class="page-title">Control de acceso</h1>
+            <p class="page-subtitle">Validación criptográfica y trazabilidad en tiempo real.</p>
+        </div>
+        <form method="get" th:action="@{/access-control}">
+            <label class="form-label" for="eventId">Dashboard por evento</label>
+            <div class="input-group">
+                <select class="form-select" id="eventId" name="eventId">
+                    <option value="">Todos</option>
+                    <option th:each="event : ${events}" th:value="${event.id}"
+                            th:selected="${event.id == selectedEventId}"
+                            th:text="${event.title}">Evento</option>
+                </select>
+                <button class="btn btn-outline-primary" type="submit">Aplicar</button>
+            </div>
+        </form>
+    </div>
+
+    <section class="row g-3 mb-4" aria-label="Métricas de acceso">
+        <div class="col-6 col-xl"><article class="metric-card access-metric"><div class="metric-label">Capacidad</div><div class="metric-value" th:text="${summary.capacity}">0</div></article></div>
+        <div class="col-6 col-xl"><article class="metric-card access-metric"><div class="metric-label">Emitidas</div><div class="metric-value" th:text="${summary.issued}">0</div></article></div>
+        <div class="col-6 col-xl"><article class="metric-card access-metric"><div class="metric-label">Asistentes</div><div class="metric-value text-success" th:text="${summary.attendees}">0</div></article></div>
+        <div class="col-6 col-xl"><article class="metric-card access-metric"><div class="metric-label">Pendientes</div><div class="metric-value text-warning" th:text="${summary.pending}">0</div></article></div>
+        <div class="col-4 col-xl"><article class="metric-card access-metric"><div class="metric-label">Rechazadas</div><div class="metric-value text-danger" th:text="${summary.rejected}">0</div></article></div>
+        <div class="col-4 col-xl"><article class="metric-card access-metric"><div class="metric-label">Duplicados</div><div class="metric-value text-danger" th:text="${summary.duplicateAttempts}">0</div></article></div>
+        <div class="col-4 col-xl"><article class="metric-card access-metric"><div class="metric-label">Reingresos</div><div class="metric-value" th:text="${summary.reentries}">0</div></article></div>
+    </section>
+
+    <div class="row g-4 mb-4" sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ACCESS_STAFF')">
+        <div class="col-lg-6">
+            <section class="content-card scanner-card h-100">
+                <h2 class="h5 fw-bold">Escáner QR</h2>
+                <p class="text-secondary small">Usa la cámara o pega el contenido completo del QR.</p>
+                <video class="scanner-video d-none" data-qr-video playsinline muted></video>
+                <div class="d-flex gap-2 mb-3">
+                    <button class="btn btn-outline-primary" type="button" data-start-scanner>
+                        <i class="bi bi-camera me-2" aria-hidden="true"></i>Activar cámara
+                    </button>
+                    <button class="btn btn-outline-secondary d-none" type="button" data-stop-scanner>Detener</button>
+                </div>
+                <p class="small text-secondary" data-scanner-message aria-live="polite"></p>
+                <form th:object="${scanForm}" th:action="@{/access-control/scan}" method="post" data-scan-form>
+                    <div class="mb-3">
+                        <label class="form-label" for="token">Contenido del QR</label>
+                        <textarea class="form-control font-monospace" id="token" rows="3"
+                                  th:field="*{token}" maxlength="512" required></textarea>
+                    </div>
+                    <input type="hidden" th:field="*{deviceIdentifier}" data-device-identifier>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="reentry" th:field="*{reentry}">
+                        <label class="form-check-label" for="reentry">Autorizar como reingreso si ya fue utilizada</label>
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">
+                        <i class="bi bi-qr-code-scan me-2" aria-hidden="true"></i>Validar entrada
+                    </button>
+                </form>
+            </section>
+        </div>
+        <div class="col-lg-6">
+            <section class="content-card h-100 scan-result"
+                     th:classappend="${scanResult != null} ? (${scanResult.accepted} ? ' scan-result-valid' : ' scan-result-rejected') : ''">
+                <div th:if="${scanResult == null}" class="empty-state py-5">
+                    <i class="bi bi-shield-check fs-1" aria-hidden="true"></i>
+                    <h2 class="h5 mt-3">Esperando una lectura</h2>
+                    <p>El resultado aparecerá aquí sin exponer el contenido del QR.</p>
+                </div>
+                <div th:if="${scanResult != null}">
+                    <i class="scan-result-icon bi"
+                       th:classappend="${scanResult.accepted} ? ' bi-check-circle-fill' : ' bi-x-octagon-fill'"
+                       aria-hidden="true"></i>
+                    <h2 class="h4 fw-bold mt-3" th:text="${scanResult.outcome.displayName}">Resultado</h2>
+                    <p th:text="${scanResult.message}">Mensaje</p>
+                    <dl class="row mb-0" th:if="${scanResult.ticketCode != null}">
+                        <dt class="col-4">Boleta</dt><dd class="col-8" th:text="${scanResult.ticketCode}">Código</dd>
+                        <dt class="col-4">Asistente</dt><dd class="col-8" th:text="${scanResult.attendeeName}">Nombre</dd>
+                        <dt class="col-4">Evento</dt><dd class="col-8" th:text="${scanResult.eventTitle}">Evento</dd>
+                        <dt class="col-4">Tipo</dt><dd class="col-8" th:text="${scanResult.ticketTypeName}">Tipo</dd>
+                    </dl>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <section class="content-card">
+        <h2 class="h5 fw-bold mb-4">Últimas validaciones</h2>
+        <div class="table-responsive" th:if="${attempts.hasContent()}">
+            <table class="table align-middle">
+                <thead><tr><th>Fecha</th><th>Boleta / evento</th><th>Resultado</th><th>Usuario</th><th>Dispositivo / IP</th></tr></thead>
+                <tbody><tr th:each="attempt : ${attempts.content}">
+                    <td th:text="${#temporals.format(attempt.occurredAt, 'dd/MM/yyyy HH:mm:ss')}">Fecha</td>
+                    <td><code th:text="${attempt.ticketCode}">Código</code><span class="d-block small text-secondary" th:text="${attempt.eventTitle}">Evento</span></td>
+                    <td><span class="badge-status" th:classappend="${attempt.outcome.accepted()} ? ' badge-active' : ' badge-locked'" th:text="${attempt.outcome.displayName}">Resultado</span></td>
+                    <td th:text="${attempt.scannedBy}">Usuario</td>
+                    <td><span th:text="${attempt.deviceIdentifier}">Dispositivo</span><code class="d-block small" th:text="${attempt.ipAddress}">IP</code></td>
+                </tr></tbody>
+            </table>
+        </div>
+        <div class="empty-state" th:if="${!attempts.hasContent()}">
+            <i class="bi bi-clock-history fs-1" aria-hidden="true"></i>
+            <h2 class="h5 mt-3">Aún no hay validaciones</h2>
+        </div>
+    </section>
+
+    <nav class="mt-4" th:if="${attempts.totalPages > 1}" aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${attempts.first} ? ' disabled'"><a class="page-link" th:href="@{/access-control(page=${attempts.number - 1},eventId=${selectedEventId})}">Anterior</a></li>
+            <li class="page-item disabled"><span class="page-link" th:text="|Página ${attempts.number + 1} de ${attempts.totalPages}|">Página</span></li>
+            <li class="page-item" th:classappend="${attempts.last} ? ' disabled'"><a class="page-link" th:href="@{/access-control(page=${attempts.number + 1},eventId=${selectedEventId})}">Siguiente</a></li>
+        </ul>
+    </nav>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+<script th:src="@{/js/access-scanner.js}"></script>
+</body>
+</html>

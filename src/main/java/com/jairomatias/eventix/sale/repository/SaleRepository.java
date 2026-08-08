@@ -1,6 +1,7 @@
 package com.jairomatias.eventix.sale.repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -23,6 +24,19 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
     boolean existsByReferenceCode(String referenceCode);
 
     boolean existsByReservation_Id(Long reservationId);
+
+    @Query("""
+            SELECT s.id
+            FROM Sale s
+            WHERE s.status = :status
+            AND NOT EXISTS (
+                SELECT t.id
+                FROM DigitalTicket t
+                WHERE t.sale = s
+            )
+            """)
+    List<Long> findSaleIdsWithoutTicketsByStatus(
+            @Param("status") SaleStatus status);
 
     @Query("SELECT s.event.id FROM Sale s WHERE s.id = :id")
     Optional<Long> findEventIdById(@Param("id") Long id);

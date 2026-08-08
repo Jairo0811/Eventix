@@ -25,6 +25,7 @@ import com.jairomatias.eventix.sale.dto.SaleListItem;
 import com.jairomatias.eventix.sale.entity.SaleStatus;
 import com.jairomatias.eventix.sale.service.SaleService;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
+import com.jairomatias.eventix.ticket.service.TicketService;
 
 import jakarta.validation.Valid;
 
@@ -35,9 +36,13 @@ public class SaleController {
     private static final int PAGE_SIZE = 12;
 
     private final SaleService saleService;
+    private final TicketService ticketService;
 
-    public SaleController(SaleService saleService) {
+    public SaleController(
+            SaleService saleService,
+            TicketService ticketService) {
         this.saleService = saleService;
+        this.ticketService = ticketService;
     }
 
     @ModelAttribute("saleStatuses")
@@ -135,6 +140,9 @@ public class SaleController {
         model.addAttribute(
                 "sale",
                 saleService.findById(id, authentication.getName()));
+        model.addAttribute(
+                "tickets",
+                ticketService.findBySale(id, authentication.getName()));
         model.addAttribute("paymentForm", new PaymentForm());
         model.addAttribute("saleActionForm", new SaleActionForm());
         return "sales/detail";

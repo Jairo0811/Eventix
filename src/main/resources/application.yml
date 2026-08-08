@@ -74,3 +74,29 @@ eventix:
   reservations:
     hold-duration: ${RESERVATION_HOLD_DURATION:PT15M}
     expiration-scan-interval: ${RESERVATION_EXPIRATION_SCAN_INTERVAL:PT1M}
+
+  ticketing:
+    issuer-name: ${TICKETING_ISSUER_NAME:Eventix}
+    signing-key-id: ${TICKETING_SIGNING_KEY_ID:eventix-dev}
+    signing-private-key: ${TICKETING_SIGNING_PRIVATE_KEY:}
+    signing-public-key: ${TICKETING_SIGNING_PUBLIC_KEY:}
+    allow-ephemeral-signing-key: ${TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY:true}
+    allow-reentry: ${TICKETING_ALLOW_REENTRY:false}
+    expiration-scan-interval: ${TICKETING_EXPIRATION_SCAN_INTERVAL:PT5M}
+
+    google-wallet:
+      enabled: ${GOOGLE_WALLET_ENABLED:false}
+      issuer-id: ${GOOGLE_WALLET_ISSUER_ID:}
+      service-account-json: ${GOOGLE_WALLET_SERVICE_ACCOUNT_JSON:}
+      origins: ${GOOGLE_WALLET_ORIGINS:http://localhost:8080}
+
+    apple-wallet:
+      enabled: ${APPLE_WALLET_ENABLED:false}
+      pass-type-identifier: ${APPLE_WALLET_PASS_TYPE_IDENTIFIER:}
+      team-identifier: ${APPLE_WALLET_TEAM_IDENTIFIER:}
+      certificate-p12: ${APPLE_WALLET_CERTIFICATE_P12:}
+      certificate-password: ${APPLE_WALLET_CERTIFICATE_PASSWORD:}
+      wwdr-certificate: ${APPLE_WALLET_WWDR_CERTIFICATE:}
+      web-service-url: ${APPLE_WALLET_WEB_SERVICE_URL:${app.base-url}/api/wallet/apple/v1}
+      apns-enabled: ${APPLE_WALLET_APNS_ENABLED:false}
+      apns-production: ${APPLE_WALLET_APNS_PRODUCTION:false}

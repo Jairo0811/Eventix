@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Boletas digitales')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('tickets')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="mb-4">
+        <p class="text-success fw-semibold mb-1">Emisión segura</p>
+        <h1 class="page-title">Boletas digitales</h1>
+        <p class="page-subtitle">PDF, QR firmado, estado y pases para wallets.</p>
+    </div>
+
+    <section class="row g-3 mb-4" aria-label="Resumen de boletas">
+        <div class="col-6 col-xl"><article class="metric-card ticket-metric">
+            <div class="metric-label">Emitidas</div>
+            <div class="metric-value" th:text="${summary.total}">0</div>
+        </article></div>
+        <div class="col-6 col-xl"><article class="metric-card ticket-metric">
+            <div class="metric-label">Activas</div>
+            <div class="metric-value text-success" th:text="${summary.active}">0</div>
+        </article></div>
+        <div class="col-6 col-xl"><article class="metric-card ticket-metric">
+            <div class="metric-label">Utilizadas</div>
+            <div class="metric-value" th:text="${summary.used}">0</div>
+        </article></div>
+        <div class="col-6 col-xl"><article class="metric-card ticket-metric">
+            <div class="metric-label">Canceladas</div>
+            <div class="metric-value text-danger" th:text="${summary.cancelled}">0</div>
+        </article></div>
+        <div class="col-12 col-xl"><article class="metric-card ticket-metric">
+            <div class="metric-label">Vencidas</div>
+            <div class="metric-value text-secondary" th:text="${summary.expired}">0</div>
+        </article></div>
+    </section>
+
+    <form class="content-card mb-4" method="get" th:action="@{/tickets}">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-5">
+                <label class="form-label" for="term">Buscar</label>
+                <input class="form-control" id="term" name="term" th:value="${term}"
+                       placeholder="Código, venta, asistente, correo o evento">
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <label class="form-label" for="status">Estado</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    <option th:each="ticketStatus : ${ticketStatuses}"
+                            th:value="${ticketStatus}"
+                            th:selected="${ticketStatus == selectedStatus}"
+                            th:text="${ticketStatus.displayName}">Estado</option>
+                </select>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <label class="form-label" for="eventId">Evento</label>
+                <select class="form-select" id="eventId" name="eventId">
+                    <option value="">Todos</option>
+                    <option th:each="event : ${events}"
+                            th:value="${event.id}"
+                            th:selected="${event.id == selectedEventId}"
+                            th:text="${event.title}">Evento</option>
+                </select>
+            </div>
+            <div class="col-md-4 col-lg-1 d-grid">
+                <button class="btn btn-outline-primary" type="submit" aria-label="Filtrar boletas">
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <section class="content-card">
+        <div class="table-responsive" th:if="${tickets.hasContent()}">
+            <table class="table align-middle">
+                <thead><tr>
+                    <th>Boleta</th><th>Evento</th><th>Asistente</th>
+                    <th>Tipo</th><th>Estado</th><th>Emisión</th><th></th>
+                </tr></thead>
+                <tbody><tr th:each="ticket : ${tickets.content}">
+                    <td>
+                        <code class="ticket-code" th:text="${ticket.uniqueCode}">EVX-</code>
+                        <span class="d-block text-secondary small mt-1"
+                              th:text="${ticket.saleReference}">SAL-</span>
+                    </td>
+                    <td th:text="${ticket.eventTitle}">Evento</td>
+                    <td>
+                        <strong class="d-block" th:text="${ticket.attendeeName}">Nombre</strong>
+                        <span class="text-secondary small" th:text="${ticket.attendeeEmail}">Correo</span>
+                    </td>
+                    <td th:text="${ticket.ticketTypeName}">General</td>
+                    <td><span class="badge-status"
+                              th:classappend="| badge-ticket-${#strings.toLowerCase(ticket.status.name())}|"
+                              th:text="${ticket.status.displayName}">Estado</span></td>
+                    <td th:text="${#temporals.format(ticket.issuedAt, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-primary"
+                       th:href="@{/tickets/{id}(id=${ticket.id})}">Ver</a></td>
+                </tr></tbody>
+            </table>
+        </div>
+        <div class="empty-state" th:if="${!tickets.hasContent()}">
+            <i class="bi bi-ticket-perforated fs-1" aria-hidden="true"></i>
+            <h2 class="h5 mt-3">No hay boletas con esos filtros</h2>
+            <p>Las boletas se emiten automáticamente cuando una venta queda pagada.</p>
+        </div>
+    </section>
+
+    <nav class="mt-4" th:if="${tickets.totalPages > 1}" aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${tickets.first} ? ' disabled'">
+                <a class="page-link" th:href="@{/tickets(page=${tickets.number - 1},term=${term},status=${selectedStatus},eventId=${selectedEventId})}">Anterior</a>
+            </li>
+            <li class="page-item disabled"><span class="page-link"
+                th:text="|Página ${tickets.number + 1} de ${tickets.totalPages}|">Página</span></li>
+            <li class="page-item" th:classappend="${tickets.last} ? ' disabled'">
+                <a class="page-link" th:href="@{/tickets(page=${tickets.number + 1},term=${term},status=${selectedStatus},eventId=${selectedEventId})}">Siguiente</a>
+            </li>
+        </ul>
+    </nav>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
