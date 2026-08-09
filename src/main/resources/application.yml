@@ -103,6 +103,10 @@ eventix:
       mutation-requests-per-minute: ${EVENTIX_MUTATION_RATE_LIMIT:180}
       maximum-tracked-clients: ${EVENTIX_RATE_LIMIT_MAX_CLIENTS:10000}
 
+  maps:
+    google:
+      embed-api-key: ${GOOGLE_MAPS_EMBED_API_KEY:}
+
   reservations:
     hold-duration: ${RESERVATION_HOLD_DURATION:PT15M}
     expiration-scan-interval: ${RESERVATION_EXPIRATION_SCAN_INTERVAL:PT1M}
