@@ -14,10 +14,25 @@ permissions:
   contents: read
 
 jobs:
-  verify:
-    name: Build and test
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+
+  verify:
+    name: Build, test and secure
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      EVENTIX_IMAGE_TAG: ci
 
     steps:
       - name: Checkout repository
@@ -34,16 +49,35 @@ jobs:
         run: |
           echo "MSSQL_SA_PASSWORD=Sa$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
           echo "EVENTIX_DB_PASSWORD=Ev$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
+          echo "EVENTIX_MIGRATOR_PASSWORD=Mg$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
 
       - name: Verify with Maven
         run: mvn --batch-mode --no-transfer-progress clean verify
+
+      - name: Upload application and test evidence
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: eventix-verification-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            target/eventix.jar
+            target/site/jacoco/**
+            target/surefire-reports/**
+            target/checkstyle-*.xml
 
       - name: Start Eventix with Docker Compose
         id: start_eventix
         run: docker compose up --detach --build --wait --wait-timeout 300
 
-      - name: Verify Eventix login page
-        run: curl --fail --silent --show-error http://localhost:8080/login
+      - name: Verify readiness, login and security headers
+        run: |
+          curl --fail --silent --show-error http://localhost:8080/actuator/health/readiness
+          curl --fail --silent --show-error --dump-header /tmp/eventix-headers.txt http://localhost:8080/login --output /tmp/eventix-login.html
+          grep --ignore-case "content-security-policy:" /tmp/eventix-headers.txt
+          grep --ignore-case "x-correlation-id:" /tmp/eventix-headers.txt
+          grep --quiet "Eventix" /tmp/eventix-login.html
 
       - name: Show Docker diagnostics after failure
         if: ${{ failure() && steps.start_eventix.outcome != 'skipped' }}
@@ -56,3 +90,26 @@ jobs:
       - name: Stop Docker Compose
         if: ${{ always() && steps.start_eventix.outcome != 'skipped' }}
         run: docker compose down --volumes --remove-orphans
+
+      - name: Scan container image
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: eventix:ci
+          format: table
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0.23.1
+        with:
+          image: eventix:ci
+          format: spdx-json
+          output-file: eventix-sbom.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v5
+        with:
+          name: eventix-sbom-${{ github.sha }}
+          path: eventix-sbom.spdx.json
+          retention-days: 30
