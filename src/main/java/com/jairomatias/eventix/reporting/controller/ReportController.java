@@ -15,15 +15,17 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.jairomatias.eventix.audit.service.AuditService;
 import com.jairomatias.eventix.reporting.dto.ReportDataset;
 import com.jairomatias.eventix.reporting.dto.ReportFilter;
 import com.jairomatias.eventix.reporting.service.ReportExportService;
+import com.jairomatias.eventix.reporting.service.ReportPdfService;
 import com.jairomatias.eventix.reporting.service.ReportService;
 import com.jairomatias.eventix.security.UserPrincipal;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
-import com.jairomatias.eventix.audit.service.AuditService;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 @Controller
 @RequestMapping("/reports")
 public class ReportController {
@@ -33,14 +35,17 @@ public class ReportController {
 
     private final ReportService reportService;
     private final ReportExportService exportService;
+    private final ReportPdfService pdfService;
     private final AuditService auditService;
 
     public ReportController(
             ReportService reportService,
             ReportExportService exportService,
+            ReportPdfService pdfService,
             AuditService auditService) {
         this.reportService = reportService;
         this.exportService = exportService;
+        this.pdfService = pdfService;
         this.auditService = auditService;
     }
 
@@ -81,7 +86,7 @@ public class ReportController {
                     "eventix-report.xlsx",
                     XLSX);
             case "pdf" -> download(
-                    exportService.toPdf(report),
+                    pdfService.create(report),
                     "eventix-report.pdf",
                     MediaType.APPLICATION_PDF);
             default -> throw new BusinessRuleException(
