@@ -67,6 +67,7 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/images/**",
                                 "/error/**",
+                                "/.well-known/apple-developer-merchantid-domain-association",
                                 "/actuator/health",
                                 "/actuator/health/**")
                         .permitAll()
@@ -181,18 +182,19 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
                                 "default-src 'self'; "
-                                + "script-src 'self' https://cdn.jsdelivr.net; "
+                                + "script-src 'self' https://cdn.jsdelivr.net https://pay.google.com; "
                                 + "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
                                 + "font-src 'self' data: https://cdn.jsdelivr.net; "
                                 + "img-src 'self' data: https:; "
-                                + "connect-src 'self'; object-src 'none'; "
-                                + "base-uri 'self'; frame-ancestors 'none'; "
-                                + "form-action 'self'"))
+                                + "connect-src 'self' https://pay.google.com; "
+                                + "frame-src 'self' https://pay.google.com; "
+                                + "object-src 'none'; base-uri 'self'; "
+                                + "frame-ancestors 'none'; form-action 'self'"))
                         .referrerPolicy(referrer -> referrer
                                 .policy(ReferrerPolicy.NO_REFERRER))
                         .addHeaderWriter(new StaticHeadersWriter(
                                 "Permissions-Policy",
-                                "camera=(self), microphone=(), geolocation=(), payment=()"))
+                                "camera=(self), microphone=(), geolocation=(), payment=(self)"))
                         .httpStrictTransportSecurity(hsts -> hsts
                                 .includeSubDomains(true)
                                 .preload(true)
