@@ -1,18 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" role="img" aria-labelledby="title description">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 220" role="img" aria-labelledby="title description">
   <title id="title">Eventix</title>
-  <desc id="description">Símbolo de boleta y nombre Eventix en verde y turquesa.</desc>
+  <desc id="description">Logo oficial Eventix con boleta dinámica, letra E y flecha de acceso.</desc>
   <defs>
-    <linearGradient id="eventixGradient" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#14B8A6"/>
-      <stop offset="0.55" stop-color="#22C55E"/>
-      <stop offset="1" stop-color="#A3E635"/>
+    <linearGradient id="eventixGradient" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#00A88F"/>
+      <stop offset="0.55" stop-color="#20C45A"/>
+      <stop offset="1" stop-color="#7CD600"/>
     </linearGradient>
   </defs>
-  <g transform="translate(12 15)">
-    <path fill="url(#eventixGradient)" d="M12 8h76a8 8 0 0 1 8 8v17a14 14 0 0 0 0 28v17a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8V61a14 14 0 0 0 0-28V16a8 8 0 0 1 8-8Z"/>
-    <path fill="#061923" d="M36 27h39v10H47v11h24v9H47v12h29v10H36Z"/>
-    <path stroke="#061923" stroke-width="4" stroke-linecap="round" stroke-dasharray="4 8" d="M24 18v58"/>
-  </g>
-  <text x="125" y="78" fill="#F8FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="61" font-weight="800" letter-spacing="-2">Eventix</text>
-</svg>
 
+  <g transform="translate(24 12)">
+    <g fill="url(#eventixGradient)">
+      <rect x="0" y="84" width="38" height="10" rx="5"/>
+      <rect x="36" y="60" width="42" height="10" rx="5"/>
+      <rect x="40" y="108" width="42" height="10" rx="5"/>
+      <rect x="82" y="82" width="48" height="12" rx="6"/>
+    </g>
+
+    <g transform="translate(116 8) rotate(-18 116 92)">
+      <path fill="url(#eventixGradient)" d="M22 20h150a12 12 0 0 1 12 12v35c-18 5-24 18-20 33 3 12 12 20 25 23v35a12 12 0 0 1-12 12H22a12 12 0 0 1-12-12v-38c19-4 28-15 28-30s-9-26-28-30V32A12 12 0 0 1 22 20Z"/>
+      <path fill="url(#eventixGradient)" d="M150 130h80v-22l48 37-48 37v-22h-88z"/>
+      <path fill="#F7FFF9" d="M72 54h70v18H91v19h44v17H91v21h53v18H72z"/>
+    </g>
+  </g>
+
+  <text x="55" y="210" fill="#F8FAFC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="86" font-weight="800" letter-spacing="-4">Event</text>
+  <text x="430" y="210" fill="url(#eventixGradient)" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="86" font-weight="800" letter-spacing="-4">ix</text>
+</svg>
