@@ -19,6 +19,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.jairomatias.eventix.shared.pdf.PdfBranding;
 import com.jairomatias.eventix.ticket.entity.DigitalTicket;
 import com.jairomatias.eventix.ticket.security.TicketCryptographyService;
 
@@ -74,7 +75,7 @@ public class TicketDocumentService {
             try (PDPageContentStream content =
                     new PDPageContentStream(document, page)) {
                 drawBackground(content);
-                drawBrandHeader(content);
+                drawBrandHeader(document, content);
                 drawEventHero(content, ticket);
                 drawDetailsCard(content, ticket);
                 drawQrCard(content, qr, ticket);
@@ -97,15 +98,19 @@ public class TicketDocumentService {
         fillRect(content, 28, 28, 539, 786, Color.WHITE);
     }
 
-    private void drawBrandHeader(PDPageContentStream content) throws IOException {
+    private void drawBrandHeader(
+            PDDocument document,
+            PDPageContentStream content) throws IOException {
         fillRect(content, 28, 704, 539, 110, NAVY);
         fillRect(content, 28, 704, 8, 110, GREEN);
-        fillRect(content, 50, 752, 34, 34, GREEN);
 
-        writeText(content, "E", 60, 760, 20, true, Color.WHITE);
-        writeText(content, "Eventix", 96, 766, 24, true, Color.WHITE);
-        writeText(content, "BOLETA DIGITAL", 96, 746, 9, true,
+        PdfBranding.drawOfficialLogo(document, content,
+                48, 724, 116, 79);
+
+        writeText(content, "BOLETA DIGITAL", 181, 769, 11, true,
                 new Color(185, 232, 211));
+        writeText(content, "Tu acceso oficial Eventix", 181, 750, 8, false,
+                Color.WHITE);
         writeText(content, "ACCESO OFICIAL", 432, 767, 9, true,
                 new Color(185, 232, 211));
         writeText(content, "Seguro · rápido · verificable",
