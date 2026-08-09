@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.jairomatias.eventix.reporting.dto.EventReportRow;
 import com.jairomatias.eventix.reporting.dto.ReportDataset;
 import com.jairomatias.eventix.reporting.dto.ReportSummary;
+import com.jairomatias.eventix.shared.pdf.PdfBranding;
 
 @Service
 public class ReportPdfService {
@@ -100,11 +101,14 @@ public class ReportPdfService {
         private void header(ReportDataset report) throws IOException {
             fillRect(24, 716, PAGE_WIDTH - 48, 102, NAVY);
             fillRect(24, 716, 8, 102, GREEN);
-            fillRect(44, 760, 32, 32, GREEN);
-            text("E", 54, 768, 18, true, Color.WHITE);
-            text("Eventix", 88, 772, 22, true, Color.WHITE);
-            text("REPORTE EJECUTIVO", 88, 752, 9, true,
+
+            PdfBranding.drawOfficialLogo(document, content,
+                    43, 731, 102, 69);
+
+            text("REPORTE EJECUTIVO", 160, 771, 11, true,
                     new Color(185, 232, 211));
+            text("Inteligencia operativa Eventix", 160, 750, 8, false,
+                    Color.WHITE);
 
             text("PERÍODO ANALIZADO", 386, 777, 8, true,
                     new Color(185, 232, 211));
