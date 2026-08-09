@@ -132,7 +132,8 @@ public class ReportPdfService {
                     "ASISTENTES", Long.toString(summary.attendees()), "Asistencias registradas", GREEN);
             metricCard(MARGIN + ((smallWidth + gap) * 2), y - 66, smallWidth, 66,
                     "CONVERSIÓN", percent(summary.conversionRate()), "Ventas / Reservaciones", NAVY);
-            metricCard(MARGIN + ((smallWidth + gap) * 3), y - 66, smallWidth, 66, "ASISTENCIA", percent(summary.attendanceRate()), "Asistentes / Entradas", NAVY);
+            metricCard(MARGIN + ((smallWidth + gap) * 3), y - 66, smallWidth, 66,
+                    "ASISTENCIA", percent(summary.attendanceRate()), "Asistentes / Entradas", NAVY);
             y -= 87;
         }
 
