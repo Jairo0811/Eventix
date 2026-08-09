@@ -15,7 +15,7 @@ public class SimulatedPaymentGateway implements PaymentGateway {
 
     @Override
     public boolean supports(PaymentProvider provider) {
-        return provider != null;
+        return provider != null && !provider.isDigitalWallet();
     }
 
     @Override
