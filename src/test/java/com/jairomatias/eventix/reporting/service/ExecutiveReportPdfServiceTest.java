@@ -38,7 +38,7 @@ class ExecutiveReportPdfServiceTest {
                 2L,
                 "Deportivo",
                 3L,
-                "Francis Jairo Matías Rosario",
+                "Organizador Eventix",
                 1,
                 1,
                 1,
@@ -61,7 +61,7 @@ class ExecutiveReportPdfServiceTest {
                 List.of(new CategoryReportRow(
                         2L, "Deportivo", 1, 1, 1, 1, 0, revenue)),
                 List.of(new OrganizerReportRow(
-                        3L, "Francis Jairo Matías Rosario",
+                        3L, "Organizador Eventix",
                         1, 1, 1, 1, 0, revenue)),
                 List.of(new MonthlyRevenueRow(
                         2026, 8, "Agosto 2026", 1, 1, revenue)));
