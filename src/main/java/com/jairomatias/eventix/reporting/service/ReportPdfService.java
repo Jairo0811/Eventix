@@ -128,8 +128,10 @@ public class ReportPdfService {
 
             float smallWidth = (CONTENT_WIDTH - (gap * 3)) / 4;
             metricCard(MARGIN, y - 66, smallWidth, 66, "RESERVACIONES", Long.toString(summary.reservations()), "Reservas realizadas", GREEN);
-            metricCard(MARGIN + smallWidth + gap, y - 66, smallWidth, 66, "ASISTENTES", Long.toString(summary.attendees()), "Asistencias registradas", GREEN);
-            metricCard(MARGIN + ((smallWidth + gap) * 2), y - 66, smallWidth, 66, "CONVERSIÓN", percent(summary.conversionRate()), "Ventas / Reservaciones", NAVY);
+            metricCard(MARGIN + smallWidth + gap, y - 66, smallWidth, 66,
+                    "ASISTENTES", Long.toString(summary.attendees()), "Asistencias registradas", GREEN);
+            metricCard(MARGIN + ((smallWidth + gap) * 2), y - 66, smallWidth, 66,
+                    "CONVERSIÓN", percent(summary.conversionRate()), "Ventas / Reservaciones", NAVY);
             metricCard(MARGIN + ((smallWidth + gap) * 3), y - 66, smallWidth, 66, "ASISTENCIA", percent(summary.attendanceRate()), "Asistentes / Entradas", NAVY);
             y -= 87;
         }
@@ -285,8 +287,8 @@ public class ReportPdfService {
             content.moveTo(MARGIN, 50);
             content.lineTo(PAGE_WIDTH - MARGIN, 50);
             content.stroke();
-            text("Eventix - Gestión profesional de eventos, ventas y accesos", MARGIN, 34, 7, false, MUTED);
-            text("Página " + pageNumber, PAGE_WIDTH - 76, 34, 7, true, MUTED);
+            text("Eventix · Reporte ejecutivo", MARGIN, 34, 7, false, MUTED);
+            text("Página " + pageNumber, PAGE_WIDTH - MARGIN - 45, 34, 7, false, MUTED);
         }
 
         private void close() throws IOException {
@@ -294,18 +296,19 @@ public class ReportPdfService {
         }
 
         private void closeCurrentPage() throws IOException {
-            if (content != null) {
-                footer();
-                content.close();
-                content = null;
+            if (content == null) {
+                return;
             }
+            footer();
+            content.close();
+            content = null;
         }
 
         private void card(float x, float y, float width, float height, Color fill) throws IOException {
-            content.setNonStrokingColor(fill);
+            fillRect(x, y, width, height, fill);
             content.setStrokingColor(BORDER);
             content.addRect(x, y, width, height);
-            content.fillAndStroke();
+            content.stroke();
         }
 
         private void fillRect(float x, float y, float width, float height, Color color) throws IOException {
@@ -314,15 +317,14 @@ public class ReportPdfService {
             content.fill();
         }
 
-        private void circle(float centerX, float centerY, float radius, Color color) throws IOException {
-            float c = 0.552284749831f;
-            float ox = radius * c;
+        private void circle(float cx, float cy, float radius, Color color) throws IOException {
+            float k = 0.552284749831f;
             content.setNonStrokingColor(color);
-            content.moveTo(centerX + radius, centerY);
-            content.curveTo(centerX + radius, centerY + ox, centerX + ox, centerY + radius, centerX, centerY + radius);
-            content.curveTo(centerX - ox, centerY + radius, centerX - radius, centerY + ox, centerX - radius, centerY);
-            content.curveTo(centerX - radius, centerY - ox, centerX - ox, centerY - radius, centerX, centerY - radius);
-            content.curveTo(centerX + ox, centerY - radius, centerX + radius, centerY - ox, centerX + radius, centerY);
+            content.moveTo(cx + radius, cy);
+            content.curveTo(cx + radius, cy + (k * radius), cx + (k * radius), cy + radius, cx, cy + radius);
+            content.curveTo(cx - (k * radius), cy + radius, cx - radius, cy + (k * radius), cx - radius, cy);
+            content.curveTo(cx - radius, cy - (k * radius), cx - (k * radius), cy - radius, cx, cy - radius);
+            content.curveTo(cx + (k * radius), cy - radius, cx + radius, cy - (k * radius), cx + radius, cy);
             content.fill();
         }
 
@@ -333,20 +335,13 @@ public class ReportPdfService {
             content.stroke();
         }
 
-        private void text(String value, float x, float y, float size, boolean isBold, Color color) throws IOException {
+        private void text(String value, float x, float y, float size, boolean boldText, Color color) throws IOException {
             content.beginText();
-            content.setFont(isBold ? bold : regular, size);
+            content.setFont(boldText ? bold : regular, size);
             content.setNonStrokingColor(color);
             content.newLineAtOffset(x, y);
-            content.showText(pdfSafe(value));
+            content.showText(sanitize(value));
             content.endText();
-        }
-
-        private String truncate(String value, int maximum) {
-            if (value == null) {
-                return "";
-            }
-            return value.length() <= maximum ? value : value.substring(0, maximum - 3) + "...";
         }
 
         private String money(BigDecimal value) {
@@ -354,15 +349,29 @@ public class ReportPdfService {
         }
 
         private String percent(BigDecimal value) {
-            return String.format(REPORT_LOCALE, "%.1f%%", value);
+            return String.format(REPORT_LOCALE, "%.2f%%", value);
         }
 
-        private String pdfSafe(String value) {
-            return value == null ? "" : value
-                    .replace("·", "-")
+        private String truncate(String value, int maxLength) {
+            if (value == null || value.isBlank()) {
+                return "-";
+            }
+            if (value.length() <= maxLength) {
+                return value;
+            }
+            return value.substring(0, Math.max(1, maxLength - 3)) + "...";
+        }
+
+        private String sanitize(String value) {
+            return value
                     .replace("↗", "+")
                     .replace("✓", "OK")
-                    .replaceAll("[^\\x20-\\x7EÀ-ÿ]", "-");
+                    .replace("•", "-")
+                    .replace("–", "-")
+                    .replace("—", "-")
+                    .replace("’", "'")
+                    .replace("“", "\"")
+                    .replace("”", "\"");
         }
     }
 }
