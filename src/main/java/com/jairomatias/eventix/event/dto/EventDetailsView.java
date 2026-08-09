@@ -16,6 +16,7 @@ public record EventDetailsView(
         LocalDateTime endAt,
         String venue,
         String address,
+        String googleMapsUrl,
         int capacity,
         Long organizerId,
         String organizerName,
