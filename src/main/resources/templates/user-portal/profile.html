@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mi perfil')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('my-profile')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <section class="mb-4">
+        <p class="text-success fw-semibold mb-1">Cuenta Eventix</p>
+        <h1 class="page-title">Mi perfil</h1>
+        <p class="page-subtitle">Información utilizada para identificar tu cuenta y asociar tus boletas.</p>
+    </section>
+
+    <section class="content-card">
+        <div class="row g-4 align-items-center">
+            <div class="col-12 col-lg-4 text-center">
+                <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center"
+                     style="width: 96px; height: 96px;">
+                    <i class="bi bi-person-fill fs-1" aria-hidden="true"></i>
+                </div>
+                <h2 class="h4 mt-3 mb-1" th:text="${principal.fullName}">Usuario Eventix</h2>
+                <span class="badge text-bg-success">Usuario</span>
+            </div>
+            <div class="col-12 col-lg-8">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-secondary">Nombre</dt>
+                    <dd class="col-sm-8 fw-semibold" th:text="${principal.fullName}">Nombre</dd>
+
+                    <dt class="col-sm-4 text-secondary">Correo</dt>
+                    <dd class="col-sm-8 fw-semibold" th:text="${principal.username}">correo@example.com</dd>
+
+                    <dt class="col-sm-4 text-secondary">Rol</dt>
+                    <dd class="col-sm-8 fw-semibold">Usuario final</dd>
+                </dl>
+
+                <div class="alert alert-light border mt-4 mb-0">
+                    <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+                    Las boletas se muestran en tu cuenta cuando el correo del asistente coincide con este correo.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
