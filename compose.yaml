@@ -29,6 +29,7 @@ services:
     environment:
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Define MSSQL_SA_PASSWORD}
       EVENTIX_DB_PASSWORD: ${EVENTIX_DB_PASSWORD:?Define EVENTIX_DB_PASSWORD}
+      EVENTIX_MIGRATOR_PASSWORD: ${EVENTIX_MIGRATOR_PASSWORD:?Define EVENTIX_MIGRATOR_PASSWORD}
     entrypoint:
       - /bin/bash
       - -c
@@ -37,6 +38,7 @@ services:
         [ -x "$$SQLCMD" ] || SQLCMD=/opt/mssql-tools/bin/sqlcmd
         "$$SQLCMD" -S sqlserver -U sa -P "$$MSSQL_SA_PASSWORD" \
           -C -b -v EVENTIX_DB_PASSWORD="$$EVENTIX_DB_PASSWORD" \
+          EVENTIX_MIGRATOR_PASSWORD="$$EVENTIX_MIGRATOR_PASSWORD" \
           -i /scripts/EventixDb.docker.sql
     volumes:
       - ./docker/EventixDb.docker.sql:/scripts/EventixDb.docker.sql:ro
@@ -46,6 +48,7 @@ services:
     restart: "no"
 
   app:
+    image: eventix:${EVENTIX_IMAGE_TAG:-local}
     build:
       context: .
       dockerfile: Dockerfile
@@ -55,6 +58,8 @@ services:
         jdbc:sqlserver://sqlserver:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true
       DB_USERNAME: eventix_app
       DB_PASSWORD: ${EVENTIX_DB_PASSWORD:?Define EVENTIX_DB_PASSWORD}
+      FLYWAY_DB_USERNAME: eventix_migrator
+      FLYWAY_DB_PASSWORD: ${EVENTIX_MIGRATOR_PASSWORD:?Define EVENTIX_MIGRATOR_PASSWORD}
       APP_BASE_URL: http://localhost:8080
     ports:
       - "${APP_PORT:-8080}:8080"
@@ -64,7 +69,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - curl --fail --silent --show-error http://localhost:8080/login
+        - curl --fail --silent --show-error http://localhost:8080/actuator/health/readiness
       interval: 10s
       timeout: 5s
       retries: 12

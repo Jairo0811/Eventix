@@ -19,7 +19,7 @@ RUN apt-get update \
 WORKDIR /app
 
 COPY --from=build --chown=eventix:eventix \
-    /workspace/target/eventix-0.1.0-SNAPSHOT.jar \
+    /workspace/target/eventix.jar \
     /app/eventix.jar
 
 USER eventix

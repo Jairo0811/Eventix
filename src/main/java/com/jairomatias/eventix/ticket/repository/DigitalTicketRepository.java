@@ -2,6 +2,7 @@ package com.jairomatias.eventix.ticket.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -25,6 +26,10 @@ public interface DigitalTicketRepository
     boolean existsByUniqueCode(String uniqueCode);
 
     boolean existsByAntiFraudCode(String antiFraudCode);
+
+    long countByEvent_StatusAndStatusIn(
+            com.jairomatias.eventix.event.entity.EventStatus eventStatus,
+            Collection<TicketStatus> statuses);
 
     @EntityGraph(attributePaths = {
             "sale", "saleItem", "event", "event.organizer"

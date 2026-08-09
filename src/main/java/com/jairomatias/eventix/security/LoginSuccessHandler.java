@@ -8,6 +8,9 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.jairomatias.eventix.user.service.UserService;
+import com.jairomatias.eventix.audit.entity.AuditEventType;
+import com.jairomatias.eventix.audit.entity.AuditOutcome;
+import com.jairomatias.eventix.audit.service.AuditService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,9 +20,13 @@ import jakarta.servlet.http.HttpServletResponse;
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserService userService;
+    private final AuditService auditService;
 
-    public LoginSuccessHandler(@Lazy UserService userService) {
+    public LoginSuccessHandler(
+            @Lazy UserService userService,
+            AuditService auditService) {
         this.userService = userService;
+        this.auditService = auditService;
     }
 
     @Override
@@ -30,6 +37,12 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             throws IOException, ServletException {
 
         userService.recordSuccessfulLogin(authentication.getName());
+        auditService.recordAuthentication(
+                AuditEventType.LOGIN,
+                AuditOutcome.SUCCESS,
+                authentication.getName(),
+                request,
+                "Inicio de sesión correcto.");
 
         UserPrincipal principal =
                 (UserPrincipal) authentication.getPrincipal();

@@ -4,6 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.classList.toggle("sidebar-open");
     });
 
+    document.querySelector("[data-print-page]")?.addEventListener(
+        "click",
+        () => window.print()
+    );
+
     document.querySelectorAll("[data-confirm]").forEach((form) => {
         form.addEventListener("submit", (event) => {
             if (form.dataset.confirmed === "true") {

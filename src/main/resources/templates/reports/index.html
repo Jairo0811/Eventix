@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Reportes')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('reports')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <p class="text-success fw-semibold mb-1">Inteligencia operativa</p>
+            <h1 class="page-title">Reportes y estadísticas</h1>
+            <p class="page-subtitle">Ventas, reservaciones, ingresos y asistencia con datos reales.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary" th:href="@{/reports/export/csv(from=${filter.from},to=${filter.to},eventId=${filter.eventId},categoryId=${filter.categoryId},organizerId=${filter.organizerId})}">CSV</a>
+            <a class="btn btn-outline-primary" th:href="@{/reports/export/xlsx(from=${filter.from},to=${filter.to},eventId=${filter.eventId},categoryId=${filter.categoryId},organizerId=${filter.organizerId})}">Excel</a>
+            <a class="btn btn-primary" th:href="@{/reports/export/pdf(from=${filter.from},to=${filter.to},eventId=${filter.eventId},categoryId=${filter.categoryId},organizerId=${filter.organizerId})}">PDF</a>
+        </div>
+    </div>
+
+    <section class="content-card mb-4" aria-labelledby="report-filter-title">
+        <h2 class="h5 fw-bold" id="report-filter-title">Filtros</h2>
+        <form method="get" th:action="@{/reports}" th:object="${filter}" class="row g-3 align-items-end">
+            <div class="col-md-3 col-xl-2">
+                <label class="form-label" for="from">Desde</label>
+                <input class="form-control" id="from" type="date" th:field="*{from}" required>
+            </div>
+            <div class="col-md-3 col-xl-2">
+                <label class="form-label" for="to">Hasta</label>
+                <input class="form-control" id="to" type="date" th:field="*{to}" required>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <label class="form-label" for="eventId">Evento</label>
+                <select class="form-select" id="eventId" th:field="*{eventId}">
+                    <option value="">Todos los eventos</option>
+                    <option th:each="event : ${events}" th:value="${event.id}" th:text="${event.label}"></option>
+                </select>
+            </div>
+            <div class="col-md-6 col-xl-2">
+                <label class="form-label" for="categoryId">Categoría</label>
+                <select class="form-select" id="categoryId" th:field="*{categoryId}">
+                    <option value="">Todas</option>
+                    <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.label}"></option>
+                </select>
+            </div>
+            <div class="col-md-6 col-xl-2" sec:authorize="hasRole('ADMINISTRATOR')">
+                <label class="form-label" for="organizerId">Organizador</label>
+                <select class="form-select" id="organizerId" th:field="*{organizerId}">
+                    <option value="">Todos</option>
+                    <option th:each="organizer : ${organizers}" th:value="${organizer.id}" th:text="${organizer.label}"></option>
+                </select>
+            </div>
+            <div class="col-md-3 col-xl-1 d-grid">
+                <button class="btn btn-primary" type="submit">Aplicar</button>
+            </div>
+        </form>
+    </section>
+
+    <section aria-labelledby="report-summary-title">
+        <h2 class="visually-hidden" id="report-summary-title">Resumen ejecutivo</h2>
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <article class="metric-card"><div class="metric-label">Ingresos</div><div class="metric-value metric-value-money" th:text="|DOP ${#numbers.formatDecimal(report.summary.revenue, 1, 'COMMA', 2, 'POINT')}|">DOP 0.00</div></article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card"><div class="metric-label">Ventas pagadas</div><div class="metric-value" th:text="${report.summary.sales}">0</div></article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card"><div class="metric-label">Entradas vendidas</div><div class="metric-value" th:text="${report.summary.ticketsSold}">0</div></article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card"><div class="metric-label">Asistentes</div><div class="metric-value" th:text="${report.summary.attendees}">0</div></article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card"><div class="metric-label">Reservaciones</div><div class="metric-value" th:text="${report.summary.reservations}">0</div></article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card"><div class="metric-label">Plazas reservadas</div><div class="metric-value" th:text="${report.summary.reservedPlaces}">0</div></article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card"><div class="metric-label">Tasa de conversión</div><div class="metric-value" th:text="|${#numbers.formatDecimal(report.summary.conversionRate, 1, 2)} %|">0 %</div></article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card"><div class="metric-label">Tasa de asistencia</div><div class="metric-value" th:text="|${#numbers.formatDecimal(report.summary.attendanceRate, 1, 2)} %|">0 %</div></article>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-card mb-4" aria-labelledby="events-report-title">
+        <h2 class="h5 fw-bold" id="events-report-title">Resultados por evento</h2>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Evento</th><th>Categoría</th><th>Organizador</th><th>Ventas</th><th>Entradas</th><th>Reservaciones</th><th>Asistentes</th><th>Ingresos</th></tr></thead>
+                <tbody>
+                <tr th:each="row : ${report.byEvent}">
+                    <td class="fw-semibold" th:text="${row.eventName}">Evento</td>
+                    <td th:text="${row.categoryName}">Categoría</td>
+                    <td th:text="${row.organizerName}">Organizador</td>
+                    <td th:text="${row.sales}">0</td>
+                    <td th:text="${row.ticketsSold}">0</td>
+                    <td th:text="${row.reservations}">0</td>
+                    <td th:text="${row.attendees}">0</td>
+                    <td th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">DOP 0.00</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(report.byEvent)}"><td colspan="8" class="empty-state">No hay datos para el período seleccionado.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-xl-6">
+            <section class="content-card h-100" aria-labelledby="category-report-title">
+                <h2 class="h5 fw-bold" id="category-report-title">Por categoría</h2>
+                <div class="table-responsive"><table class="table"><thead><tr><th>Categoría</th><th>Eventos</th><th>Entradas</th><th>Ingresos</th></tr></thead><tbody>
+                <tr th:each="row : ${report.byCategory}"><td th:text="${row.categoryName}">Categoría</td><td th:text="${row.events}">0</td><td th:text="${row.ticketsSold}">0</td><td th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</td></tr>
+                </tbody></table></div>
+            </section>
+        </div>
+        <div class="col-xl-6">
+            <section class="content-card h-100" aria-labelledby="monthly-report-title">
+                <h2 class="h5 fw-bold" id="monthly-report-title">Ingresos mensuales</h2>
+                <div class="table-responsive"><table class="table"><thead><tr><th>Período</th><th>Ventas</th><th>Entradas</th><th>Ingresos</th></tr></thead><tbody>
+                <tr th:each="row : ${report.monthlyRevenue}"><td th:text="${row.period}">Mes</td><td th:text="${row.sales}">0</td><td th:text="${row.ticketsSold}">0</td><td th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</td></tr>
+                </tbody></table></div>
+            </section>
+        </div>
+    </div>
+
+    <section class="content-card mt-4" sec:authorize="hasRole('ADMINISTRATOR')" aria-labelledby="organizer-report-title">
+        <h2 class="h5 fw-bold" id="organizer-report-title">Rendimiento por organizador</h2>
+        <div class="table-responsive"><table class="table"><thead><tr><th>Organizador</th><th>Eventos</th><th>Ventas</th><th>Entradas</th><th>Reservaciones</th><th>Asistentes</th><th>Ingresos</th></tr></thead><tbody>
+        <tr th:each="row : ${report.byOrganizer}"><td th:text="${row.organizerName}">Organizador</td><td th:text="${row.events}">0</td><td th:text="${row.sales}">0</td><td th:text="${row.ticketsSold}">0</td><td th:text="${row.reservations}">0</td><td th:text="${row.attendees}">0</td><td th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</td></tr>
+        </tbody></table></div>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

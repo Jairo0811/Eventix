@@ -14,7 +14,8 @@
 
 **Eventix** es una plataforma web empresarial desarrollada con **Java 21, Spring Boot y Microsoft SQL Server**, diseñada para la administración de eventos, usuarios, reservaciones, ventas de entradas, boletas digitales y control de acceso.
 
-[![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-2563EB?style=for-the-badge)](#-estado-del-proyecto)
+[![Estado](https://img.shields.io/badge/Estado-1.0.0%20completado-15803D?style=for-the-badge)](#-estado-del-proyecto)
+[![Eventix CI](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml/badge.svg)](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)](https://spring.io/projects/spring-security)
@@ -25,7 +26,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 
-> Estado actual: **En desarrollo. Las fases 1 a 5 están completadas: seguridad, usuarios, eventos, reservaciones, ventas, boletas digitales y control de acceso.**
+> Estado actual: **Versión 1.0.0 completada. Las seis fases están implementadas, probadas y documentadas.**
 
 </div>
 
@@ -49,7 +50,7 @@ Estos proyectos representan una secuencia académica enfocada en programación, 
 
 **Eventix** es una aplicación web creada como evolución profesional de un proyecto final de la asignatura **Programación II** del Instituto Tecnológico de Las Américas (ITLA).
 
-Su objetivo es ofrecer una base sólida para administrar eventos, reservaciones, ventas, pagos, boletas digitales y control de acceso y, en fases posteriores, incorporar reportes y estadísticas avanzadas.
+Su objetivo es administrar eventos, reservaciones, ventas, pagos, boletas digitales, control de acceso, reportes y auditoría con una base segura y preparada para producción.
 
 La solución fue construida como un **monolito modular por dominio**, con separación clara entre controladores, servicios, repositorios, entidades, DTO y vistas.
 
@@ -125,6 +126,16 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 - Detección transaccional de primer acceso, reingreso autorizado, duplicado, cancelación, falsificación y vencimiento.
 - Bitácora de cada intento con fecha, usuario, dispositivo e IP, almacenando solo la huella del QR recibido.
 - Dashboard de capacidad, emitidas, asistentes, pendientes, rechazadas, duplicados y reingresos.
+- Dashboard ejecutivo con ingresos, ventas, entradas disponibles, organizadores, conversión y asistencia.
+- Reportes por evento, categoría, organizador y período.
+- Ingresos mensuales, eventos más vendidos y más reservados.
+- Exportaciones profesionales en CSV, XLSX y PDF.
+- Auditoría central de autenticación, CRUD, ventas, reservaciones, cambios de estado, escaneos, exportaciones y errores.
+- Rate limiting, CSP, HSTS, Permissions Policy e identificadores de correlación.
+- Separación entre usuario SQL de ejecución y usuario de migraciones.
+- Rotación segura de claves públicas Ed25519 sin invalidar boletas vigentes.
+- Health checks de liveness/readiness, métricas Prometheus y logs JSON en producción.
+- Pipeline con cobertura JaCoCo, Checkstyle, revisión de dependencias, Trivy y SBOM.
 
 ---
 
@@ -153,6 +164,7 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 | Construcción | Apache Maven |
 | Documentos y QR | Apache PDFBox y ZXing |
 | Firmas y pases | Ed25519 y Bouncy Castle |
+| Observabilidad | Spring Boot Actuator, Micrometer y Prometheus |
 
 ## 🎨 Frontend
 
@@ -202,6 +214,8 @@ La solución fue construida como un **monolito modular por dominio**, con separa
 | Base de datos de pruebas | Microsoft SQL Server 2022 mediante Testcontainers |
 | Aislamiento de pruebas | Contenedor efímero por ejecución |
 | Integración continua | GitHub Actions con Java 21 |
+| Cobertura y análisis | JaCoCo y Checkstyle |
+| Seguridad de cadena | Dependency Review, Trivy y SBOM SPDX |
 
 ## 🛠️ Herramientas de desarrollo
 
@@ -237,6 +251,8 @@ flowchart LR
     Tests["JUnit · MockMvc"] --> Container["Testcontainers"]
     Container --> TestDatabase[(SQL Server 2022 efímero)]
     Flyway --> TestDatabase
+    Metrics["Actuator · Prometheus"] --> Service
+    Service --> Audit["Auditoría central"]
 ```
 
 Flujo principal:
@@ -262,6 +278,7 @@ La autorización se aplica en dos niveles:
 | Mapper | Mapeadores de usuarios, eventos y reservaciones con MapStruct | Evitar exponer entidades JPA a las vistas. |
 | Strategy | Pasarelas de pago bajo `PaymentGateway` | Sustituir la simulación por integraciones reales sin acoplar ventas al proveedor. |
 | Domain Events | Eventos de venta, evento y pase | Emitir, revocar y sincronizar boletas sin acoplar los módulos. |
+| CQRS ligero | JDBC de solo lectura en `reporting` | Ejecutar agregaciones analíticas sin contaminar el dominio transaccional. |
 
 ---
 
@@ -272,15 +289,18 @@ src/
 ├── main/
 │   ├── java/com/jairomatias/eventix/
 │   │   ├── auth/
+│   │   ├── audit/
 │   │   ├── category/
 │   │   ├── config/
 │   │   ├── dashboard/
 │   │   ├── event/
 │   │   ├── payment/
+│   │   ├── reporting/
 │   │   ├── role/
 │   │   ├── reservation/
 │   │   ├── sale/
 │   │   ├── security/
+│   │   ├── observability/
 │   │   ├── shared/
 │   │   ├── ticket/
 │   │   └── user/
@@ -301,7 +321,7 @@ src/
 
 ## 🚦 Estado del proyecto
 
-**Estado general: 🚧 En desarrollo — Fases 1 a 5 completadas**
+**Estado general: ✅ Versión 1.0.0 — alcance planificado completado**
 
 ### Completado
 
@@ -333,10 +353,14 @@ src/
 - [x] Google Wallet y Apple Wallet con actualización de pases.
 - [x] Control de acceso, reingresos, duplicados y bitácora antifraude.
 - [x] Dashboard operativo de asistencia y capacidad.
-
-### Pendiente
-
-- [ ] Reportes y estadísticas.
+- [x] Dashboard ejecutivo y reportes con datos reales.
+- [x] Exportaciones CSV, XLSX y PDF.
+- [x] Auditoría central consultable.
+- [x] Rate limiting, cabeceras de seguridad y correlación.
+- [x] Actuator, Prometheus y logs estructurados.
+- [x] Usuarios SQL separados para runtime y migraciones.
+- [x] CI de calidad, seguridad, SBOM y artefactos.
+- [x] Documentación técnica, funcional y operativa.
 
 ---
 
@@ -377,24 +401,25 @@ git clone https://github.com/Jairo0811/Eventix.git
 cd Eventix
 ```
 
-### 3. Crear la base de datos y el usuario técnico
+### 3. Crear la base de datos y los usuarios técnicos
 
 Ejecuta [`EventixDb.sql`](EventixDb.sql) con una cuenta administradora de SQL Server. El script crea:
 
 - la base de datos `EventixDb`;
-- el inicio de sesión `eventix_app`;
-- el usuario técnico;
-- los permisos necesarios para JPA y Flyway.
+- el inicio de sesión `eventix_app` con permisos de lectura y escritura;
+- el inicio de sesión `eventix_migrator` con permisos de migración;
+- la separación entre ejecución y DDL.
 
 El script usa modo SQLCMD y exige una contraseña técnica de al menos 12 caracteres. Desde una terminal:
 
 ```powershell
 sqlcmd -S localhost -E `
   -v EVENTIX_DB_PASSWORD="define-una-clave-segura" `
+  EVENTIX_MIGRATOR_PASSWORD="define-otra-clave-segura" `
   -i EventixDb.sql
 ```
 
-En SQL Server Management Studio, activa **Query > SQLCMD Mode**, define `EVENTIX_DB_PASSWORD` en una consulta no guardada y ejecuta el script. No escribas la contraseña dentro de `EventixDb.sql`.
+En SQL Server Management Studio, activa **Query > SQLCMD Mode**, define ambas variables en una consulta no guardada y ejecuta el script. No escribas contraseñas dentro de `EventixDb.sql`.
 
 Las tablas y los datos iniciales se crean únicamente mediante las migraciones:
 
@@ -405,6 +430,7 @@ V3__create_event_management_schema.sql
 V4__create_reservations_schema.sql
 V5__create_sales_and_payments_schema.sql
 V6__create_digital_ticketing_and_access_schema.sql
+V7__create_central_audit_log.sql
 ```
 
 ### 4. Configurar la conexión
@@ -417,6 +443,8 @@ La URL y el usuario predeterminados son exclusivamente para desarrollo local. `D
 $env:DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true"
 $env:DB_USERNAME = "eventix_app"
 $env:DB_PASSWORD = "tu_contraseña_segura"
+$env:FLYWAY_DB_USERNAME = "eventix_migrator"
+$env:FLYWAY_DB_PASSWORD = "tu_contraseña_de_migraciones"
 ```
 
 #### Bash
@@ -425,6 +453,8 @@ $env:DB_PASSWORD = "tu_contraseña_segura"
 export DB_URL='jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true'
 export DB_USERNAME='eventix_app'
 export DB_PASSWORD='tu_contraseña_segura'
+export FLYWAY_DB_USERNAME='eventix_migrator'
+export FLYWAY_DB_PASSWORD='tu_contraseña_de_migraciones'
 ```
 
 ### 5. Ejecutar las pruebas
@@ -460,6 +490,7 @@ El archivo `compose.yaml` levanta SQL Server 2022, prepara `EventixDb`, construy
 ```powershell
 $env:MSSQL_SA_PASSWORD = "define-una-clave-segura"
 $env:EVENTIX_DB_PASSWORD = "define-otra-clave-segura"
+$env:EVENTIX_MIGRATOR_PASSWORD = "define-una-tercera-clave-segura"
 docker compose up --build
 ```
 
@@ -468,6 +499,7 @@ docker compose up --build
 ```bash
 export MSSQL_SA_PASSWORD='define-una-clave-segura'
 export EVENTIX_DB_PASSWORD='define-otra-clave-segura'
+export EVENTIX_MIGRATOR_PASSWORD='define-una-tercera-clave-segura'
 docker compose up --build
 ```
 
@@ -494,6 +526,8 @@ docker compose down -v
 | Contraseña temporal | Definida en la migración de datos iniciales para desarrollo local. |
 
 Eventix solicita cambiar la contraseña en el primer acceso.
+
+En producción, `EVENTIX_BOOTSTRAP_ADMIN_PASSWORD` es obligatoria mientras la cuenta conserve la contraseña conocida de desarrollo. Eventix la rota durante el primer arranque y nunca la escribe en logs.
 
 ### 9. Ejecutar desde Apache NetBeans
 
@@ -555,6 +589,31 @@ Las variables, el formato de claves, el servicio web PassKit y la matriz de perm
 - **SQL Server no responde:** revisa el puerto 1433 y ejecuta `docker compose ps`.
 - **NetBeans usa otro JDK:** cambia la plataforma Java del proyecto a JDK 21.
 - **Puerto 8080 ocupado:** define `APP_PORT` o ejecuta `APP_PORT=8081 docker compose up`.
+- **Flyway no puede crear V7:** confirma que `FLYWAY_DB_USERNAME=eventix_migrator` y que ese usuario conserva `db_ddladmin`.
+- **Producción rechaza el arranque:** configura el administrador inicial y las claves Ed25519 persistentes requeridas por el perfil `prod`.
+
+### 14. Salud y métricas
+
+| Endpoint | Acceso | Uso |
+|---|---|---|
+| `/actuator/health/liveness` | Público | Confirma que el proceso está vivo. |
+| `/actuator/health/readiness` | Público | Confirma que la aplicación está lista. |
+| `/actuator/prometheus` | Administrador | Métricas para Prometheus. |
+
+Cada respuesta incluye `X-Correlation-ID`. El perfil `prod` emite logs JSON compatibles con Logstash.
+
+---
+
+## 📚 Documentación
+
+- [Arquitectura](docs/architecture.md)
+- [Modelo entidad-relación](docs/er-model.md)
+- [Casos de uso y permisos](docs/use-cases.md)
+- [Manual técnico](docs/technical-manual.md)
+- [Manual del usuario](docs/user-manual.md)
+- [Operación, respaldo y recuperación](docs/operations-runbook.md)
+- [Fase 5: ticketing digital](docs/phase-5-digital-ticketing.md)
+- [Fase 6: reportes y producción](docs/phase-6-reports-production.md)
 
 ---
 

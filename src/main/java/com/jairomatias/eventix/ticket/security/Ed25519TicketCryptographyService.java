@@ -14,6 +14,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Optional;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,17 +35,20 @@ public class Ed25519TicketCryptographyService
     private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
 
     private final PrivateKey privateKey;
-    private final PublicKey publicKey;
+    private final Map<String, PublicKey> verificationKeys;
     private final String keyId;
 
     public Ed25519TicketCryptographyService(
             TicketingProperties properties) {
         KeyPair keyPair = loadOrCreateKeyPair(properties);
         privateKey = keyPair.getPrivate();
-        publicKey = keyPair.getPublic();
         keyId = requireText(
                 properties.getSigningKeyId(),
                 "eventix.ticketing.signing-key-id");
+        verificationKeys = loadVerificationKeys(
+                properties,
+                keyId,
+                keyPair.getPublic());
     }
 
     @Override
@@ -64,8 +69,13 @@ public class Ed25519TicketCryptographyService
                 || !ticket.getAntiFraudCode().equals(
                         submittedToken.antiFraudCode())
                 || !ticket.getDigitalSignature().equals(
-                        submittedToken.signature())
-                || !ticket.getSignatureKeyId().equals(keyId)) {
+                        submittedToken.signature())) {
+            return false;
+        }
+
+        PublicKey verificationKey = verificationKeys.get(
+                ticket.getSignatureKeyId());
+        if (verificationKey == null) {
             return false;
         }
 
@@ -79,7 +89,7 @@ public class Ed25519TicketCryptographyService
 
         try {
             Signature verifier = Signature.getInstance("Ed25519");
-            verifier.initVerify(publicKey);
+            verifier.initVerify(verificationKey);
             verifier.update(payload.canonicalValue()
                     .getBytes(StandardCharsets.UTF_8));
             return verifier.verify(URL_DECODER.decode(
@@ -188,6 +198,49 @@ public class Ed25519TicketCryptographyService
         } catch (GeneralSecurityException | IllegalArgumentException exception) {
             throw new IllegalStateException(
                     "Las claves Ed25519 configuradas no son válidas.",
+                    exception);
+        }
+    }
+
+    private Map<String, PublicKey> loadVerificationKeys(
+            TicketingProperties properties,
+            String activeKeyId,
+            PublicKey activePublicKey) {
+        Map<String, PublicKey> keys = new LinkedHashMap<>();
+        keys.put(activeKeyId, activePublicKey);
+        String configured = properties.getVerificationPublicKeys();
+        if (configured == null || configured.isBlank()) {
+            return Map.copyOf(keys);
+        }
+        for (String entry : configured.split(",")) {
+            String[] parts = entry.trim().split("=", 2);
+            if (parts.length != 2 || parts[0].isBlank()
+                    || parts[1].isBlank()) {
+                throw new IllegalStateException(
+                        "TICKETING_VERIFICATION_PUBLIC_KEYS debe usar "
+                        + "el formato key-id=base64,key-id-2=base64.");
+            }
+            String verificationKeyId = parts[0].trim();
+            PublicKey publicKey = decodePublicKey(parts[1]);
+            PublicKey previous = keys.putIfAbsent(
+                    verificationKeyId,
+                    publicKey);
+            if (previous != null && !verificationKeyId.equals(activeKeyId)) {
+                throw new IllegalStateException(
+                        "Cada identificador de clave de verificación debe ser único.");
+            }
+        }
+        return Map.copyOf(keys);
+    }
+
+    private PublicKey decodePublicKey(String value) {
+        try {
+            KeyFactory factory = KeyFactory.getInstance("Ed25519");
+            return factory.generatePublic(
+                    new X509EncodedKeySpec(decodeBase64(value)));
+        } catch (GeneralSecurityException | IllegalArgumentException exception) {
+            throw new IllegalStateException(
+                    "Una clave pública Ed25519 de verificación no es válida.",
                     exception);
         }
     }

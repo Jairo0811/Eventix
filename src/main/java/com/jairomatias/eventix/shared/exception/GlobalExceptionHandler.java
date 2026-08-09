@@ -12,10 +12,19 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.jairomatias.eventix.audit.service.AuditService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private final AuditService auditService;
+
+    public GlobalExceptionHandler(AuditService auditService) {
+        this.auditService = auditService;
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -43,8 +52,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String handleUnexpectedException(Exception exception, Model model) {
+    public String handleUnexpectedException(
+            Exception exception,
+            Model model,
+            HttpServletRequest request) {
         LOGGER.error("Error no controlado al procesar la solicitud", exception);
+        auditService.recordError(exception, request);
         model.addAttribute("message", "No fue posible completar la operación.");
         return "error/500";
     }
