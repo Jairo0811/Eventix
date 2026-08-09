@@ -57,6 +57,13 @@ public interface DigitalTicketRepository
     @EntityGraph(attributePaths = {
             "sale", "saleItem", "event", "event.organizer"
     })
+    Page<DigitalTicket> findAllByAttendeeEmailIgnoreCase(
+            String attendeeEmail,
+            Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+            "sale", "saleItem", "event", "event.organizer"
+    })
     List<DigitalTicket> findAllByEvent_IdOrderBySequenceNumberAsc(
             Long eventId);
 

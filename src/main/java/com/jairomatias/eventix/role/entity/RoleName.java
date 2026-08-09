@@ -4,7 +4,8 @@ public enum RoleName {
     ADMINISTRATOR("Administrador"),
     OPERATOR("Operador"),
     ORGANIZER("Organizador"),
-    ACCESS_STAFF("Personal de acceso");
+    ACCESS_STAFF("Personal de acceso"),
+    USER("Usuario");
 
     private final String displayName;
 
@@ -16,4 +17,3 @@ public enum RoleName {
         return displayName;
     }
 }
-

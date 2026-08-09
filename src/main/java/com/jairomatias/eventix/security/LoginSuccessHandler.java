@@ -47,9 +47,14 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         UserPrincipal principal =
                 (UserPrincipal) authentication.getPrincipal();
 
-        String destination = principal.isMustChangePassword()
-                ? "/auth/change-password?required"
-                : "/dashboard";
+        String destination;
+        if (principal.isMustChangePassword()) {
+            destination = "/auth/change-password?required";
+        } else if ("USER".equals(principal.getRoleName())) {
+            destination = "/my";
+        } else {
+            destination = "/dashboard";
+        }
 
         response.sendRedirect(
                 request.getContextPath() + destination);

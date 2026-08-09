@@ -20,6 +20,10 @@ public interface TicketService {
             String authenticatedLogin,
             Pageable pageable);
 
+    Page<TicketListItem> findMine(
+            String authenticatedLogin,
+            Pageable pageable);
+
     TicketSummary getSummary(
             Long eventId,
             String authenticatedLogin);

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mi Eventix')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('my-home')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <section class="mb-4">
+        <p class="text-success fw-semibold mb-1">Tu espacio personal</p>
+        <h1 class="page-title" th:text="|Hola, ${principal.fullName}|">Hola</h1>
+        <p class="page-subtitle">Descubre experiencias y lleva tus boletas siempre contigo.</p>
+    </section>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-md-4">
+            <a class="content-card d-block h-100 text-decoration-none text-dark" th:href="@{/events}">
+                <i class="bi bi-compass fs-2 text-success" aria-hidden="true"></i>
+                <h2 class="h5 mt-3 mb-2">Explorar eventos</h2>
+                <p class="text-secondary mb-0">Encuentra eventos publicados y revisa todos sus detalles.</p>
+            </a>
+        </div>
+        <div class="col-12 col-md-4">
+            <a class="content-card d-block h-100 text-decoration-none text-dark" th:href="@{/my/tickets}">
+                <i class="bi bi-ticket-perforated fs-2 text-success" aria-hidden="true"></i>
+                <h2 class="h5 mt-3 mb-2">Mis boletas</h2>
+                <p class="text-secondary mb-0" th:text="|${tickets.totalElements} boleta(s) asociada(s) a tu cuenta.|">0 boletas</p>
+            </a>
+        </div>
+        <div class="col-12 col-md-4">
+            <a class="content-card d-block h-100 text-decoration-none text-dark" th:href="@{/my/profile}">
+                <i class="bi bi-person-circle fs-2 text-success" aria-hidden="true"></i>
+                <h2 class="h5 mt-3 mb-2">Mi perfil</h2>
+                <p class="text-secondary mb-0">Consulta la información vinculada a tu cuenta Eventix.</p>
+            </a>
+        </div>
+    </div>
+
+    <section class="content-card">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            <div>
+                <p class="text-success fw-semibold mb-1">Acceso rápido</p>
+                <h2 class="h4 mb-0">Boletas recientes</h2>
+            </div>
+            <a class="btn btn-outline-primary" th:href="@{/my/tickets}">Ver todas</a>
+        </div>
+
+        <div class="table-responsive" th:if="${tickets.hasContent()}">
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>Evento</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Emitida</th>
+                    <th class="text-end">Acción</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="ticket : ${tickets.content}">
+                    <td>
+                        <strong th:text="${ticket.eventTitle}">Evento</strong>
+                        <div class="small text-secondary" th:text="${ticket.uniqueCode}">Código</div>
+                    </td>
+                    <td th:text="${ticket.ticketTypeName}">General</td>
+                    <td><span class="badge text-bg-light" th:text="${ticket.status.displayName}">Activa</span></td>
+                    <td th:text="${#temporals.format(ticket.issuedAt, 'dd/MM/yyyy HH:mm')}">08/08/2026</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/tickets/{id}(id=${ticket.id})}">Abrir</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state py-4" th:unless="${tickets.hasContent()}">
+            <i class="bi bi-ticket-perforated fs-1 d-block mb-3" aria-hidden="true"></i>
+            <h2 class="h5 text-dark">Todavía no tienes boletas</h2>
+            <p class="mb-3">Cuando una compra utilice el correo de tu cuenta, aparecerá automáticamente aquí.</p>
+            <a class="btn btn-primary" th:href="@{/events}">Explorar eventos</a>
+        </div>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

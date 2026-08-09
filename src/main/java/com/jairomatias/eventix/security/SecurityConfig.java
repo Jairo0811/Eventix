@@ -34,10 +34,6 @@ public class SecurityConfig {
         this.logoutSuccessHandler = logoutSuccessHandler;
     }
 
-    /**
-     * Se declara static para que Spring pueda crear el codificador sin
-     * instanciar previamente SecurityConfig, evitando dependencias circulares.
-     */
     @Bean
     static PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
@@ -78,6 +74,8 @@ public class SecurityConfig {
                         .hasRole("ADMINISTRATOR")
                         .requestMatchers("/api/wallet/apple/**")
                         .permitAll()
+                        .requestMatchers("/my/**")
+                        .hasRole("USER")
                         .requestMatchers("/users/**")
                         .hasRole("ADMINISTRATOR")
                         .requestMatchers("/categories/**")
@@ -136,7 +134,8 @@ public class SecurityConfig {
                         .hasAnyRole(
                                 "ADMINISTRATOR",
                                 "OPERATOR",
-                                "ORGANIZER")
+                                "ORGANIZER",
+                                "USER")
                         .requestMatchers("/reports/**")
                         .hasAnyRole("ADMINISTRATOR", "ORGANIZER")
                         .requestMatchers("/audit/**")
