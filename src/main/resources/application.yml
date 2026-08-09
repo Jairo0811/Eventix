@@ -63,6 +63,28 @@ server:
         http-only: true
         same-site: lax
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+info:
+  app:
+    name: Eventix
+    version: 1.0.0
+    description: Plataforma profesional de gestión de eventos y ticketing digital.
+
 app:
   base-url: ${APP_BASE_URL:http://localhost:8080}
 
@@ -71,6 +93,16 @@ app:
   currency: DOP
 
 eventix:
+  security:
+    allow-default-bootstrap-administrator: ${EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN:true}
+    bootstrap-administrator-password: ${EVENTIX_BOOTSTRAP_ADMIN_PASSWORD:}
+    rate-limit:
+      enabled: ${EVENTIX_RATE_LIMIT_ENABLED:true}
+      login-requests-per-minute: ${EVENTIX_LOGIN_RATE_LIMIT:10}
+      wallet-requests-per-minute: ${EVENTIX_WALLET_RATE_LIMIT:120}
+      mutation-requests-per-minute: ${EVENTIX_MUTATION_RATE_LIMIT:180}
+      maximum-tracked-clients: ${EVENTIX_RATE_LIMIT_MAX_CLIENTS:10000}
+
   reservations:
     hold-duration: ${RESERVATION_HOLD_DURATION:PT15M}
     expiration-scan-interval: ${RESERVATION_EXPIRATION_SCAN_INTERVAL:PT1M}
@@ -80,6 +112,7 @@ eventix:
     signing-key-id: ${TICKETING_SIGNING_KEY_ID:eventix-dev}
     signing-private-key: ${TICKETING_SIGNING_PRIVATE_KEY:}
     signing-public-key: ${TICKETING_SIGNING_PUBLIC_KEY:}
+    verification-public-keys: ${TICKETING_VERIFICATION_PUBLIC_KEYS:}
     allow-ephemeral-signing-key: ${TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY:true}
     allow-reentry: ${TICKETING_ALLOW_REENTRY:false}
     expiration-scan-interval: ${TICKETING_EXPIRATION_SCAN_INTERVAL:PT5M}

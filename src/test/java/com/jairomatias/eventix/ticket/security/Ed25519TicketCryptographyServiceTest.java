@@ -5,6 +5,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.util.Base64;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,6 +62,45 @@ class Ed25519TicketCryptographyServiceTest {
     void rejectsMalformedOrOversizedQrPayload() {
         assertThat(service.parseQrPayload("not-a-ticket")).isEmpty();
         assertThat(service.parseQrPayload("x".repeat(513))).isEmpty();
+    }
+
+    @Test
+    void verifiesTicketSignedWithHistoricalPublicKey() throws Exception {
+        KeyPair oldPair = KeyPairGenerator.getInstance("Ed25519")
+                .generateKeyPair();
+        TicketingProperties oldProperties = properties(
+                "old-key", oldPair);
+        Ed25519TicketCryptographyService oldService =
+                new Ed25519TicketCryptographyService(oldProperties);
+        TicketSigningPayload payload = payload();
+        SignedTicketPayload signed = oldService.sign(payload);
+        DigitalTicket ticket = ticket(payload, signed);
+
+        KeyPair activePair = KeyPairGenerator.getInstance("Ed25519")
+                .generateKeyPair();
+        TicketingProperties activeProperties = properties(
+                "active-key", activePair);
+        activeProperties.setVerificationPublicKeys(
+                "old-key=" + Base64.getEncoder().encodeToString(
+                        oldPair.getPublic().getEncoded()));
+        Ed25519TicketCryptographyService rotatedService =
+                new Ed25519TicketCryptographyService(activeProperties);
+
+        ParsedTicketToken token = oldService.parseQrPayload(
+                        oldService.createQrPayload(ticket))
+                .orElseThrow();
+        assertThat(rotatedService.verify(ticket, token)).isTrue();
+    }
+
+    private TicketingProperties properties(String keyId, KeyPair pair) {
+        TicketingProperties properties = new TicketingProperties();
+        properties.setSigningKeyId(keyId);
+        properties.setSigningPrivateKey(Base64.getEncoder().encodeToString(
+                pair.getPrivate().getEncoded()));
+        properties.setSigningPublicKey(Base64.getEncoder().encodeToString(
+                pair.getPublic().getEncoded()));
+        properties.setAllowEphemeralSigningKey(false);
+        return properties;
     }
 
     private TicketSigningPayload payload() {

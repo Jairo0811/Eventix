@@ -1,6 +1,10 @@
 spring:
   thymeleaf:
     cache: true
+  flyway:
+    url: ${FLYWAY_DB_URL:${DB_URL}}
+    user: ${FLYWAY_DB_USERNAME}
+    password: ${FLYWAY_DB_PASSWORD}
 
 server:
   forward-headers-strategy: framework
@@ -10,10 +14,15 @@ server:
         secure: true
 
 logging:
+  structured:
+    format:
+      console: logstash
   level:
     root: INFO
     com.jairomatias.eventix: INFO
 
 eventix:
+  security:
+    allow-default-bootstrap-administrator: false
   ticketing:
     allow-ephemeral-signing-key: ${TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY:false}

@@ -9,6 +9,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
 
 @Configuration
 public class SecurityConfig {
@@ -16,14 +18,20 @@ public class SecurityConfig {
     private final DatabaseUserDetailsService userDetailsService;
     private final LoginSuccessHandler loginSuccessHandler;
     private final ForcePasswordChangeFilter forcePasswordChangeFilter;
+    private final AuditAuthenticationFailureHandler authenticationFailureHandler;
+    private final AuditLogoutSuccessHandler logoutSuccessHandler;
 
     public SecurityConfig(
             DatabaseUserDetailsService userDetailsService,
             LoginSuccessHandler loginSuccessHandler,
-            ForcePasswordChangeFilter forcePasswordChangeFilter) {
+            ForcePasswordChangeFilter forcePasswordChangeFilter,
+            AuditAuthenticationFailureHandler authenticationFailureHandler,
+            AuditLogoutSuccessHandler logoutSuccessHandler) {
         this.userDetailsService = userDetailsService;
         this.loginSuccessHandler = loginSuccessHandler;
         this.forcePasswordChangeFilter = forcePasswordChangeFilter;
+        this.authenticationFailureHandler = authenticationFailureHandler;
+        this.logoutSuccessHandler = logoutSuccessHandler;
     }
 
     /**
@@ -62,8 +70,12 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/error/**")
+                                "/error/**",
+                                "/actuator/health",
+                                "/actuator/health/**")
                         .permitAll()
+                        .requestMatchers("/actuator/**")
+                        .hasRole("ADMINISTRATOR")
                         .requestMatchers("/api/wallet/apple/**")
                         .permitAll()
                         .requestMatchers("/users/**")
@@ -125,6 +137,10 @@ public class SecurityConfig {
                                 "ADMINISTRATOR",
                                 "OPERATOR",
                                 "ORGANIZER")
+                        .requestMatchers("/reports/**")
+                        .hasAnyRole("ADMINISTRATOR", "ORGANIZER")
+                        .requestMatchers("/audit/**")
+                        .hasRole("ADMINISTRATOR")
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/access-control/**")
@@ -145,10 +161,10 @@ public class SecurityConfig {
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .successHandler(loginSuccessHandler)
-                        .failureUrl("/login?error")
+                        .failureHandler(authenticationFailureHandler)
                         .permitAll())
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/login?logout")
+                        .logoutSuccessHandler(logoutSuccessHandler)
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
@@ -163,6 +179,25 @@ public class SecurityConfig {
                         .accessDeniedPage("/access-denied"))
                 .csrf(csrf -> csrf.ignoringRequestMatchers(
                         "/api/wallet/apple/**"))
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'self'; "
+                                + "script-src 'self' https://cdn.jsdelivr.net; "
+                                + "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                                + "font-src 'self' data: https://cdn.jsdelivr.net; "
+                                + "img-src 'self' data: https:; "
+                                + "connect-src 'self'; object-src 'none'; "
+                                + "base-uri 'self'; frame-ancestors 'none'; "
+                                + "form-action 'self'"))
+                        .referrerPolicy(referrer -> referrer
+                                .policy(ReferrerPolicy.NO_REFERRER))
+                        .addHeaderWriter(new StaticHeadersWriter(
+                                "Permissions-Policy",
+                                "camera=(self), microphone=(), geolocation=(), payment=()"))
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .preload(true)
+                                .maxAgeInSeconds(31536000)))
                 .addFilterAfter(
                         forcePasswordChangeFilter,
                         UsernamePasswordAuthenticationFilter.class);

@@ -270,6 +270,33 @@ a:hover {
     margin-top: 0.15rem;
 }
 
+.metric-value-money {
+    font-size: clamp(1.25rem, 2vw, 1.8rem);
+    overflow-wrap: anywhere;
+}
+
+.dashboard-trend-row {
+    align-items: center;
+    border-bottom: 1px solid var(--eventix-border);
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: 0.85rem 0;
+}
+
+.dashboard-trend-row:last-child {
+    border-bottom: 0;
+}
+
+.audit-correlation {
+    display: inline-block;
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
 .table {
     --bs-table-bg: transparent;
     margin-bottom: 0;

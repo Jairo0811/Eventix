@@ -14,6 +14,7 @@ public class TicketingProperties {
     private String signingKeyId = "eventix-dev";
     private String signingPrivateKey = "";
     private String signingPublicKey = "";
+    private String verificationPublicKeys = "";
     private boolean allowEphemeralSigningKey = true;
     private boolean allowReentry;
     private final GoogleWallet googleWallet = new GoogleWallet();
@@ -49,6 +50,14 @@ public class TicketingProperties {
 
     public void setSigningPublicKey(String signingPublicKey) {
         this.signingPublicKey = signingPublicKey;
+    }
+
+    public String getVerificationPublicKeys() {
+        return verificationPublicKeys;
+    }
+
+    public void setVerificationPublicKeys(String value) {
+        verificationPublicKeys = value;
     }
 
     public boolean isAllowEphemeralSigningKey() {

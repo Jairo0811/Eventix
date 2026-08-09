@@ -5,7 +5,7 @@
 <main class="receipt-sheet">
     <div class="receipt-actions">
         <a class="btn btn-light" th:href="@{/sales/{id}(id=${sale.id})}">Volver</a>
-        <button class="btn btn-primary" type="button" onclick="window.print()">
+        <button class="btn btn-primary" type="button" data-print-page>
             Imprimir / Guardar PDF
         </button>
     </div>

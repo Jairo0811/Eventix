@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Auditoría')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('audit')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+    <div class="mb-4">
+        <p class="text-success fw-semibold mb-1">Trazabilidad</p>
+        <h1 class="page-title">Auditoría central</h1>
+        <p class="page-subtitle">Actividad de seguridad y operaciones críticas de Eventix.</p>
+    </div>
+
+    <section class="content-card mb-4" aria-labelledby="audit-filter-title">
+        <h2 class="h5 fw-bold" id="audit-filter-title">Filtros</h2>
+        <form method="get" th:action="@{/audit}" class="row g-3 align-items-end">
+            <div class="col-md-6 col-xl-3">
+                <label class="form-label" for="term">Buscar</label>
+                <input class="form-control" id="term" name="term" th:value="${term}" placeholder="Usuario, acción o correlación">
+            </div>
+            <div class="col-md-6 col-xl-2">
+                <label class="form-label" for="eventType">Tipo</label>
+                <select class="form-select" id="eventType" name="eventType">
+                    <option value="">Todos</option>
+                    <option th:each="type : ${eventTypes}" th:value="${type}" th:text="${type}" th:selected="${type == selectedEventType}"></option>
+                </select>
+            </div>
+            <div class="col-md-4 col-xl-2">
+                <label class="form-label" for="outcome">Resultado</label>
+                <select class="form-select" id="outcome" name="outcome">
+                    <option value="">Todos</option>
+                    <option th:each="value : ${outcomes}" th:value="${value}" th:text="${value}" th:selected="${value == selectedOutcome}"></option>
+                </select>
+            </div>
+            <div class="col-md-3 col-xl-2">
+                <label class="form-label" for="from">Desde</label>
+                <input class="form-control" id="from" name="from" type="date" th:value="${from}">
+            </div>
+            <div class="col-md-3 col-xl-2">
+                <label class="form-label" for="to">Hasta</label>
+                <input class="form-control" id="to" name="to" type="date" th:value="${to}">
+            </div>
+            <div class="col-md-2 col-xl-1 d-grid">
+                <button class="btn btn-primary" type="submit">Aplicar</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="content-card" aria-labelledby="audit-table-title">
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+            <h2 class="h5 fw-bold mb-0" id="audit-table-title">Eventos registrados</h2>
+            <span class="badge rounded-pill text-bg-light" th:text="|${entries.totalElements} registros|">0 registros</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th>Fecha</th><th>Tipo</th><th>Resultado</th><th>Usuario</th><th>Acción</th><th>IP</th><th>Correlación</th></tr></thead>
+                <tbody>
+                <tr th:each="entry : ${entries.content}">
+                    <td class="text-nowrap" th:text="${#temporals.format(entry.occurredAt, 'dd/MM/yyyy HH:mm:ss')}">Fecha</td>
+                    <td><span class="badge text-bg-dark" th:text="${entry.eventType}">TIPO</span></td>
+                    <td><span class="badge badge-status" th:classappend="${entry.outcome.name() == 'SUCCESS'} ? ' badge-active' : ' badge-locked'" th:text="${entry.outcome}">RESULTADO</span></td>
+                    <td th:text="${entry.actorUsername ?: 'anónimo'}">Usuario</td>
+                    <td>
+                        <div class="fw-semibold" th:text="${entry.action}">Acción</div>
+                        <small class="text-secondary" th:if="${entry.details}" th:text="${entry.details}">Detalle</small>
+                    </td>
+                    <td th:text="${entry.ipAddress ?: '—'}">IP</td>
+                    <td><code class="audit-correlation" th:text="${entry.correlationId}">id</code></td>
+                </tr>
+                <tr th:if="${entries.empty}"><td colspan="7" class="empty-state">No hay eventos con los filtros seleccionados.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <nav class="mt-3" th:if="${entries.totalPages > 1}" aria-label="Paginación de auditoría">
+            <ul class="pagination mb-0">
+                <li class="page-item" th:classappend="${entries.first} ? ' disabled'"><a class="page-link" th:href="@{/audit(term=${term},eventType=${selectedEventType},outcome=${selectedOutcome},from=${from},to=${to},page=${entries.number - 1})}">Anterior</a></li>
+                <li class="page-item disabled"><span class="page-link" th:text="|${entries.number + 1} / ${entries.totalPages}|">1 / 1</span></li>
+                <li class="page-item" th:classappend="${entries.last} ? ' disabled'"><a class="page-link" th:href="@{/audit(term=${term},eventType=${selectedEventType},outcome=${selectedOutcome},from=${from},to=${to},page=${entries.number + 1})}">Siguiente</a></li>
+            </ul>
+        </nav>
+    </section>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
