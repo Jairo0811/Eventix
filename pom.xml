@@ -28,6 +28,7 @@
     <properties>
         <java.version>21</java.version>
         <mapstruct.version>1.6.3</mapstruct.version>
+        <mssql-jdbc.version>13.4.0.jre11</mssql-jdbc.version>
         <pdfbox.version>3.0.8</pdfbox.version>
         <zxing.version>3.5.4</zxing.version>
         <bouncycastle.version>1.85</bouncycastle.version>
