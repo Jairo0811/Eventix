@@ -188,7 +188,7 @@ public class SecurityConfig {
                                 + "font-src 'self' data: https://cdn.jsdelivr.net; "
                                 + "img-src 'self' data: https:; "
                                 + "connect-src 'self' https://pay.google.com; "
-                                + "frame-src 'self' https://pay.google.com; "
+                                + "frame-src 'self' https://pay.google.com https://www.google.com https://maps.google.com; "
                                 + "object-src 'none'; base-uri 'self'; "
                                 + "frame-ancestors 'none'; form-action 'self'"))
                         .referrerPolicy(referrer -> referrer
