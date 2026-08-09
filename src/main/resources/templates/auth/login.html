@@ -5,7 +5,9 @@
 <main class="auth-page">
     <section class="auth-visual" aria-label="Presentación de Eventix">
         <div class="auth-visual-content">
-            <img class="auth-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
+            <a th:href="@{/}" aria-label="Volver al inicio de Eventix">
+                <img class="auth-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
+            </a>
             <h2 class="auth-tagline">Transforma tus eventos.<br>Conecta experiencias.</h2>
             <p class="auth-copy">
                 Administra eventos, reservaciones, ventas y accesos desde una plataforma
@@ -17,9 +19,16 @@
     <section class="auth-panel">
         <div class="auth-form">
             <div class="d-lg-none bg-dark rounded-4 p-3 mb-4 text-center">
-                <img class="auth-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
+                <a th:href="@{/}" aria-label="Volver al inicio de Eventix">
+                    <img class="auth-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
+                </a>
             </div>
 
+            <a class="small text-decoration-none d-inline-flex align-items-center gap-1 mb-4"
+               th:href="@{/}">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                Volver al inicio
+            </a>
             <p class="text-success fw-semibold mb-2">Bienvenido de nuevo</p>
             <h1>Inicia sesión</h1>
             <p class="text-secondary mb-4">Accede al panel de administración de Eventix.</p>
@@ -83,4 +92,3 @@
 <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
 </body>
 </html>
-

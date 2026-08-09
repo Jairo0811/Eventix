@@ -62,6 +62,7 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
+                                "/",
                                 "/login",
                                 "/css/**",
                                 "/js/**",
