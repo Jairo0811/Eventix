@@ -3,17 +3,28 @@
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <aside class="app-sidebar" th:fragment="sidebar(activePage)">
-    <a th:href="@{/dashboard}" aria-label="Ir al dashboard">
+    <a sec:authorize="!hasRole('USER')" th:href="@{/dashboard}" aria-label="Ir al dashboard">
+        <img class="sidebar-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
+    </a>
+    <a sec:authorize="hasRole('USER')" th:href="@{/my}" aria-label="Ir a Mi Eventix">
         <img class="sidebar-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
     </a>
 
     <p class="sidebar-label">Principal</p>
     <nav class="nav flex-column sidebar-nav" aria-label="Navegación principal">
         <a class="nav-link"
+           sec:authorize="!hasRole('USER')"
            th:classappend="${activePage == 'dashboard'} ? ' active'"
            th:href="@{/dashboard}">
             <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i>
             Dashboard
+        </a>
+        <a class="nav-link"
+           sec:authorize="hasRole('USER')"
+           th:classappend="${activePage == 'my-home'} ? ' active'"
+           th:href="@{/my}">
+            <i class="bi bi-house-heart-fill" aria-hidden="true"></i>
+            Mi Eventix
         </a>
         <a class="nav-link"
            sec:authorize="hasRole('ADMINISTRATOR')"
@@ -26,7 +37,22 @@
            th:classappend="${activePage == 'events'} ? ' active'"
            th:href="@{/events}">
             <i class="bi bi-calendar-event-fill" aria-hidden="true"></i>
-            Eventos
+            <span sec:authorize="!hasRole('USER')">Eventos</span>
+            <span sec:authorize="hasRole('USER')">Explorar eventos</span>
+        </a>
+        <a class="nav-link"
+           sec:authorize="hasRole('USER')"
+           th:classappend="${activePage == 'my-tickets'} ? ' active'"
+           th:href="@{/my/tickets}">
+            <i class="bi bi-ticket-perforated-fill" aria-hidden="true"></i>
+            Mis boletas
+        </a>
+        <a class="nav-link"
+           sec:authorize="hasRole('USER')"
+           th:classappend="${activePage == 'my-profile'} ? ' active'"
+           th:href="@{/my/profile}">
+            <i class="bi bi-person-circle" aria-hidden="true"></i>
+            Mi perfil
         </a>
         <a class="nav-link"
            sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')"
