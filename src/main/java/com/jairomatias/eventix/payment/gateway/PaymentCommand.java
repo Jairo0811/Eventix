@@ -11,5 +11,7 @@ public record PaymentCommand(
         PaymentTransactionType transactionType,
         BigDecimal amount,
         String currency,
-        SimulationOutcome simulationOutcome) {
+        SimulationOutcome simulationOutcome,
+        String walletToken,
+        String originalExternalReference) {
 }
