@@ -50,9 +50,15 @@ public class EventForm {
     @Size(max = 300, message = "La dirección no puede superar 300 caracteres.")
     private String address;
 
-    @Size(max = 1000, message = "El enlace de Google Maps no puede superar 1,000 caracteres.")
+    @Size(
+            max = 1000,
+            message = "El enlace de Google Maps no puede superar 1,000 caracteres.")
     @Pattern(
-            regexp = "^(|https://(?:(?:www\\.)?google\\.com/maps(?:/.*)?|maps\\.google\\.com(?:/.*)?|maps\\.app\\.goo\\.gl(?:/.*)?|goo\\.gl/maps(?:/.*)?))$",
+            regexp = "^(|https://(?:"
+                    + "(?:www\\.)?google\\.com/maps(?:/.*)?|"
+                    + "maps\\.google\\.com(?:/.*)?|"
+                    + "maps\\.app\\.goo\\.gl(?:/.*)?|"
+                    + "goo\\.gl/maps(?:/.*)?))$",
             message = "Usa un enlace HTTPS válido de Google Maps.")
     private String googleMapsUrl;
 
