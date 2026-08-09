@@ -50,6 +50,12 @@ public class EventForm {
     @Size(max = 300, message = "La dirección no puede superar 300 caracteres.")
     private String address;
 
+    @Size(max = 1000, message = "El enlace de Google Maps no puede superar 1,000 caracteres.")
+    @Pattern(
+            regexp = "^(|https://(?:(?:www\\.)?google\\.com/maps(?:/.*)?|maps\\.google\\.com(?:/.*)?|maps\\.app\\.goo\\.gl(?:/.*)?|goo\\.gl/maps(?:/.*)?))$",
+            message = "Usa un enlace HTTPS válido de Google Maps.")
+    private String googleMapsUrl;
+
     @NotNull(message = "La capacidad es obligatoria.")
     @Min(value = 1, message = "La capacidad mínima es 1.")
     @Max(value = 1000000, message = "La capacidad máxima es 1,000,000.")
@@ -139,6 +145,14 @@ public class EventForm {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getGoogleMapsUrl() {
+        return googleMapsUrl;
+    }
+
+    public void setGoogleMapsUrl(String googleMapsUrl) {
+        this.googleMapsUrl = googleMapsUrl;
     }
 
     public Integer getCapacity() {
