@@ -1,18 +1,16 @@
 <div align="center">
 
 <p align="center">
-  <img
-    src="docs/images/eventix-logo.png"
-    alt="Logo de Eventix"
-    width="720"
-  />
+  <img src="docs/images/eventix-logo.png" alt="Logo de Eventix" width="720" />
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/ITLA-2017--C2-0057B8?style=for-the-badge" alt="ITLA 2017-C2">
 </p>
 
-**Eventix** es una plataforma web empresarial desarrollada con **Java 21, Spring Boot y Microsoft SQL Server**, diseñada para la administración de eventos, usuarios, reservaciones, ventas de entradas, boletas digitales y control de acceso.
+# Eventix
+
+**Plataforma web empresarial para gestión integral de eventos, reservaciones, ventas, pagos, ticketing digital y control de acceso.**
 
 [![Estado](https://img.shields.io/badge/Estado-1.0.0%20completado-15803D?style=for-the-badge)](#-estado-del-proyecto)
 [![Eventix CI](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml/badge.svg)](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml)
@@ -20,13 +18,11 @@
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)](https://spring.io/projects/spring-security)
 [![SQL Server](https://img.shields.io/badge/SQL_Server_2022-CC2927?style=for-the-badge&logo=microsoftsqlserver&logoColor=white)](https://www.microsoft.com/sql-server)
-[![Docker](https://img.shields.io/badge/Docker_Desktop-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/products/docker-desktop/)
-[![Testcontainers](https://img.shields.io/badge/Testcontainers-SQL_Server-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://testcontainers.com/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)](https://www.thymeleaf.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
-[![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 
-> Estado actual: **Versión 1.0.0 completada. Las seis fases están implementadas, probadas y documentadas.**
+> **Estado actual:** versión 1.0.0 completada, estabilizada y preparada como proyecto de portafolio. Incluye Home público, Dashboard ejecutivo, pagos digitales, Apple Pay, Google Pay, ticketing con QR, Wallet passes, control de acceso, reportes, auditoría y pipeline de seguridad.
 
 </div>
 
@@ -34,7 +30,7 @@
 
 ## 🧭 Continuidad académica
 
-Programación II fue la primera de tres asignaturas cursadas con el profesor **Raydelto Hernández Perera**, dentro de una evolución progresiva en el desarrollo de software:
+Eventix nació como proyecto final de **Programación II** en el Instituto Tecnológico de Las Américas (ITLA), cursada con el profesor **Raydelto Hernández Perera** durante el período **2017-C2**.
 
 | Orden | Asignatura | Proyecto | Período |
 |---:|---|---|---|
@@ -42,217 +38,173 @@ Programación II fue la primera de tres asignaturas cursadas con el profesor **R
 | 2 | Estructuras de Datos | [Aerolinea](https://github.com/Jairo0811/Aerolinea) | 2018-C1 |
 | 3 | Programación WEB | [ITLA Crush](https://github.com/Jairo0811/ITLAcrushReact) | 2018-C2 |
 
-Estos proyectos representan una secuencia académica enfocada en programación, estructuras de datos y desarrollo web. Actualmente están siendo preservados y modernizados como parte del portafolio profesional.
+Actualmente Eventix ha sido reconstruido y modernizado con estándares profesionales de arquitectura, seguridad, pruebas y despliegue.
 
 ---
 
 ## 📌 Descripción
 
-**Eventix** es una aplicación web creada como evolución profesional de un proyecto final de la asignatura **Programación II** del Instituto Tecnológico de Las Américas (ITLA).
+**Eventix** administra el ciclo completo de un evento: publicación, reservación, venta, cobro, emisión de entradas, almacenamiento en wallets digitales, validación de acceso, seguimiento operativo, reportes y auditoría.
 
-Su objetivo es administrar eventos, reservaciones, ventas, pagos, boletas digitales, control de acceso, reportes y auditoría con una base segura y preparada para producción.
-
-La solución fue construida como un **monolito modular por dominio**, con separación clara entre controladores, servicios, repositorios, entidades, DTO y vistas.
+La aplicación está construida como un **monolito modular por dominio**, manteniendo separación de responsabilidades entre controladores, servicios, repositorios, entidades, DTO, seguridad, infraestructura y vistas.
 
 ---
 
-## ✨ Funcionalidades disponibles
+## 🆕 Últimas incorporaciones
+
+### 🌐 Home público
+
+La ruta `/` presenta ahora una **landing page pública y responsiva** con identidad visual propia, propuesta de valor, módulos principales, flujo operativo y llamadas a la acción.
+
+- Navegación pública sin exponer módulos administrativos.
+- Acceso directo al login para visitantes.
+- Acceso contextual al Dashboard para usuarios autenticados.
+- Login enlazado nuevamente con el Home.
+- Diseño responsive integrado con la identidad visual de Eventix.
+
+### 💳 Apple Pay y Google Pay mediante AZUL
+
+La arquitectura de pagos incorpora soporte real para **Apple Pay** y **Google Pay** utilizando **AZUL** como procesador/adquirente.
+
+- Apple Pay y Google Pay integrados como proveedores de wallet.
+- Recepción segura de tokens de pago digitales.
+- Procesamiento de cargos de wallet mediante AZUL.
+- Reembolsos asociados a la transacción original.
+- Cliente SOAP seguro para AZUL.
+- Endpoints dedicados para pagos con wallets.
+- Botones y experiencia de checkout para Apple Pay y Google Pay.
+- Asociación de dominio requerida por Apple Pay.
+- CSP y `Permissions-Policy` adaptadas para capacidades de pago web.
+- Las wallets **no utilizan simulación**: requieren credenciales comerciales válidas para operar.
+
+> Para producción deben configurarse las credenciales de AZUL, la validación de dominio de Apple Pay y las credenciales/habilitación correspondientes de Google Pay.
+
+### 📊 Dashboard ejecutivo renovado
+
+El panel principal ofrece una lectura moderna del estado operativo y comercial de Eventix, incluyendo métricas de ventas, ingresos, eventos, entradas y asistencia.
+
+---
+
+## ✨ Funcionalidades
+
+### 🔐 Seguridad y usuarios
 
 - Inicio y cierre de sesión con Spring Security.
 - Acceso mediante correo electrónico o nombre de usuario.
-- Contraseñas cifradas con BCrypt.
-- Cambio obligatorio de contraseña temporal.
-- Protección CSRF y gestión segura de sesiones.
-- Autorización por roles en rutas y servicios.
-- Roles iniciales:
-  - `ADMINISTRATOR`
-  - `OPERATOR`
-  - `ORGANIZER`
-  - `ACCESS_STAFF`
-- Dashboard adaptado al rol del usuario.
-- CRUD completo de usuarios.
+- Contraseñas BCrypt y cambio obligatorio de contraseña temporal.
+- Gestión segura de sesiones y protección CSRF.
+- Autorización por rutas, servicios, roles y propiedad del recurso.
+- Roles `ADMINISTRATOR`, `OPERATOR`, `ORGANIZER`, `ACCESS_STAFF` y `USER`.
+- CRUD de usuarios, filtros, paginación, activación/desactivación y restablecimiento de contraseña.
+- Rate limiting, CSP, HSTS, Permissions Policy e identificadores de correlación.
+
+### 📅 Eventos
+
+- CRUD completo de eventos y categorías.
+- Estados borrador, publicado, cancelado y finalizado.
+- Fechas, lugar, dirección, capacidad, organizador y portada.
+- Eventos gratuitos o de pago.
+- Reglas de transición de estado y validaciones de negocio.
 - Búsqueda, filtros y paginación.
-- Activación y desactivación lógica.
-- Cambio de rol y estado.
-- Restablecimiento seguro de contraseña.
-- Auditoría técnica mediante JPA Auditing.
-- Migraciones de base de datos con Flyway.
-- Microsoft SQL Server como motor principal.
-- Pruebas de integración sobre SQL Server real mediante Testcontainers.
-- Interfaz responsiva con identidad visual verde de Eventix.
-- Pruebas automatizadas de autenticación, autorización y seguridad.
-- CRUD completo de eventos.
-- Categorías administrables con activación y desactivación.
-- Estados de evento: borrador, publicado, cancelado y finalizado.
-- Programación de inicio y finalización, lugar, dirección y capacidad.
-- Asignación de organizador responsable.
-- Portada mediante URL segura HTTP/HTTPS.
-- Eventos gratuitos o de pago con precio base en pesos dominicanos.
-- Reglas de transición de estado, fechas, precio y eliminación.
-- Búsqueda, filtros por estado/categoría y paginación.
-- Autorización por rol y propiedad del evento.
-- Panel responsivo de eventos con identidad visual de Eventix.
+- Tipos de entrada General, VIP, Preferencial, Estudiante, Cortesía y Personalizado.
+
+### 🎟️ Reservaciones y ventas
+
 - CRUD operativo de reservaciones con historial permanente.
-- Estados de reservación: pendiente, confirmada, cancelada y expirada.
-- Retención temporal de cupos con duración configurable.
-- Liberación automática de inventario al vencer una reservación.
-- Prevención transaccional de sobreventa mediante bloqueo pesimista.
-- Prevención de reservaciones activas duplicadas por evento y correo.
-- Confirmación y cancelación con motivo obligatorio.
-- Búsqueda, filtros, paginación y detalle de reservaciones.
-- Métricas de asistentes, pendientes, disponibilidad y ocupación por evento.
-- Autorización diferenciada para administradores, operadores y organizadores.
-- Configuración de tipos de entrada General, VIP, Preferencial, Estudiante, Cortesía y Personalizado.
-- Precios, cupos y activación por tipo de entrada y evento.
-- Ventas vinculadas de forma exclusiva a reservaciones confirmadas.
-- Distribución multirrenglón de entradas con precio histórico por venta.
-- Estados de venta: pendiente, pagada, reembolsada y cancelada.
-- Prevención transaccional de sobreasignación por evento y tipo de entrada.
-- Pagos y reembolsos simulados para Stripe, PayPal, Azul, CardNET, Qik y transferencia bancaria.
-- Pasarelas desacopladas mediante el patrón Strategy para integrar proveedores reales sin alterar el dominio de ventas.
+- Estados pendiente, confirmada, cancelada y expirada.
+- Retención temporal y liberación automática de cupos.
+- Bloqueo pesimista para prevención transaccional de sobreventa.
+- Prevención de reservaciones activas duplicadas.
+- Ventas vinculadas a reservaciones confirmadas.
+- Distribución multirrenglón de entradas con precio histórico.
+- Estados de venta pendiente, pagada, reembolsada y cancelada.
+- Cancelaciones y reembolsos justificados.
+- Comprobantes imprimibles y exportables a PDF.
+
+### 💰 Pagos
+
+- Arquitectura desacoplada mediante patrón **Strategy**.
+- Proveedores preparados para Stripe, PayPal, AZUL, CardNET, Qik y transferencia bancaria.
+- Apple Pay y Google Pay procesados mediante AZUL cuando existen credenciales válidas.
 - Historial permanente de intentos aprobados y rechazados.
-- Cancelaciones y reembolsos justificados con liberación automática de cupos.
-- Dashboard comercial con estados e ingreso neto.
-- Comprobantes de venta imprimibles y exportables a PDF desde el navegador.
-- Autorización de ventas por rol y propiedad del evento.
+- Cargos y reembolsos.
+- Separación entre dominio de ventas e infraestructura de pasarelas.
+
+### 📱 Ticketing y Wallets
+
 - Emisión idempotente de una boleta digital por cada unidad de una venta pagada.
-- PDF descargable y QR individual generado con Apache PDFBox y ZXing.
-- Firma Ed25519, huella SHA-256 y código antifraude por boleta.
-- Estados de boleta activa, utilizada, cancelada y vencida.
-- Revocación automática al reembolsar la venta o cancelar el evento.
-- Pases firmados para Apple Wallet y enlaces de guardado para Google Wallet cuando se configuran credenciales.
-- Sincronización de cambios con Google Wallet y servicio web PassKit/APNs para Apple Wallet.
-- Escáner web con cámara y entrada manual de respaldo.
-- Detección transaccional de primer acceso, reingreso autorizado, duplicado, cancelación, falsificación y vencimiento.
-- Bitácora de cada intento con fecha, usuario, dispositivo e IP, almacenando solo la huella del QR recibido.
-- Dashboard de capacidad, emitidas, asistentes, pendientes, rechazadas, duplicados y reingresos.
-- Dashboard ejecutivo con ingresos, ventas, entradas disponibles, organizadores, conversión y asistencia.
+- PDF descargable y QR individual con Apache PDFBox y ZXing.
+- Firma Ed25519, huella SHA-256 y código antifraude.
+- Estados activa, utilizada, cancelada y vencida.
+- Revocación automática por reembolso o cancelación del evento.
+- Pases firmados para **Apple Wallet**.
+- Enlaces de guardado para **Google Wallet**.
+- Sincronización con Google Wallet y servicio web PassKit/APNs para Apple Wallet cuando las credenciales están configuradas.
+
+### 🚪 Control de acceso
+
+- Escáner web mediante cámara y entrada manual de respaldo.
+- Validación transaccional de primer acceso y reingreso autorizado.
+- Detección de duplicados, cancelaciones, falsificaciones y vencimientos.
+- Bitácora de cada intento con fecha, usuario, dispositivo e IP.
+- Almacenamiento únicamente de la huella del QR recibido.
+- Métricas de capacidad, asistentes, pendientes, rechazados, duplicados y reingresos.
+
+### 📈 Reportes, auditoría y observabilidad
+
+- Dashboard ejecutivo y comercial.
 - Reportes por evento, categoría, organizador y período.
 - Ingresos mensuales, eventos más vendidos y más reservados.
-- Exportaciones profesionales en CSV, XLSX y PDF.
-- Auditoría central de autenticación, CRUD, ventas, reservaciones, cambios de estado, escaneos, exportaciones y errores.
-- Rate limiting, CSP, HSTS, Permissions Policy e identificadores de correlación.
-- Separación entre usuario SQL de ejecución y usuario de migraciones.
-- Rotación segura de claves públicas Ed25519 sin invalidar boletas vigentes.
-- Health checks de liveness/readiness, métricas Prometheus y logs JSON en producción.
-- Pipeline con cobertura JaCoCo, Checkstyle, revisión de dependencias, Trivy y SBOM.
+- Exportación CSV, XLSX y PDF.
+- Auditoría de autenticación, CRUD, ventas, reservaciones, cambios de estado, escaneos, exportaciones y errores.
+- Health checks de liveness/readiness.
+- Métricas Prometheus y logs JSON en producción.
 
 ---
 
 # 🧱 Stack tecnológico
 
-## ⚙️ Backend
-
-<div align="center">
-
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" title="Java 21" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg" alt="Spring" title="Spring Boot, Spring MVC, Spring Security y Spring Data JPA" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/hibernate/hibernate-original.svg" alt="Hibernate" title="Hibernate ORM" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/maven/maven-original.svg" alt="Maven" title="Apache Maven" width="52" height="52" />
-
-</div>
-
 | Área | Tecnología |
 |---|---|
 | Lenguaje | Java 21 LTS |
-| Framework | Spring Boot 3.5.16 |
-| Aplicación web | Spring MVC |
-| Seguridad | Spring Security, BCrypt y CSRF |
-| Persistencia | Spring Data JPA e Hibernate |
+| Framework | Spring Boot 3.5 |
+| Web | Spring MVC + Thymeleaf |
+| Seguridad | Spring Security, BCrypt, CSRF |
+| Persistencia | Spring Data JPA + Hibernate |
+| Base de datos | Microsoft SQL Server 2022 |
 | Migraciones | Flyway |
 | Mapeo | MapStruct |
-| Construcción | Apache Maven |
-| Documentos y QR | Apache PDFBox y ZXing |
-| Firmas y pases | Ed25519 y Bouncy Castle |
-| Observabilidad | Spring Boot Actuator, Micrometer y Prometheus |
-
-## 🎨 Frontend
-
-<div align="center">
-
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML5" title="HTML5" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS3" title="CSS3" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" title="JavaScript" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg" alt="Bootstrap" title="Bootstrap 5" width="52" height="52" />
-<img src="https://www.thymeleaf.org/images/thymeleaf.png" alt="Thymeleaf" title="Thymeleaf" width="52" height="52" />
-
-</div>
-
-| Área | Tecnología |
-|---|---|
-| Motor de plantillas | Thymeleaf |
-| Estructura | HTML5 |
-| Estilos | CSS3 y Bootstrap 5 |
-| Interactividad | JavaScript |
-| Componentes visuales | Bootstrap Icons |
-| Alertas | SweetAlert2 |
-| Diseño | Interfaz responsiva con identidad verde de Eventix |
-
-## 🗄️ Base de datos
-
-<div align="center">
-
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg" alt="Microsoft SQL Server" title="Microsoft SQL Server 2022" width="52" height="52" />
-
-</div>
-
-| Área | Tecnología |
-|---|---|
-| Motor relacional | Microsoft SQL Server 2022 o SQL Server Express |
-| Driver JDBC | Microsoft JDBC Driver for SQL Server |
-| Migraciones | Flyway SQL Server |
-| ORM | Hibernate |
-| Base para pruebas | SQL Server 2022 en Testcontainers |
-
-## 🧪 Pruebas y calidad
-
-| Área | Tecnología |
-|---|---|
-| Pruebas unitarias | JUnit 5 |
-| Pruebas de integración | Spring Boot Test y MockMvc |
-| Seguridad | Spring Security Test |
-| Base de datos de pruebas | Microsoft SQL Server 2022 mediante Testcontainers |
-| Aislamiento de pruebas | Contenedor efímero por ejecución |
-| Integración continua | GitHub Actions con Java 21 |
-| Cobertura y análisis | JaCoCo y Checkstyle |
-| Seguridad de cadena | Dependency Review, Trivy y SBOM SPDX |
-
-## 🛠️ Herramientas de desarrollo
-
-<div align="center">
-
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" alt="Git" title="Git" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub" title="GitHub" width="52" height="52" />
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker" title="Docker Desktop y Testcontainers" width="52" height="52" />
-
-</div>
-
-| Área | Tecnología |
-|---|---|
-| Control de versiones | Git |
-| Repositorio y CI | GitHub y GitHub Actions |
-| Gestión de dependencias | Maven |
-| Contenedores de prueba | Docker Desktop y Testcontainers |
+| UI | HTML5, CSS3, JavaScript, Bootstrap 5, Bootstrap Icons |
+| Documentos | Apache PDFBox |
+| QR | ZXing |
+| Criptografía | Ed25519 + Bouncy Castle |
+| Pagos | Strategy + AZUL + Apple Pay + Google Pay |
+| Wallet passes | Apple Wallet + Google Wallet |
+| Observabilidad | Spring Boot Actuator, Micrometer, Prometheus |
+| Build | Apache Maven |
+| Contenedores | Docker + Docker Compose |
+| Pruebas | JUnit 5, MockMvc, Spring Security Test, Testcontainers |
+| CI y seguridad | GitHub Actions, JaCoCo, Checkstyle, Dependency Review, Trivy, SBOM SPDX |
 
 ---
 
 ## 🏗️ Arquitectura
 
-Eventix sigue una arquitectura por capas dentro de un monolito modular:
-
 ```mermaid
 flowchart LR
     Browser["Navegador · Thymeleaf"] --> Security["Spring Security"]
-    Security --> Controller["Controller"]
+    Security --> Controller["Controllers"]
     Controller --> Service["Service Layer"]
-    Service --> Repository["Repository"]
+    Service --> Repository["Repositories"]
     Repository --> Database[(SQL Server 2022)]
+    Service --> Payments["Payment Strategies"]
+    Payments --> Azul["AZUL"]
+    Azul --> ApplePay["Apple Pay"]
+    Azul --> GooglePay["Google Pay"]
+    Service --> Ticketing["Ticketing · QR · Wallet Passes"]
     Flyway["Flyway"] --> Database
-    Tests["JUnit · MockMvc"] --> Container["Testcontainers"]
-    Container --> TestDatabase[(SQL Server 2022 efímero)]
-    Flyway --> TestDatabase
     Metrics["Actuator · Prometheus"] --> Service
-    Service --> Audit["Auditoría central"]
+    Service --> Audit["Auditoría"]
 ```
 
 Flujo principal:
@@ -261,377 +213,96 @@ Flujo principal:
 Controller → Service → Repository → Database
 ```
 
-La autorización se aplica en dos niveles:
-
-1. Las rutas web se protegen en `SecurityConfig`.
-2. Las operaciones sensibles se protegen con `@PreAuthorize` en la capa de servicios.
+Las integraciones externas permanecen desacopladas de las reglas centrales mediante servicios y estrategias específicas.
 
 ---
 
-## 🧩 Patrones de diseño
+## 🧩 Principios y patrones
 
-| Patrón | Ubicación | Propósito |
-|---|---|---|
-| MVC | Controladores y plantillas Thymeleaf | Separar entrada HTTP, modelo y presentación. |
-| Repository | Repositorios de usuarios, categorías, eventos, reservaciones, ventas y pagos | Abstraer la persistencia JPA. |
-| Service Layer | Servicios de usuarios, categorías, eventos, reservaciones, ventas, pagos y dashboard | Centralizar reglas, transacciones y permisos. |
-| Mapper | Mapeadores de usuarios, eventos y reservaciones con MapStruct | Evitar exponer entidades JPA a las vistas. |
-| Strategy | Pasarelas de pago bajo `PaymentGateway` | Sustituir la simulación por integraciones reales sin acoplar ventas al proveedor. |
-| Domain Events | Eventos de venta, evento y pase | Emitir, revocar y sincronizar boletas sin acoplar los módulos. |
-| CQRS ligero | JDBC de solo lectura en `reporting` | Ejecutar agregaciones analíticas sin contaminar el dominio transaccional. |
-
----
-
-## 📁 Estructura principal
-
-```text
-src/
-├── main/
-│   ├── java/com/jairomatias/eventix/
-│   │   ├── auth/
-│   │   ├── audit/
-│   │   ├── category/
-│   │   ├── config/
-│   │   ├── dashboard/
-│   │   ├── event/
-│   │   ├── payment/
-│   │   ├── reporting/
-│   │   ├── role/
-│   │   ├── reservation/
-│   │   ├── sale/
-│   │   ├── security/
-│   │   ├── observability/
-│   │   ├── shared/
-│   │   ├── ticket/
-│   │   └── user/
-│   └── resources/
-│       ├── db/migration/
-│       ├── static/
-│       ├── templates/
-│       ├── application.yml
-│       ├── application-dev.yml
-│       └── application-prod.yml
-└── test/
-    ├── java/com/jairomatias/eventix/
-    │   └── config/TestcontainersConfiguration.java
-    └── resources/application-test.yml
-```
+- Clean Code, SOLID, DRY y KISS.
+- MVC.
+- Repository Pattern.
+- Service Layer.
+- Strategy Pattern para pasarelas de pago.
+- DTO para límites entre presentación y dominio.
+- Transacciones en operaciones críticas.
+- Separación entre lógica de negocio e infraestructura externa.
 
 ---
 
-## 🚦 Estado del proyecto
+## 🧪 Calidad y seguridad
 
-**Estado general: ✅ Versión 1.0.0 — alcance planificado completado**
+El pipeline de Eventix valida automáticamente:
 
-### Completado
+1. Compilación con Java 21 y Maven.
+2. Checkstyle.
+3. Pruebas unitarias y de integración.
+4. Integración con SQL Server mediante Testcontainers.
+5. Cobertura JaCoCo.
+6. Dependency Review.
+7. Arranque completo mediante Docker Compose.
+8. Readiness, autenticación y headers de seguridad.
+9. Escaneo de imagen con Trivy.
+10. Generación de SBOM SPDX.
 
-- [x] Arquitectura base.
-- [x] Seguridad y autenticación.
-- [x] Gestión de usuarios y roles iniciales.
-- [x] Dashboard por rol.
-- [x] Migraciones con Flyway.
-- [x] Integración con SQL Server.
-- [x] Pruebas automatizadas y Testcontainers.
-- [x] Gestión completa de eventos.
-- [x] Categorías de eventos.
-- [x] Estados y validaciones del ciclo de vida.
-- [x] Búsqueda, filtros y paginación de eventos.
-- [x] Autorización de eventos por rol y propiedad.
-- [x] Ejecución reproducible con Docker Compose.
-- [x] Gestión integral de reservaciones.
-- [x] Estados, historial y cancelaciones justificadas.
-- [x] Disponibilidad en tiempo real y prevención de sobreventa.
-- [x] Retenciones temporales y expiración automática.
-- [x] Vista de asistentes y ocupación por evento.
-- [x] Autorización de reservaciones por rol y propiedad del evento.
-- [x] Tipos de entrada, precios y cupos por evento.
-- [x] Ventas vinculadas a reservaciones confirmadas.
-- [x] Estados, historial, cancelaciones y reembolsos de ventas.
-- [x] Pagos simulados con arquitectura extensible por proveedor.
-- [x] Comprobantes y panel comercial.
-- [x] Boletas digitales con PDF, QR, código único y firma Ed25519.
-- [x] Google Wallet y Apple Wallet con actualización de pases.
-- [x] Control de acceso, reingresos, duplicados y bitácora antifraude.
-- [x] Dashboard operativo de asistencia y capacidad.
-- [x] Dashboard ejecutivo y reportes con datos reales.
-- [x] Exportaciones CSV, XLSX y PDF.
-- [x] Auditoría central consultable.
-- [x] Rate limiting, cabeceras de seguridad y correlación.
-- [x] Actuator, Prometheus y logs estructurados.
-- [x] Usuarios SQL separados para runtime y migraciones.
-- [x] CI de calidad, seguridad, SBOM y artefactos.
-- [x] Documentación técnica, funcional y operativa.
+Las integraciones de **Home público + Apple Pay + Google Pay/AZUL** fueron verificadas conjuntamente por el pipeline antes de incorporarse a `main`.
 
 ---
 
-## 🚀 Clonar y probar Eventix
+## 🚀 Ejecución local
 
-### 1. Requisitos previos
+### Requisitos
 
-Instala y verifica:
-
-- JDK 21.
-- Maven 3.6.3 o superior.
-- Microsoft SQL Server 2022 o SQL Server Express.
-- SQL Server Management Studio o Azure Data Studio.
+- Java 21.
+- Maven 3.9+.
+- Docker Desktop.
 - Git.
-- Docker Desktop para ejecutar las pruebas de integración con Testcontainers.
-- Virtualización habilitada en BIOS/UEFI (`SVM Mode` en equipos AMD o `Intel Virtualization Technology` en equipos Intel).
-
-```bash
-java -version
-mvn -version
-git --version
-docker version
-docker ps
-```
-
-Para verificar SQL Server desde una terminal con `sqlcmd` instalado:
-
-```bash
-sqlcmd -?
-```
-
-> Docker Desktop no es obligatorio para iniciar la aplicación en desarrollo, pero sí para ejecutar la suite de integración basada en Testcontainers.
-
-### 2. Clonar el repositorio
 
 ```bash
 git clone https://github.com/Jairo0811/Eventix.git
 cd Eventix
 ```
 
-### 3. Crear la base de datos y los usuarios técnicos
-
-Ejecuta [`EventixDb.sql`](EventixDb.sql) con una cuenta administradora de SQL Server. El script crea:
-
-- la base de datos `EventixDb`;
-- el inicio de sesión `eventix_app` con permisos de lectura y escritura;
-- el inicio de sesión `eventix_migrator` con permisos de migración;
-- la separación entre ejecución y DDL.
-
-El script usa modo SQLCMD y exige una contraseña técnica de al menos 12 caracteres. Desde una terminal:
-
-```powershell
-sqlcmd -S localhost -E `
-  -v EVENTIX_DB_PASSWORD="define-una-clave-segura" `
-  EVENTIX_MIGRATOR_PASSWORD="define-otra-clave-segura" `
-  -i EventixDb.sql
-```
-
-En SQL Server Management Studio, activa **Query > SQLCMD Mode**, define ambas variables en una consulta no guardada y ejecuta el script. No escribas contraseñas dentro de `EventixDb.sql`.
-
-Las tablas y los datos iniciales se crean únicamente mediante las migraciones:
-
-```text
-V1__create_security_schema.sql
-V2__seed_roles_and_administrator.sql
-V3__create_event_management_schema.sql
-V4__create_reservations_schema.sql
-V5__create_sales_and_payments_schema.sql
-V6__create_digital_ticketing_and_access_schema.sql
-V7__create_central_audit_log.sql
-```
-
-### 4. Configurar la conexión
-
-La URL y el usuario predeterminados son exclusivamente para desarrollo local. `DB_PASSWORD` es obligatoria en todos los entornos y nunca debe guardarse en el repositorio:
-
-#### PowerShell
-
-```powershell
-$env:DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true"
-$env:DB_USERNAME = "eventix_app"
-$env:DB_PASSWORD = "tu_contraseña_segura"
-$env:FLYWAY_DB_USERNAME = "eventix_migrator"
-$env:FLYWAY_DB_PASSWORD = "tu_contraseña_de_migraciones"
-```
-
-#### Bash
-
-```bash
-export DB_URL='jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true'
-export DB_USERNAME='eventix_app'
-export DB_PASSWORD='tu_contraseña_segura'
-export FLYWAY_DB_USERNAME='eventix_migrator'
-export FLYWAY_DB_PASSWORD='tu_contraseña_de_migraciones'
-```
-
-### 5. Ejecutar las pruebas
-
-Docker debe estar iniciado porque Testcontainers levanta SQL Server 2022:
-
-```bash
-mvn clean test
-```
-
-Para ejecutar también todas las verificaciones del ciclo Maven:
+Para desarrollo con Maven:
 
 ```bash
 mvn clean verify
-```
-
-El perfil `test` no utiliza H2 ni una emulación: conecta Flyway, Hibernate y las pruebas de integración a un contenedor efímero real de SQL Server.
-
-### 6. Iniciar la aplicación con Maven
-
-```bash
 mvn spring-boot:run
 ```
 
-Abre [http://localhost:8080](http://localhost:8080).
+La solución también incluye configuración Docker Compose para levantar Eventix junto con SQL Server. Deben definirse previamente las variables de entorno requeridas por la base de datos.
 
-### 7. Iniciar toda la plataforma con Docker
-
-El archivo `compose.yaml` levanta SQL Server 2022, prepara `EventixDb`, construye la aplicación con Java 21 y espera la salud de cada servicio:
-
-#### PowerShell
-
-```powershell
-$env:MSSQL_SA_PASSWORD = "define-una-clave-segura"
-$env:EVENTIX_DB_PASSWORD = "define-otra-clave-segura"
-$env:EVENTIX_MIGRATOR_PASSWORD = "define-una-tercera-clave-segura"
-docker compose up --build
-```
-
-#### Bash
-
-```bash
-export MSSQL_SA_PASSWORD='define-una-clave-segura'
-export EVENTIX_DB_PASSWORD='define-otra-clave-segura'
-export EVENTIX_MIGRATOR_PASSWORD='define-una-tercera-clave-segura'
-docker compose up --build
-```
-
-Las variables son obligatorias y no deben guardarse en el repositorio.
-
-Para detener la plataforma:
-
-```bash
-docker compose down
-```
-
-Para eliminar también el volumen de desarrollo:
-
-```bash
-docker compose down -v
-```
-
-### 8. Credenciales iniciales
-
-| Campo | Valor |
-|---|---|
-| Correo | `admin@eventix.local` |
-| Usuario | `admin` |
-| Contraseña temporal | Definida en la migración de datos iniciales para desarrollo local. |
-
-Eventix solicita cambiar la contraseña en el primer acceso.
-
-En producción, `EVENTIX_BOOTSTRAP_ADMIN_PASSWORD` es obligatoria mientras la cuenta conserve la contraseña conocida de desarrollo. Eventix la rota durante el primer arranque y nunca la escribe en logs.
-
-### 9. Ejecutar desde Apache NetBeans
-
-1. Configura **JDK 21** como plataforma Java.
-2. Abre `File > Open Project`.
-3. Selecciona la carpeta que contiene `pom.xml`.
-4. Espera a que NetBeans resuelva las dependencias Maven.
-5. Inicia Docker Desktop si ejecutarás pruebas.
-6. Usa `Run Project` para ejecutar `spring-boot:run`.
-7. Usa `Test Project` para ejecutar la suite.
-
-El archivo `nbactions.xml` incluido define las acciones de ejecutar, depurar, probar y reconstruir.
-
-### 10. Roles y permisos de eventos
-
-| Rol | Acceso |
-|---|---|
-| `ADMINISTRATOR` | Administra categorías y todos los eventos. |
-| `ORGANIZER` | Crea y administra únicamente sus propios eventos. |
-| `OPERATOR` | Consulta eventos publicados o finalizados. |
-| `ACCESS_STAFF` | Consulta eventos publicados o finalizados. |
-
-### 11. Roles y permisos de reservaciones
-
-| Rol | Acceso |
-|---|---|
-| `ADMINISTRATOR` | Administra todas las reservaciones y consulta métricas globales. |
-| `OPERATOR` | Crea, edita, confirma y cancela reservaciones. |
-| `ORGANIZER` | Consulta asistentes, pendientes y ocupación de sus propios eventos. |
-| `ACCESS_STAFF` | Opera el escáner y consulta la bitácora y el dashboard de acceso. |
-
-La retención predeterminada es de 15 minutos. Puede configurarse sin modificar código:
-
-#### PowerShell
-
-```powershell
-$env:RESERVATION_HOLD_DURATION = "PT15M"
-$env:RESERVATION_EXPIRATION_SCAN_INTERVAL = "PT1M"
-```
-
-#### Bash
-
-```bash
-export RESERVATION_HOLD_DURATION='PT15M'
-export RESERVATION_EXPIRATION_SCAN_INTERVAL='PT1M'
-```
-
-### 12. Configurar boletas y wallets
-
-En desarrollo Eventix puede crear una clave Ed25519 efímera. En producción deben configurarse claves persistentes y deshabilitarse ese respaldo. Google Wallet y Apple Wallet son opcionales: si sus credenciales no están completas, la emisión PDF/QR continúa y los botones correspondientes no se muestran.
-
-Las variables, el formato de claves, el servicio web PassKit y la matriz de permisos están documentados en [Fase 5: boletas digitales y control de acceso](docs/phase-5-digital-ticketing.md).
-
-### 13. Problemas frecuentes
-
-- **Testcontainers no encuentra Docker:** abre Docker Desktop y ejecuta `docker version`.
-- **Java incorrecto en Maven:** `java -version` y `mvn -version` deben mostrar Java 21.
-- **Flyway detecta un checksum distinto:** no edites migraciones aplicadas; crea una migración nueva.
-- **SQL Server no responde:** revisa el puerto 1433 y ejecuta `docker compose ps`.
-- **NetBeans usa otro JDK:** cambia la plataforma Java del proyecto a JDK 21.
-- **Puerto 8080 ocupado:** define `APP_PORT` o ejecuta `APP_PORT=8081 docker compose up`.
-- **Flyway no puede crear V7:** confirma que `FLYWAY_DB_USERNAME=eventix_migrator` y que ese usuario conserva `db_ddladmin`.
-- **Producción rechaza el arranque:** configura el administrador inicial y las claves Ed25519 persistentes requeridas por el perfil `prod`.
-
-### 14. Salud y métricas
-
-| Endpoint | Acceso | Uso |
-|---|---|---|
-| `/actuator/health/liveness` | Público | Confirma que el proceso está vivo. |
-| `/actuator/health/readiness` | Público | Confirma que la aplicación está lista. |
-| `/actuator/prometheus` | Administrador | Métricas para Prometheus. |
-
-Cada respuesta incluye `X-Correlation-ID`. El perfil `prod` emite logs JSON compatibles con Logstash.
+> Las integraciones reales con AZUL, Apple Pay, Google Pay, Apple Wallet y Google Wallet requieren credenciales externas y configuración específica del proveedor. Nunca deben almacenarse secretos reales en el repositorio.
 
 ---
 
-## 📚 Documentación
+## 🗃️ Base de datos
 
-- [Arquitectura](docs/architecture.md)
-- [Modelo entidad-relación](docs/er-model.md)
-- [Casos de uso y permisos](docs/use-cases.md)
-- [Manual técnico](docs/technical-manual.md)
-- [Manual del usuario](docs/user-manual.md)
-- [Operación, respaldo y recuperación](docs/operations-runbook.md)
-- [Fase 5: ticketing digital](docs/phase-5-digital-ticketing.md)
-- [Fase 6: reportes y producción](docs/phase-6-reports-production.md)
+- Microsoft SQL Server 2022.
+- Esquema administrado mediante Flyway.
+- Usuario de ejecución separado del usuario de migraciones.
+- Pruebas de integración contra SQL Server real mediante Testcontainers.
 
 ---
 
-## 🎓 Información académica
+## 👤 Autor
 
-| Información | Detalle |
-|---|---|
-| 👨‍🎓 Estudiante | Francis Jairo Matías Rosario |
-| 🆔 Matrícula | 2015-2984 |
-| 📖 Asignatura | Programación 2 (SOF-004) |
-| 👨‍🏫 Profesor | Raydelto Hernández Perera |
-| 🏫 Institución | Instituto Tecnológico de Las Américas (ITLA) |
-| 📅 Período académico | 2017-C2 |
-| 🎯 Tipo de proyecto | Proyecto final |
+**Francis Jairo Matías Rosario**  
+Proyecto original: Programación II — ITLA, 2017-C2.  
+Modernización y reconstrucción profesional: 2026.
 
 ---
 
-## 👨‍💻 Autor
+## 📄 Licencia
 
-**Francis Jairo Matías Rosario**
-[GitHub](https://github.com/Jairo0811)
+Consulta el archivo `LICENSE` del repositorio para conocer los términos aplicables.
+
+---
+
+## 📍 Estado del proyecto
+
+**Eventix 1.0.0 — completado y funcional.**
+
+La reconstrucción incluye autenticación y autorización, gestión de usuarios, eventos y reservaciones, ventas y pagos, **Apple Pay y Google Pay mediante AZUL**, ticketing digital, **Apple Wallet y Google Wallet**, control de acceso, **Home público**, Dashboard ejecutivo, reportes, auditoría, observabilidad, seguridad y automatización CI.
+
+El proyecto continúa abierto a mantenimiento, endurecimiento de producción e integración de credenciales comerciales reales, sin requerir cambios estructurales en el dominio principal.
