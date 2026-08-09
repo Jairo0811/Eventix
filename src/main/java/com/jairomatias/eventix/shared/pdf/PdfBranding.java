@@ -27,7 +27,30 @@ public final class PdfBranding {
                 document,
                 loadLogoBytes(),
                 "eventix-official-logo");
-        content.drawImage(logo, x, y, width, height);
+
+        float imageAspectRatio = (float) logo.getWidth() / logo.getHeight();
+        float boxAspectRatio = width / height;
+
+        float renderedWidth;
+        float renderedHeight;
+
+        if (imageAspectRatio > boxAspectRatio) {
+            renderedWidth = width;
+            renderedHeight = width / imageAspectRatio;
+        } else {
+            renderedHeight = height;
+            renderedWidth = height * imageAspectRatio;
+        }
+
+        float renderedX = x + ((width - renderedWidth) / 2f);
+        float renderedY = y + ((height - renderedHeight) / 2f);
+
+        content.drawImage(
+                logo,
+                renderedX,
+                renderedY,
+                renderedWidth,
+                renderedHeight);
     }
 
     private static byte[] loadLogoBytes() throws IOException {
