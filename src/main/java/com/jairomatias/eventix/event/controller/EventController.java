@@ -20,6 +20,7 @@ import com.jairomatias.eventix.event.dto.EventDetailsView;
 import com.jairomatias.eventix.event.dto.EventForm;
 import com.jairomatias.eventix.event.dto.EventListItem;
 import com.jairomatias.eventix.event.entity.EventStatus;
+import com.jairomatias.eventix.event.service.EventManagementFacade;
 import com.jairomatias.eventix.event.service.EventService;
 import com.jairomatias.eventix.reservation.service.ReservationService;
 import com.jairomatias.eventix.security.UserPrincipal;
@@ -34,14 +35,17 @@ public class EventController {
     private static final int PAGE_SIZE = 9;
 
     private final EventService eventService;
+    private final EventManagementFacade eventManagementFacade;
     private final EventCategoryService categoryService;
     private final ReservationService reservationService;
 
     public EventController(
             EventService eventService,
+            EventManagementFacade eventManagementFacade,
             EventCategoryService categoryService,
             ReservationService reservationService) {
         this.eventService = eventService;
+        this.eventManagementFacade = eventManagementFacade;
         this.categoryService = categoryService;
         this.reservationService = reservationService;
     }
@@ -118,7 +122,7 @@ public class EventController {
         }
 
         try {
-            Long eventId = eventService.create(
+            Long eventId = eventManagementFacade.create(
                     form,
                     authentication.getName());
             redirectAttributes.addFlashAttribute(
@@ -211,7 +215,7 @@ public class EventController {
         }
 
         try {
-            eventService.update(
+            eventManagementFacade.update(
                     id,
                     form,
                     authentication.getName());
