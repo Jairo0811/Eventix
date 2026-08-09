@@ -1,0 +1,15 @@
+.wallet-payment-panel .apple-pay-button {
+    -webkit-appearance: -apple-pay-button;
+    -apple-pay-button-type: pay;
+    -apple-pay-button-style: black;
+    appearance: none;
+    min-width: 220px;
+    min-height: 48px;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.wallet-payment-panel [role="button"] {
+    min-height: 48px;
+}
