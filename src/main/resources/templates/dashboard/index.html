@@ -10,291 +10,352 @@
 <main class="app-main">
     <div th:replace="~{fragments/messages :: messages}"></div>
 
-    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
-        <div>
-            <p class="text-success fw-semibold mb-1">Panel principal</p>
-            <h1 class="page-title" th:text="|Hola, ${principal.fullName}|">Hola</h1>
-            <p class="page-subtitle">Este es el estado actual de tu espacio Eventix.</p>
-        </div>
-        <span class="badge rounded-pill text-bg-dark px-3 py-2"
-              th:text="${principal.roleName}">ROL</span>
-    </div>
-
-    <section sec:authorize="hasRole('ADMINISTRATOR')" aria-labelledby="user-metrics-title">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-            <div>
-                <h2 class="h5 fw-bold mb-1">Resumen ejecutivo del año</h2>
-                <p class="text-secondary mb-0">Ingresos, conversión y operación acumulada.</p>
-            </div>
-            <a class="btn btn-sm btn-outline-primary" th:href="@{/reports}">Ver reportes completos</a>
-        </div>
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-xl-3">
-                <article class="metric-card">
-                    <div class="metric-icon"><i class="bi bi-cash-coin" aria-hidden="true"></i></div>
-                    <div class="metric-label">Ingresos</div>
-                    <div class="metric-value metric-value-money" th:text="|DOP ${#numbers.formatDecimal(summary.executive.revenue, 1, 'COMMA', 2, 'POINT')}|">DOP 0.00</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl-3">
-                <article class="metric-card">
-                    <div class="metric-icon"><i class="bi bi-ticket-perforated-fill" aria-hidden="true"></i></div>
-                    <div class="metric-label">Entradas vendidas</div>
-                    <div class="metric-value" th:text="${summary.executive.ticketsSold}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl-3">
-                <article class="metric-card">
-                    <div class="metric-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></div>
-                    <div class="metric-label">Asistentes</div>
-                    <div class="metric-value" th:text="${summary.executive.attendees}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl-3">
-                <article class="metric-card">
-                    <div class="metric-icon"><i class="bi bi-percent" aria-hidden="true"></i></div>
-                    <div class="metric-label">Conversión</div>
-                    <div class="metric-value" th:text="|${#numbers.formatDecimal(summary.executive.conversionRate, 1, 2)} %|">0 %</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl-3">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Ventas pagadas</div>
-                    <div class="metric-value" th:text="${summary.executive.sales}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl-3">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Entradas disponibles</div>
-                    <div class="metric-value" th:text="${summary.availableTickets}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl-3">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Organizadores activos</div>
-                    <div class="metric-value" th:text="${summary.activeOrganizers}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl-3">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Tasa de asistencia</div>
-                    <div class="metric-value" th:text="|${#numbers.formatDecimal(summary.executive.attendanceRate, 1, 2)} %|">0 %</div>
-                </article>
-            </div>
-        </div>
-
-        <div class="row g-4 mb-4">
-            <div class="col-xl-7">
-                <div class="content-card h-100">
-                    <h2 class="h5 fw-bold">Eventos con mayor rendimiento</h2>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead><tr><th>Evento</th><th>Entradas</th><th>Asistentes</th><th>Ingresos</th></tr></thead>
-                            <tbody>
-                            <tr th:each="row : ${summary.topEvents}">
-                                <td class="fw-semibold" th:text="${row.eventName}">Evento</td>
-                                <td th:text="${row.ticketsSold}">0</td>
-                                <td th:text="${row.attendees}">0</td>
-                                <td th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</td>
-                            </tr>
-                            <tr th:if="${#lists.isEmpty(summary.topEvents)}"><td colspan="4" class="empty-state">Aún no hay actividad este año.</td></tr>
-                            </tbody>
-                        </table>
+    <div class="dashboard-shell">
+        <section class="dashboard-hero" aria-labelledby="dashboard-title">
+            <div class="dashboard-hero-content">
+                <div class="dashboard-hero-copy">
+                    <div class="dashboard-eyebrow">
+                        <i class="bi bi-activity" aria-hidden="true"></i>
+                        Centro de operaciones
                     </div>
-                </div>
-            </div>
-            <div class="col-xl-5">
-                <div class="content-card h-100">
-                    <h2 class="h5 fw-bold">Ingresos mensuales</h2>
-                    <div class="dashboard-trend" th:if="${!#lists.isEmpty(summary.monthlyRevenue)}">
-                        <div class="dashboard-trend-row" th:each="row : ${summary.monthlyRevenue}">
-                            <span th:text="${row.period}">Mes</span>
-                            <strong th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</strong>
-                        </div>
-                    </div>
-                    <p class="empty-state" th:if="${#lists.isEmpty(summary.monthlyRevenue)}">Aún no hay ingresos registrados.</p>
-                </div>
-            </div>
-        </div>
-
-        <h2 class="visually-hidden" id="user-metrics-title">Indicadores de usuarios</h2>
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-xl-3">
-                <article class="metric-card">
-                    <div class="metric-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></div>
-                    <div class="metric-label">Total de usuarios</div>
-                    <div class="metric-value" th:text="${summary.totalUsers}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl-3">
-                <article class="metric-card">
-                    <div class="metric-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></div>
-                    <div class="metric-label">Usuarios activos</div>
-                    <div class="metric-value" th:text="${summary.activeUsers}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl-3">
-                <article class="metric-card">
-                    <div class="metric-icon"><i class="bi bi-person-dash-fill" aria-hidden="true"></i></div>
-                    <div class="metric-label">Usuarios inactivos</div>
-                    <div class="metric-value" th:text="${summary.inactiveUsers}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl-3">
-                <article class="metric-card">
-                    <div class="metric-icon"><i class="bi bi-person-lock" aria-hidden="true"></i></div>
-                    <div class="metric-label">Usuarios bloqueados</div>
-                    <div class="metric-value" th:text="${summary.lockedUsers}">0</div>
-                </article>
-            </div>
-        </div>
-
-        <div class="content-card">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                <div>
-                    <h2 class="h5 fw-bold mb-1">Administración de usuarios</h2>
-                    <p class="text-secondary mb-0">
-                        Crea cuentas, asigna roles y controla el acceso a la plataforma.
+                    <h1 id="dashboard-title" th:text="|Hola, ${principal.fullName}|">Hola</h1>
+                    <p sec:authorize="hasRole('ADMINISTRATOR')">
+                        Supervisa ingresos, ventas, eventos, reservaciones y disponibilidad desde una sola vista ejecutiva.
                     </p>
+                    <p sec:authorize="!hasRole('ADMINISTRATOR')">
+                        Consulta tu actividad y accede rápidamente a las herramientas disponibles para tu rol.
+                    </p>
+                    <div class="dashboard-role">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                        <span th:text="${principal.roleName}">ROL</span>
+                    </div>
+                    <div class="dashboard-hero-actions" sec:authorize="hasRole('ADMINISTRATOR')">
+                        <a class="btn btn-light" th:href="@{/reports}">
+                            <i class="bi bi-bar-chart-line me-2" aria-hidden="true"></i>
+                            Ver reportes
+                        </a>
+                        <a class="btn btn-outline-light" th:href="@{/events}">
+                            <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
+                            Gestionar eventos
+                        </a>
+                    </div>
                 </div>
-                <a class="btn btn-primary" th:href="@{/users}">
-                    Gestionar usuarios
-                    <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+                <img class="dashboard-hero-logo"
+                     th:src="@{/images/eventix-logo.svg}"
+                     alt="Eventix">
+            </div>
+        </section>
+
+        <section sec:authorize="hasRole('ADMINISTRATOR')" aria-labelledby="executive-title">
+            <div class="dashboard-section-heading mb-3">
+                <div>
+                    <h2 id="executive-title">Resumen ejecutivo del año</h2>
+                    <p>Los indicadores clave para medir el rendimiento comercial y operativo.</p>
+                </div>
+                <span class="badge rounded-pill text-bg-light border px-3 py-2">
+                    <i class="bi bi-calendar3 me-1 text-success" aria-hidden="true"></i>
+                    Acumulado anual
+                </span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-sm-6 col-xl-3">
+                    <article class="dashboard-kpi">
+                        <div class="dashboard-kpi-top">
+                            <span class="dashboard-kpi-icon"><i class="bi bi-cash-coin" aria-hidden="true"></i></span>
+                        </div>
+                        <div class="dashboard-kpi-label">Ingresos</div>
+                        <div class="dashboard-kpi-value"
+                             th:text="|DOP ${#numbers.formatDecimal(summary.executive.revenue, 1, 'COMMA', 2, 'POINT')}|">DOP 0.00</div>
+                        <div class="dashboard-kpi-caption">Ingresos confirmados del período</div>
+                    </article>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <article class="dashboard-kpi">
+                        <div class="dashboard-kpi-top">
+                            <span class="dashboard-kpi-icon"><i class="bi bi-ticket-perforated-fill" aria-hidden="true"></i></span>
+                        </div>
+                        <div class="dashboard-kpi-label">Entradas vendidas</div>
+                        <div class="dashboard-kpi-value" th:text="${summary.executive.ticketsSold}">0</div>
+                        <div class="dashboard-kpi-caption">Boletas emitidas por ventas pagadas</div>
+                    </article>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <article class="dashboard-kpi">
+                        <div class="dashboard-kpi-top">
+                            <span class="dashboard-kpi-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
+                        </div>
+                        <div class="dashboard-kpi-label">Asistentes</div>
+                        <div class="dashboard-kpi-value" th:text="${summary.executive.attendees}">0</div>
+                        <div class="dashboard-kpi-caption">Accesos validados en eventos</div>
+                    </article>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <article class="dashboard-kpi">
+                        <div class="dashboard-kpi-top">
+                            <span class="dashboard-kpi-icon"><i class="bi bi-percent" aria-hidden="true"></i></span>
+                        </div>
+                        <div class="dashboard-kpi-label">Conversión</div>
+                        <div class="dashboard-kpi-value"
+                             th:text="|${#numbers.formatDecimal(summary.executive.conversionRate, 1, 2)} %|">0 %</div>
+                        <div class="dashboard-kpi-caption">Reservaciones convertidas en ventas</div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section sec:authorize="hasRole('ADMINISTRATOR')" aria-label="Indicadores operativos">
+            <div class="row g-3">
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-receipt-check" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Ventas pagadas</div>
+                        <div class="dashboard-kpi-value" th:text="${summary.executive.sales}">0</div>
+                        <div class="dashboard-kpi-caption">Operaciones completadas</div>
+                    </article>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-ticket-detailed" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Entradas disponibles</div>
+                        <div class="dashboard-kpi-value" th:text="${summary.availableTickets}">0</div>
+                        <div class="dashboard-kpi-caption">Capacidad aún disponible</div>
+                    </article>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-person-badge-fill" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Organizadores activos</div>
+                        <div class="dashboard-kpi-value" th:text="${summary.activeOrganizers}">0</div>
+                        <div class="dashboard-kpi-caption">Cuentas operativas</div>
+                    </article>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Tasa de asistencia</div>
+                        <div class="dashboard-kpi-value"
+                             th:text="|${#numbers.formatDecimal(summary.executive.attendanceRate, 1, 2)} %|">0 %</div>
+                        <div class="dashboard-kpi-caption">Asistentes sobre entradas emitidas</div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section sec:authorize="hasRole('ADMINISTRATOR')" aria-labelledby="performance-title">
+            <div class="dashboard-section-heading mb-3">
+                <div>
+                    <h2 id="performance-title">Rendimiento comercial</h2>
+                    <p>Eventos con mayor movimiento e ingresos acumulados por mes.</p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-xl-8">
+                    <article class="dashboard-panel">
+                        <div class="dashboard-panel-title">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="dashboard-panel-icon"><i class="bi bi-trophy-fill" aria-hidden="true"></i></span>
+                                <h3>Eventos con mayor rendimiento</h3>
+                            </div>
+                            <a class="btn btn-sm btn-outline-primary" th:href="@{/reports}">Ver detalle</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Evento</th>
+                                    <th>Entradas</th>
+                                    <th>Asistentes</th>
+                                    <th class="text-end">Ingresos</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="row : ${summary.topEvents}">
+                                    <td>
+                                        <div class="dashboard-event-name" th:text="${row.eventName}">Evento</div>
+                                        <small class="text-secondary" th:text="${row.categoryName}">Categoría</small>
+                                    </td>
+                                    <td th:text="${row.ticketsSold}">0</td>
+                                    <td th:text="${row.attendees}">0</td>
+                                    <td class="text-end fw-bold text-success"
+                                        th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">DOP 0.00</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(summary.topEvents)}">
+                                    <td colspan="4" class="dashboard-empty">Aún no hay actividad comercial este año.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="col-xl-4">
+                    <article class="dashboard-panel">
+                        <div class="dashboard-panel-title">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="dashboard-panel-icon"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i></span>
+                                <h3>Ingresos mensuales</h3>
+                            </div>
+                        </div>
+                        <div class="dashboard-trend-list" th:if="${!#lists.isEmpty(summary.monthlyRevenue)}">
+                            <div class="dashboard-trend-item" th:each="row : ${summary.monthlyRevenue}">
+                                <span class="dashboard-trend-period" th:text="${row.period}">Mes</span>
+                                <strong class="dashboard-trend-value"
+                                        th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">DOP 0.00</strong>
+                            </div>
+                        </div>
+                        <p class="dashboard-empty mb-0" th:if="${#lists.isEmpty(summary.monthlyRevenue)}">
+                            Aún no hay ingresos registrados.
+                        </p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section sec:authorize="hasRole('ADMINISTRATOR')" aria-labelledby="operations-title">
+            <div class="dashboard-section-heading mb-3">
+                <div>
+                    <h2 id="operations-title">Estado operativo</h2>
+                    <p>Lectura rápida del inventario de eventos, reservaciones y ventas.</p>
+                </div>
+            </div>
+
+            <div class="dashboard-operation-grid">
+                <article class="dashboard-operation-card">
+                    <div class="dashboard-operation-head">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="dashboard-panel-icon"><i class="bi bi-calendar-event-fill" aria-hidden="true"></i></span>
+                            <h3>Eventos</h3>
+                        </div>
+                        <strong th:text="${summary.totalEvents}">0</strong>
+                    </div>
+                    <div class="dashboard-operation-body">
+                        <div class="dashboard-stat-row"><span>Publicados</span><strong class="text-success" th:text="${summary.publishedEvents}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Borradores</span><strong th:text="${summary.draftEvents}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Finalizados</span><strong th:text="${summary.finishedEvents}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Cancelados</span><strong class="text-danger" th:text="${summary.cancelledEvents}">0</strong></div>
+                    </div>
+                </article>
+
+                <article class="dashboard-operation-card">
+                    <div class="dashboard-operation-head">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="dashboard-panel-icon"><i class="bi bi-journal-check" aria-hidden="true"></i></span>
+                            <h3>Reservaciones</h3>
+                        </div>
+                        <strong th:text="${summary.totalReservations}">0</strong>
+                    </div>
+                    <div class="dashboard-operation-body">
+                        <div class="dashboard-stat-row"><span>Confirmadas</span><strong class="text-success" th:text="${summary.confirmedReservations}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Pendientes</span><strong class="text-warning" th:text="${summary.pendingReservations}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Expiradas</span><strong th:text="${summary.expiredReservations}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Canceladas</span><strong class="text-danger" th:text="${summary.cancelledReservations}">0</strong></div>
+                    </div>
+                </article>
+
+                <article class="dashboard-operation-card">
+                    <div class="dashboard-operation-head">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="dashboard-panel-icon"><i class="bi bi-receipt-cutoff" aria-hidden="true"></i></span>
+                            <h3>Ventas</h3>
+                        </div>
+                        <strong th:text="${summary.totalSales}">0</strong>
+                    </div>
+                    <div class="dashboard-operation-body">
+                        <div class="dashboard-stat-row"><span>Pagadas</span><strong class="text-success" th:text="${summary.paidSales}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Pendientes</span><strong class="text-warning" th:text="${summary.pendingSales}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Reembolsadas</span><strong th:text="${summary.refundedSales}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Canceladas</span><strong class="text-danger" th:text="${summary.cancelledSales}">0</strong></div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section sec:authorize="hasRole('ADMINISTRATOR')" aria-labelledby="users-title">
+            <div class="dashboard-section-heading mb-3">
+                <div>
+                    <h2 id="users-title">Usuarios y accesos</h2>
+                    <p>Estado general de las cuentas registradas en la plataforma.</p>
+                </div>
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/users}">Gestionar usuarios</a>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Total</div>
+                        <div class="dashboard-kpi-value" th:text="${summary.totalUsers}">0</div>
+                    </article>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Activos</div>
+                        <div class="dashboard-kpi-value text-success" th:text="${summary.activeUsers}">0</div>
+                    </article>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-person-dash-fill" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Inactivos</div>
+                        <div class="dashboard-kpi-value" th:text="${summary.inactiveUsers}">0</div>
+                    </article>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-person-lock" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Bloqueados</div>
+                        <div class="dashboard-kpi-value text-danger" th:text="${summary.lockedUsers}">0</div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section sec:authorize="hasRole('ADMINISTRATOR')" aria-labelledby="quick-actions-title">
+            <div class="dashboard-section-heading mb-3">
+                <div>
+                    <h2 id="quick-actions-title">Accesos rápidos</h2>
+                    <p>Las acciones administrativas más frecuentes.</p>
+                </div>
+            </div>
+            <div class="dashboard-quick-actions">
+                <a class="dashboard-quick-action" th:href="@{/events}">
+                    <i class="bi bi-calendar-plus" aria-hidden="true"></i>
+                    <span><strong>Eventos</strong><small>Crear y administrar</small></span>
+                </a>
+                <a class="dashboard-quick-action" th:href="@{/reservations}">
+                    <i class="bi bi-journal-check" aria-hidden="true"></i>
+                    <span><strong>Reservaciones</strong><small>Revisar solicitudes</small></span>
+                </a>
+                <a class="dashboard-quick-action" th:href="@{/sales}">
+                    <i class="bi bi-receipt-cutoff" aria-hidden="true"></i>
+                    <span><strong>Ventas</strong><small>Pagos y operaciones</small></span>
+                </a>
+                <a class="dashboard-quick-action" th:href="@{/reports}">
+                    <i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i>
+                    <span><strong>Reportes</strong><small>Analítica ejecutiva</small></span>
                 </a>
             </div>
-        </div>
+        </section>
 
-        <h2 class="h5 fw-bold mt-4 mb-3">Estado de los eventos</h2>
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Total</div>
-                    <div class="metric-value" th:text="${summary.totalEvents}">0</div>
-                </article>
+        <section class="dashboard-panel" sec:authorize="!hasRole('ADMINISTRATOR')">
+            <div class="d-flex align-items-start gap-3">
+                <span class="dashboard-panel-icon flex-shrink-0"><i class="bi bi-stars" aria-hidden="true"></i></span>
+                <div>
+                    <h2 class="h5 fw-bold">Tu espacio está listo</h2>
+                    <p class="text-secondary mb-3">
+                        Consulta la agenda disponible y administra tus eventos si tienes el rol de organizador.
+                    </p>
+                    <a class="btn btn-primary" th:href="@{/events}">
+                        Ir a eventos
+                        <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+                    </a>
+                </div>
             </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Borradores</div>
-                    <div class="metric-value" th:text="${summary.draftEvents}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Publicados</div>
-                    <div class="metric-value" th:text="${summary.publishedEvents}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Cancelados</div>
-                    <div class="metric-value" th:text="${summary.cancelledEvents}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Finalizados</div>
-                    <div class="metric-value" th:text="${summary.finishedEvents}">0</div>
-                </article>
-            </div>
-        </div>
-
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-4 mb-3">
-            <h2 class="h5 fw-bold mb-0">Estado de las reservaciones</h2>
-            <a class="btn btn-sm btn-outline-primary" th:href="@{/reservations}">
-                Gestionar reservaciones
-            </a>
-        </div>
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Total</div>
-                    <div class="metric-value" th:text="${summary.totalReservations}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Pendientes</div>
-                    <div class="metric-value text-warning" th:text="${summary.pendingReservations}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Confirmadas</div>
-                    <div class="metric-value text-success" th:text="${summary.confirmedReservations}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Canceladas</div>
-                    <div class="metric-value" th:text="${summary.cancelledReservations}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Expiradas</div>
-                    <div class="metric-value" th:text="${summary.expiredReservations}">0</div>
-                </article>
-            </div>
-        </div>
-
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-4 mb-3">
-            <h2 class="h5 fw-bold mb-0">Estado de las ventas</h2>
-            <a class="btn btn-sm btn-outline-primary" th:href="@{/sales}">
-                Gestionar ventas
-            </a>
-        </div>
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Total</div>
-                    <div class="metric-value" th:text="${summary.totalSales}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Pendientes</div>
-                    <div class="metric-value text-warning" th:text="${summary.pendingSales}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Pagadas</div>
-                    <div class="metric-value text-success" th:text="${summary.paidSales}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Reembolsadas</div>
-                    <div class="metric-value" th:text="${summary.refundedSales}">0</div>
-                </article>
-            </div>
-            <div class="col-6 col-xl">
-                <article class="metric-card metric-card-events">
-                    <div class="metric-label">Canceladas</div>
-                    <div class="metric-value" th:text="${summary.cancelledSales}">0</div>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <section class="content-card" sec:authorize="!hasRole('ADMINISTRATOR')">
-        <div class="d-flex align-items-start gap-3">
-            <div class="metric-icon flex-shrink-0">
-                <i class="bi bi-stars" aria-hidden="true"></i>
-            </div>
-            <div>
-                <h2 class="h5 fw-bold">Tu espacio está listo</h2>
-                <p class="text-secondary mb-3">
-                    Consulta la agenda disponible y administra tus eventos si tienes
-                    el rol de organizador.
-                </p>
-                <a class="btn btn-primary" th:href="@{/events}">
-                    Ir a eventos
-                    <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
-                </a>
-            </div>
-        </div>
-    </section>
+        </section>
+    </div>
 
     <footer th:replace="~{fragments/footer :: footer}"></footer>
 </main>
