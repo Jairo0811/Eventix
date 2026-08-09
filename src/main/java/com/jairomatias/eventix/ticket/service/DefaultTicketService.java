@@ -72,6 +72,18 @@ public class DefaultTicketService implements TicketService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('USER')")
+    public Page<TicketListItem> findMine(
+            String authenticatedLogin,
+            Pageable pageable) {
+        User actor = findActor(authenticatedLogin);
+        return ticketRepository
+                .findAllByAttendeeEmailIgnoreCase(actor.getEmail(), pageable)
+                .map(this::toListItem);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')")
     public TicketSummary getSummary(
             Long eventId,
@@ -100,7 +112,7 @@ public class DefaultTicketService implements TicketService {
 
     @Override
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER', 'USER')")
     public TicketDetailsView findById(
             Long id,
             String authenticatedLogin) {
@@ -148,7 +160,7 @@ public class DefaultTicketService implements TicketService {
 
     @Override
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER', 'USER')")
     public byte[] createPdf(Long id, String authenticatedLogin) {
         return documentService.createPdf(
                 authorizedTicket(id, authenticatedLogin));
@@ -156,7 +168,7 @@ public class DefaultTicketService implements TicketService {
 
     @Override
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER', 'USER')")
     public byte[] createQrPng(Long id, String authenticatedLogin) {
         return documentService.createQrPng(
                 authorizedTicket(id, authenticatedLogin));
@@ -164,7 +176,7 @@ public class DefaultTicketService implements TicketService {
 
     @Override
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER', 'USER')")
     public String createGoogleWalletUrl(
             Long id,
             String authenticatedLogin) {
@@ -174,7 +186,7 @@ public class DefaultTicketService implements TicketService {
 
     @Override
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER', 'USER')")
     public byte[] createAppleWalletPass(
             Long id,
             String authenticatedLogin) {
@@ -212,6 +224,11 @@ public class DefaultTicketService implements TicketService {
         if (role == RoleName.ORGANIZER
                 && ticket.getEvent().getOrganizer().getId()
                         .equals(actor.getId())) {
+            return;
+        }
+        if (role == RoleName.USER
+                && ticket.getAttendeeEmail()
+                        .equalsIgnoreCase(actor.getEmail())) {
             return;
         }
         throw new BusinessRuleException(
