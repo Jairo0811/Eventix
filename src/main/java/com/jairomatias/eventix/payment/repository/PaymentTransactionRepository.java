@@ -6,8 +6,9 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.jairomatias.eventix.payment.entity.PaymentTransaction;
+import com.jairomatias.eventix.payment.entity.PaymentProvider;
 import com.jairomatias.eventix.payment.entity.PaymentStatus;
+import com.jairomatias.eventix.payment.entity.PaymentTransaction;
 import com.jairomatias.eventix.payment.entity.PaymentTransactionType;
 
 public interface PaymentTransactionRepository
@@ -22,6 +23,13 @@ public interface PaymentTransactionRepository
     Optional<PaymentTransaction>
             findFirstBySale_IdAndTransactionTypeAndStatusOrderByProcessedAtDesc(
                     Long saleId,
+                    PaymentTransactionType transactionType,
+                    PaymentStatus status);
+
+    Optional<PaymentTransaction>
+            findFirstBySale_ReferenceCodeAndProviderAndTransactionTypeAndStatusOrderByProcessedAtDesc(
+                    String saleReference,
+                    PaymentProvider provider,
                     PaymentTransactionType transactionType,
                     PaymentStatus status);
 }
