@@ -30,6 +30,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("eventId") Long eventId,
             @Param("organizerId") Long organizerId);
 
+    @Query("""
+            SELECT COALESCE(SUM(e.capacity), 0)
+            FROM Event e
+            WHERE e.status = :status
+            """)
+    Long sumCapacityByStatus(@Param("status") EventStatus status);
+
     long countByStatus(EventStatus status);
 
     @EntityGraph(attributePaths = {"category", "organizer"})

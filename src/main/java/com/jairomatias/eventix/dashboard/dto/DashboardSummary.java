@@ -1,5 +1,11 @@
 package com.jairomatias.eventix.dashboard.dto;
 
+import java.util.List;
+
+import com.jairomatias.eventix.reporting.dto.EventReportRow;
+import com.jairomatias.eventix.reporting.dto.MonthlyRevenueRow;
+import com.jairomatias.eventix.reporting.dto.ReportSummary;
+
 public record DashboardSummary(
         long totalUsers,
         long activeUsers,
@@ -19,5 +25,10 @@ public record DashboardSummary(
         long pendingSales,
         long paidSales,
         long refundedSales,
-        long cancelledSales) {
+        long cancelledSales,
+        long activeOrganizers,
+        long availableTickets,
+        ReportSummary executive,
+        List<EventReportRow> topEvents,
+        List<MonthlyRevenueRow> monthlyRevenue) {
 }

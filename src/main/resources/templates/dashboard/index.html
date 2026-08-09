@@ -21,6 +21,102 @@
     </div>
 
     <section sec:authorize="hasRole('ADMINISTRATOR')" aria-labelledby="user-metrics-title">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+            <div>
+                <h2 class="h5 fw-bold mb-1">Resumen ejecutivo del año</h2>
+                <p class="text-secondary mb-0">Ingresos, conversión y operación acumulada.</p>
+            </div>
+            <a class="btn btn-sm btn-outline-primary" th:href="@{/reports}">Ver reportes completos</a>
+        </div>
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+                <article class="metric-card">
+                    <div class="metric-icon"><i class="bi bi-cash-coin" aria-hidden="true"></i></div>
+                    <div class="metric-label">Ingresos</div>
+                    <div class="metric-value metric-value-money" th:text="|DOP ${#numbers.formatDecimal(summary.executive.revenue, 1, 'COMMA', 2, 'POINT')}|">DOP 0.00</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card">
+                    <div class="metric-icon"><i class="bi bi-ticket-perforated-fill" aria-hidden="true"></i></div>
+                    <div class="metric-label">Entradas vendidas</div>
+                    <div class="metric-value" th:text="${summary.executive.ticketsSold}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card">
+                    <div class="metric-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></div>
+                    <div class="metric-label">Asistentes</div>
+                    <div class="metric-value" th:text="${summary.executive.attendees}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card">
+                    <div class="metric-icon"><i class="bi bi-percent" aria-hidden="true"></i></div>
+                    <div class="metric-label">Conversión</div>
+                    <div class="metric-value" th:text="|${#numbers.formatDecimal(summary.executive.conversionRate, 1, 2)} %|">0 %</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Ventas pagadas</div>
+                    <div class="metric-value" th:text="${summary.executive.sales}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Entradas disponibles</div>
+                    <div class="metric-value" th:text="${summary.availableTickets}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Organizadores activos</div>
+                    <div class="metric-value" th:text="${summary.activeOrganizers}">0</div>
+                </article>
+            </div>
+            <div class="col-6 col-xl-3">
+                <article class="metric-card metric-card-events">
+                    <div class="metric-label">Tasa de asistencia</div>
+                    <div class="metric-value" th:text="|${#numbers.formatDecimal(summary.executive.attendanceRate, 1, 2)} %|">0 %</div>
+                </article>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-xl-7">
+                <div class="content-card h-100">
+                    <h2 class="h5 fw-bold">Eventos con mayor rendimiento</h2>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead><tr><th>Evento</th><th>Entradas</th><th>Asistentes</th><th>Ingresos</th></tr></thead>
+                            <tbody>
+                            <tr th:each="row : ${summary.topEvents}">
+                                <td class="fw-semibold" th:text="${row.eventName}">Evento</td>
+                                <td th:text="${row.ticketsSold}">0</td>
+                                <td th:text="${row.attendees}">0</td>
+                                <td th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(summary.topEvents)}"><td colspan="4" class="empty-state">Aún no hay actividad este año.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-5">
+                <div class="content-card h-100">
+                    <h2 class="h5 fw-bold">Ingresos mensuales</h2>
+                    <div class="dashboard-trend" th:if="${!#lists.isEmpty(summary.monthlyRevenue)}">
+                        <div class="dashboard-trend-row" th:each="row : ${summary.monthlyRevenue}">
+                            <span th:text="${row.period}">Mes</span>
+                            <strong th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</strong>
+                        </div>
+                    </div>
+                    <p class="empty-state" th:if="${#lists.isEmpty(summary.monthlyRevenue)}">Aún no hay ingresos registrados.</p>
+                </div>
+            </div>
+        </div>
+
         <h2 class="visually-hidden" id="user-metrics-title">Indicadores de usuarios</h2>
         <div class="row g-3 mb-4">
             <div class="col-6 col-xl-3">
