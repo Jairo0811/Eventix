@@ -107,6 +107,19 @@ eventix:
     hold-duration: ${RESERVATION_HOLD_DURATION:PT15M}
     expiration-scan-interval: ${RESERVATION_EXPIRATION_SCAN_INTERVAL:PT1M}
 
+  payments:
+    azul-wallet:
+      enabled: ${AZUL_WALLET_ENABLED:false}
+      environment: ${AZUL_WALLET_ENVIRONMENT:TEST}
+      store: ${AZUL_STORE:}
+      auth1: ${AZUL_AUTH1:}
+      auth2: ${AZUL_AUTH2:}
+      channel: ${AZUL_CHANNEL:EC}
+      merchant-display-name: ${AZUL_MERCHANT_DISPLAY_NAME:Eventix}
+      initiative-context: ${AZUL_APPLE_INITIATIVE_CONTEXT:}
+      google-merchant-id: ${AZUL_GOOGLE_MERCHANT_ID:}
+      apple-domain-association: ${AZUL_APPLE_DOMAIN_ASSOCIATION:}
+
   ticketing:
     issuer-name: ${TICKETING_ISSUER_NAME:Eventix}
     signing-key-id: ${TICKETING_SIGNING_KEY_ID:eventix-dev}
