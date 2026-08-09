@@ -304,6 +304,7 @@
                                 <configuration>
                                     <configLocation>config/checkstyle/checkstyle.xml</configLocation>
                                     <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                                    <excludeGeneratedSources>true</excludeGeneratedSources>
                                     <failOnViolation>true</failOnViolation>
                                     <consoleOutput>true</consoleOutput>
                                 </configuration>
