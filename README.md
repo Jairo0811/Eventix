@@ -164,27 +164,125 @@ El panel principal ofrece una lectura moderna del estado operativo y comercial d
 
 # 🧱 Stack tecnológico
 
+## ⚙️ Backend
+
+<div align="center">
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" title="Java 21" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg" alt="Spring" title="Spring Boot, Spring MVC, Spring Security y Spring Data JPA" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/hibernate/hibernate-original.svg" alt="Hibernate" title="Hibernate ORM" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/maven/maven-original.svg" alt="Maven" title="Apache Maven" width="52" height="52" />
+
+</div>
+
 | Área | Tecnología |
 |---|---|
 | Lenguaje | Java 21 LTS |
 | Framework | Spring Boot 3.5 |
-| Web | Spring MVC + Thymeleaf |
-| Seguridad | Spring Security, BCrypt, CSRF |
-| Persistencia | Spring Data JPA + Hibernate |
-| Base de datos | Microsoft SQL Server 2022 |
+| Aplicación web | Spring MVC |
+| Seguridad | Spring Security, BCrypt y CSRF |
+| Persistencia | Spring Data JPA e Hibernate |
 | Migraciones | Flyway |
 | Mapeo | MapStruct |
-| UI | HTML5, CSS3, JavaScript, Bootstrap 5, Bootstrap Icons |
-| Documentos | Apache PDFBox |
-| QR | ZXing |
-| Criptografía | Ed25519 + Bouncy Castle |
-| Pagos | Strategy + AZUL + Apple Pay + Google Pay |
-| Wallet passes | Apple Wallet + Google Wallet |
-| Observabilidad | Spring Boot Actuator, Micrometer, Prometheus |
-| Build | Apache Maven |
-| Contenedores | Docker + Docker Compose |
-| Pruebas | JUnit 5, MockMvc, Spring Security Test, Testcontainers |
-| CI y seguridad | GitHub Actions, JaCoCo, Checkstyle, Dependency Review, Trivy, SBOM SPDX |
+| Construcción | Apache Maven |
+| Documentos y QR | Apache PDFBox y ZXing |
+| Criptografía | Ed25519 y Bouncy Castle |
+| Observabilidad | Spring Boot Actuator, Micrometer y Prometheus |
+
+## 🎨 Frontend
+
+<div align="center">
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" alt="HTML5" title="HTML5" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" alt="CSS3" title="CSS3" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" alt="JavaScript" title="JavaScript" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bootstrap/bootstrap-original.svg" alt="Bootstrap" title="Bootstrap 5" width="52" height="52" />
+<img src="https://www.thymeleaf.org/images/thymeleaf.png" alt="Thymeleaf" title="Thymeleaf" width="52" height="52" />
+
+</div>
+
+| Área | Tecnología |
+|---|---|
+| Motor de plantillas | Thymeleaf |
+| Estructura | HTML5 |
+| Estilos | CSS3 y Bootstrap 5 |
+| Interactividad | JavaScript |
+| Componentes visuales | Bootstrap Icons |
+| Diseño | Home público, login y Dashboard responsivos con identidad visual de Eventix |
+
+## 🗄️ Base de datos
+
+<div align="center">
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg" alt="Microsoft SQL Server" title="Microsoft SQL Server 2022" width="52" height="52" />
+
+</div>
+
+| Área | Tecnología |
+|---|---|
+| Motor relacional | Microsoft SQL Server 2022 o SQL Server Express |
+| Driver JDBC | Microsoft JDBC Driver for SQL Server |
+| Migraciones | Flyway SQL Server |
+| ORM | Hibernate |
+| Base para pruebas | SQL Server 2022 en Testcontainers |
+
+## 💳 Pagos y Wallets
+
+<div align="center">
+
+<img src="https://img.shields.io/badge/AZUL-Payment_Gateway-0057B8?style=for-the-badge" alt="AZUL" />
+<img src="https://img.shields.io/badge/Apple_Pay-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Apple Pay" />
+<img src="https://img.shields.io/badge/Google_Pay-4285F4?style=for-the-badge&logo=googlepay&logoColor=white" alt="Google Pay" />
+<img src="https://img.shields.io/badge/Apple_Wallet-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Apple Wallet" />
+<img src="https://img.shields.io/badge/Google_Wallet-4285F4?style=for-the-badge&logo=googlewallet&logoColor=white" alt="Google Wallet" />
+
+</div>
+
+| Área | Tecnología |
+|---|---|
+| Patrón | Strategy mediante `PaymentGateway` |
+| Procesador | AZUL |
+| Wallets de pago | Apple Pay y Google Pay |
+| Wallets de ticketing | Apple Wallet y Google Wallet |
+| Integración | SOAP/HTTPS, tokens de pago y APIs de wallet |
+
+## 🧪 Pruebas y calidad
+
+<div align="center">
+
+<img src="https://img.shields.io/badge/JUnit_5-25A162?style=for-the-badge&logo=junit5&logoColor=white" alt="JUnit 5" />
+<img src="https://img.shields.io/badge/Testcontainers-SQL_Server-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Testcontainers" />
+<img src="https://img.shields.io/badge/JaCoCo-Coverage-EA5B0C?style=for-the-badge" alt="JaCoCo" />
+<img src="https://img.shields.io/badge/Trivy-Security-1904DA?style=for-the-badge" alt="Trivy" />
+
+</div>
+
+| Área | Tecnología |
+|---|---|
+| Pruebas unitarias | JUnit 5 |
+| Pruebas de integración | Spring Boot Test y MockMvc |
+| Seguridad | Spring Security Test |
+| Base de datos de pruebas | Microsoft SQL Server 2022 mediante Testcontainers |
+| Cobertura y análisis | JaCoCo y Checkstyle |
+| Seguridad de cadena | Dependency Review, Trivy y SBOM SPDX |
+
+## 🛠️ DevOps y herramientas
+
+<div align="center">
+
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" alt="Git" title="Git" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub" title="GitHub" width="52" height="52" />
+<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker" title="Docker y Docker Compose" width="52" height="52" />
+
+</div>
+
+| Área | Tecnología |
+|---|---|
+| Control de versiones | Git |
+| Repositorio y CI | GitHub y GitHub Actions |
+| Gestión de dependencias | Maven |
+| Contenedores | Docker y Docker Compose |
+| Pruebas de infraestructura | Testcontainers |
 
 ---
 
@@ -298,11 +396,3 @@ Modernización y reconstrucción profesional: 2026.
 Consulta el archivo `LICENSE` del repositorio para conocer los términos aplicables.
 
 ---
-
-## 📍 Estado del proyecto
-
-**Eventix 1.0.0 — completado y funcional.**
-
-La reconstrucción incluye autenticación y autorización, gestión de usuarios, eventos y reservaciones, ventas y pagos, **Apple Pay y Google Pay mediante AZUL**, ticketing digital, **Apple Wallet y Google Wallet**, control de acceso, **Home público**, Dashboard ejecutivo, reportes, auditoría, observabilidad, seguridad y automatización CI.
-
-El proyecto continúa abierto a mantenimiento, endurecimiento de producción e integración de credenciales comerciales reales, sin requerir cambios estructurales en el dominio principal.
