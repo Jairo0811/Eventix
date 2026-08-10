@@ -38,6 +38,18 @@ spring:
     baseline-on-migrate: true
     validate-on-migrate: true
 
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_STARTTLS_ENABLED:false}
+
   messages:
     basename: messages
     encoding: UTF-8
@@ -102,6 +114,11 @@ eventix:
       wallet-requests-per-minute: ${EVENTIX_WALLET_RATE_LIMIT:120}
       mutation-requests-per-minute: ${EVENTIX_MUTATION_RATE_LIMIT:180}
       maximum-tracked-clients: ${EVENTIX_RATE_LIMIT_MAX_CLIENTS:10000}
+
+  notifications:
+    email:
+      enabled: ${EVENTIX_EMAIL_ENABLED:false}
+      from: ${EVENTIX_EMAIL_FROM:no-reply@eventix.local}
 
   maps:
     google:
