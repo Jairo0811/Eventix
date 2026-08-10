@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.jairomatias.eventix.auth.event.PasswordResetRequestedEvent;
 import com.jairomatias.eventix.notification.service.NotificationService;
 import com.jairomatias.eventix.reservation.entity.Reservation;
 import com.jairomatias.eventix.reservation.event.ReservationCancelledEvent;
@@ -69,6 +70,16 @@ public class TransactionalNotificationListener {
                         sendRefundConfirmation(sale),
                         "sale-refunded",
                         event.saleId()));
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onPasswordResetRequested(PasswordResetRequestedEvent event) {
+        safelyNotify(
+                () -> notificationService.sendPasswordReset(
+                        event.email(),
+                        event.resetUrl()),
+                "password-reset",
+                null);
     }
 
     private void sendReservationConfirmation(Reservation reservation) {
