@@ -1,5 +1,6 @@
 package com.jairomatias.eventix.dashboard.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +19,8 @@ public class DashboardController {
     }
 
     @GetMapping("/dashboard")
+    @PreAuthorize(
+            "hasAnyRole('ADMINISTRATOR', 'ORGANIZER', 'OPERATOR', 'ACCESS_STAFF')")
     public String dashboard(
             @AuthenticationPrincipal UserPrincipal principal,
             Model model) {

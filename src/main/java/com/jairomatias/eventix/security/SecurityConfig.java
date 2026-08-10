@@ -40,123 +40,62 @@ public class SecurityConfig {
     }
 
     @Bean
-    DaoAuthenticationProvider authenticationProvider(
-            PasswordEncoder passwordEncoder) {
-
-        DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider(userDetailsService);
-
+    DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         provider.setHideUserNotFoundExceptions(true);
-
         return provider;
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            DaoAuthenticationProvider authenticationProvider)
-            throws Exception {
-
+            DaoAuthenticationProvider authenticationProvider) throws Exception {
         http
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/",
-                                "/login",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**",
-                                "/error/**",
+                                "/", "/login", "/css/**", "/js/**", "/images/**", "/error/**",
                                 "/.well-known/apple-developer-merchantid-domain-association",
-                                "/actuator/health",
-                                "/actuator/health/**")
+                                "/actuator/health", "/actuator/health/**")
                         .permitAll()
-                        .requestMatchers("/actuator/**")
-                        .hasRole("ADMINISTRATOR")
-                        .requestMatchers("/api/wallet/apple/**")
-                        .permitAll()
-                        .requestMatchers("/my/**")
-                        .hasRole("USER")
-                        .requestMatchers("/users/**")
-                        .hasRole("ADMINISTRATOR")
-                        .requestMatchers("/categories/**")
-                        .hasRole("ADMINISTRATOR")
+                        .requestMatchers("/actuator/**").hasRole("ADMINISTRATOR")
+                        .requestMatchers("/api/wallet/apple/**").permitAll()
+                        .requestMatchers("/my/**").hasRole("USER")
+                        .requestMatchers("/dashboard")
+                        .hasAnyRole("ADMINISTRATOR", "ORGANIZER", "OPERATOR", "ACCESS_STAFF")
+                        .requestMatchers("/users/**").hasRole("ADMINISTRATOR")
+                        .requestMatchers("/categories/**").hasRole("ADMINISTRATOR")
                         .requestMatchers("/events/*/ticket-types/**")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "ORGANIZER")
-                        .requestMatchers(
-                                "/events/new",
-                                "/events/*/edit")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "ORGANIZER")
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/events/**")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "ORGANIZER")
-                        .requestMatchers("/events/**")
-                        .authenticated()
-                        .requestMatchers(
-                                "/reservations/new",
-                                "/reservations/*/edit")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "OPERATOR")
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/reservations/**")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "OPERATOR")
+                        .hasAnyRole("ADMINISTRATOR", "ORGANIZER")
+                        .requestMatchers("/events/new", "/events/*/edit")
+                        .hasAnyRole("ADMINISTRATOR", "ORGANIZER")
+                        .requestMatchers(HttpMethod.POST, "/events/**")
+                        .hasAnyRole("ADMINISTRATOR", "ORGANIZER")
+                        .requestMatchers("/events/**").authenticated()
+                        .requestMatchers("/reservations/new", "/reservations/*/edit")
+                        .hasAnyRole("ADMINISTRATOR", "OPERATOR")
+                        .requestMatchers(HttpMethod.POST, "/reservations/**")
+                        .hasAnyRole("ADMINISTRATOR", "OPERATOR")
                         .requestMatchers("/reservations/**")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "OPERATOR",
-                                "ORGANIZER")
-                        .requestMatchers("/sales/new")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "OPERATOR")
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/sales/**")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "OPERATOR")
+                        .hasAnyRole("ADMINISTRATOR", "OPERATOR", "ORGANIZER")
+                        .requestMatchers("/sales/new").hasAnyRole("ADMINISTRATOR", "OPERATOR")
+                        .requestMatchers(HttpMethod.POST, "/sales/**")
+                        .hasAnyRole("ADMINISTRATOR", "OPERATOR")
                         .requestMatchers("/sales/**")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "OPERATOR",
-                                "ORGANIZER")
+                        .hasAnyRole("ADMINISTRATOR", "OPERATOR", "ORGANIZER")
+                        .requestMatchers("/tickets")
+                        .hasAnyRole("ADMINISTRATOR", "OPERATOR", "ORGANIZER")
                         .requestMatchers("/tickets/**")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "OPERATOR",
-                                "ORGANIZER",
-                                "USER")
+                        .hasAnyRole("ADMINISTRATOR", "OPERATOR", "ORGANIZER", "USER")
                         .requestMatchers("/reports/**")
                         .hasAnyRole("ADMINISTRATOR", "ORGANIZER")
-                        .requestMatchers("/audit/**")
-                        .hasRole("ADMINISTRATOR")
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/access-control/**")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "OPERATOR",
-                                "ACCESS_STAFF")
+                        .requestMatchers("/audit/**").hasRole("ADMINISTRATOR")
+                        .requestMatchers(HttpMethod.POST, "/access-control/**")
+                        .hasAnyRole("ADMINISTRATOR", "OPERATOR", "ACCESS_STAFF")
                         .requestMatchers("/access-control/**")
-                        .hasAnyRole(
-                                "ADMINISTRATOR",
-                                "OPERATOR",
-                                "ORGANIZER",
-                                "ACCESS_STAFF")
-                        .anyRequest()
-                        .authenticated())
+                        .hasAnyRole("ADMINISTRATOR", "OPERATOR", "ORGANIZER", "ACCESS_STAFF")
+                        .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .usernameParameter("username")
@@ -171,15 +110,12 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll())
                 .sessionManagement(session -> session
-                        .sessionFixation(fixation ->
-                                fixation.migrateSession())
+                        .sessionFixation(fixation -> fixation.migrateSession())
                         .invalidSessionUrl("/login?expired")
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false))
-                .exceptionHandling(exceptions -> exceptions
-                        .accessDeniedPage("/access-denied"))
-                .csrf(csrf -> csrf.ignoringRequestMatchers(
-                        "/api/wallet/apple/**"))
+                .exceptionHandling(exceptions -> exceptions.accessDeniedPage("/access-denied"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/wallet/apple/**"))
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
                                 "default-src 'self'; "
@@ -191,8 +127,7 @@ public class SecurityConfig {
                                 + "frame-src 'self' https://pay.google.com https://www.google.com https://maps.google.com; "
                                 + "object-src 'none'; base-uri 'self'; "
                                 + "frame-ancestors 'none'; form-action 'self'"))
-                        .referrerPolicy(referrer -> referrer
-                                .policy(ReferrerPolicy.NO_REFERRER))
+                        .referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.NO_REFERRER))
                         .addHeaderWriter(new StaticHeadersWriter(
                                 "Permissions-Policy",
                                 "camera=(self), microphone=(), geolocation=(), payment=(self)"))
@@ -200,10 +135,7 @@ public class SecurityConfig {
                                 .includeSubDomains(true)
                                 .preload(true)
                                 .maxAgeInSeconds(31536000)))
-                .addFilterAfter(
-                        forcePasswordChangeFilter,
-                        UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterAfter(forcePasswordChangeFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
