@@ -46,6 +46,9 @@ public class Event extends AuditableEntity {
     @Column(nullable = false, length = 300)
     private String address;
 
+    @Column(name = "google_maps_url", length = 1000)
+    private String googleMapsUrl;
+
     @Column(nullable = false)
     private int capacity;
 
@@ -130,6 +133,10 @@ public class Event extends AuditableEntity {
         this.basePrice = basePrice;
     }
 
+    public void updateGoogleMapsUrl(String googleMapsUrl) {
+        this.googleMapsUrl = googleMapsUrl;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -160,6 +167,10 @@ public class Event extends AuditableEntity {
 
     public String getAddress() {
         return address;
+    }
+
+    public String getGoogleMapsUrl() {
+        return googleMapsUrl;
     }
 
     public int getCapacity() {

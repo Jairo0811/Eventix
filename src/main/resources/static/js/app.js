@@ -63,6 +63,139 @@ document.addEventListener("DOMContentLoaded", () => {
     priceType?.addEventListener("change", updatePriceVisibility);
     updatePriceVisibility();
 
+    const mapPreview = document.querySelector("[data-google-maps-preview]");
+    if (mapPreview) {
+        const apiKey = mapPreview.dataset.googleMapsApiKey || "";
+        const venueInput = document.querySelector("#venue");
+        const addressInput = document.querySelector("#address");
+        const mapsUrlInput = document.querySelector("#googleMapsUrl");
+        const frame = mapPreview.querySelector("[data-google-maps-frame]");
+        const placeholder = mapPreview.querySelector(
+            "[data-google-maps-placeholder]"
+        );
+        const status = mapPreview.querySelector("[data-google-maps-status]");
+        const openLink = mapPreview.querySelector("[data-google-maps-open]");
+
+        const isAllowedMapsHost = (hostname) => {
+            const host = hostname.toLowerCase();
+            return host === "google.com"
+                || host === "www.google.com"
+                || host === "maps.google.com"
+                || host === "maps.app.goo.gl"
+                || host === "goo.gl";
+        };
+
+        const parseMapsQuery = (rawUrl) => {
+            if (!rawUrl) {
+                return "";
+            }
+
+            try {
+                const url = new URL(rawUrl);
+                if (url.protocol !== "https:"
+                        || !isAllowedMapsHost(url.hostname)) {
+                    return "";
+                }
+
+                const query = url.searchParams.get("query")
+                    || url.searchParams.get("q");
+                if (query) {
+                    return query;
+                }
+
+                const placeMatch = url.pathname.match(/\/place\/([^/]+)/i);
+                if (placeMatch?.[1]) {
+                    return decodeURIComponent(placeMatch[1])
+                        .replaceAll("+", " ");
+                }
+
+                const coordinateMatch = rawUrl.match(
+                    /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/
+                );
+                if (coordinateMatch) {
+                    return `${coordinateMatch[1]},${coordinateMatch[2]}`;
+                }
+            } catch (error) {
+                return "";
+            }
+
+            return "";
+        };
+
+        const fallbackQuery = () => [
+            venueInput?.value.trim(),
+            addressInput?.value.trim()
+        ].filter(Boolean).join(", ");
+
+        const updateMapPreview = () => {
+            if (!frame || !placeholder || !status || !openLink) {
+                return;
+            }
+
+            const rawMapsUrl = mapsUrlInput?.value.trim() || "";
+            let allowedMapsUrl = "";
+
+            if (rawMapsUrl) {
+                try {
+                    const url = new URL(rawMapsUrl);
+                    if (url.protocol === "https:"
+                            && isAllowedMapsHost(url.hostname)) {
+                        allowedMapsUrl = rawMapsUrl;
+                    }
+                } catch (error) {
+                    allowedMapsUrl = "";
+                }
+            }
+
+            openLink.classList.toggle("d-none", !allowedMapsUrl);
+            if (allowedMapsUrl) {
+                openLink.href = allowedMapsUrl;
+            } else {
+                openLink.removeAttribute("href");
+            }
+
+            const query = parseMapsQuery(allowedMapsUrl)
+                || fallbackQuery();
+
+            if (!query) {
+                frame.classList.add("d-none");
+                frame.removeAttribute("src");
+                placeholder.classList.remove("d-none");
+                status.textContent = "Esperando una ubicación.";
+                return;
+            }
+
+            if (!apiKey) {
+                frame.classList.add("d-none");
+                frame.removeAttribute("src");
+                placeholder.classList.remove("d-none");
+                status.textContent = "Configura GOOGLE_MAPS_EMBED_API_KEY para activar el mapa interactivo.";
+                return;
+            }
+
+            const params = new URLSearchParams({
+                key: apiKey,
+                q: query,
+                language: "es",
+                region: "DO"
+            });
+
+            frame.src = `https://www.google.com/maps/embed/v1/place?${params}`;
+            frame.classList.remove("d-none");
+            placeholder.classList.add("d-none");
+            status.textContent = parseMapsQuery(allowedMapsUrl)
+                ? "Vista previa generada desde el enlace de Google Maps."
+                : "Vista previa generada desde el lugar y la dirección.";
+        };
+
+        [venueInput, addressInput, mapsUrlInput].forEach((input) => {
+            input?.addEventListener("input", updateMapPreview);
+            input?.addEventListener("change", updateMapPreview);
+        });
+
+        updateMapPreview();
+    }
+
     const countdown = document.querySelector(
         "[data-reservation-expires-at]"
     );
