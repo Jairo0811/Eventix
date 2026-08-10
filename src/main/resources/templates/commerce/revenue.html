@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Ingresos y comisiones')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('commerce')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="mb-4">
+        <p class="text-success fw-semibold mb-1">Modelo comercial Eventix</p>
+        <h1 class="page-title" sec:authorize="hasRole('ADMINISTRATOR')">Ingresos de plataforma</h1>
+        <h1 class="page-title" sec:authorize="hasRole('ORGANIZER')">Ingresos de mis eventos</h1>
+        <p class="page-subtitle">
+            Desglose auditable entre ventas brutas, comisión de Eventix y neto del organizador.
+        </p>
+    </div>
+
+    <section class="row g-3 mb-4" aria-label="Resumen financiero">
+        <div class="col-md-6 col-xl-3">
+            <article class="metric-card">
+                <div class="metric-label">Ventas brutas pagadas</div>
+                <div class="metric-value metric-value-money"
+                     th:text="|RD$ ${#numbers.formatDecimal(revenue.grossRevenue, 1, 'COMMA', 2, 'POINT')}|">
+                    RD$ 0.00
+                </div>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="metric-card">
+                <div class="metric-label">Comisión Eventix</div>
+                <div class="metric-value metric-value-money text-success"
+                     th:text="|RD$ ${#numbers.formatDecimal(revenue.platformRevenue, 1, 'COMMA', 2, 'POINT')}|">
+                    RD$ 0.00
+                </div>
+                <div class="small text-secondary mt-2"
+                     th:text="|Tasa efectiva ${#numbers.formatPercent(revenue.effectivePlatformRate, 1, 2)}|">
+                    Tasa efectiva 5.00 %
+                </div>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="metric-card">
+                <div class="metric-label">Neto organizadores</div>
+                <div class="metric-value metric-value-money"
+                     th:text="|RD$ ${#numbers.formatDecimal(revenue.organizerNetRevenue, 1, 'COMMA', 2, 'POINT')}|">
+                    RD$ 0.00
+                </div>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="metric-card">
+                <div class="metric-label">Reembolsos acumulados</div>
+                <div class="metric-value metric-value-money text-danger"
+                     th:text="|RD$ ${#numbers.formatDecimal(revenue.refundedRevenue, 1, 'COMMA', 2, 'POINT')}|">
+                    RD$ 0.00
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="content-card">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-7">
+                <h2 class="h5 fw-bold">Regla comercial</h2>
+                <p class="text-secondary mb-2">
+                    Las ventas nuevas reservan el 5 % para Eventix y el 95 % restante corresponde al organizador.
+                </p>
+                <p class="text-secondary mb-0">
+                    La tasa queda congelada en cada venta para preservar el historial aunque la política cambie después.
+                </p>
+            </div>
+            <div class="col-lg-5">
+                <div class="p-3 rounded-3 border">
+                    <div class="d-flex justify-content-between mb-2"><span>Venta</span><strong>RD$ 1,000.00</strong></div>
+                    <div class="d-flex justify-content-between mb-2 text-success"><span>Eventix 5 %</span><strong>RD$ 50.00</strong></div>
+                    <div class="d-flex justify-content-between"><span>Organizador</span><strong>RD$ 950.00</strong></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

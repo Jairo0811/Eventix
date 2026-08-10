@@ -149,8 +149,10 @@ class ReportingIntegrationTest {
     }
 
     private long insert(String table, Map<String, Object> values) {
+        String[] columns = values.keySet().toArray(String[]::new);
         return new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName(table)
+                .usingColumns(columns)
                 .usingGeneratedKeyColumns("id")
                 .executeAndReturnKey(values)
                 .longValue();
