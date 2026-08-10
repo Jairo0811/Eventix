@@ -7,11 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class NotificationServiceApiTest {
 
     @Test
-    void shouldExposeFiveInitialUseCases() {
+    void shouldExposeSixTransactionalUseCases() {
         long methods = java.util.Arrays.stream(NotificationService.class.getDeclaredMethods())
                 .filter(method -> method.getName().startsWith("send"))
                 .count();
 
-        assertEquals(5, methods);
+        assertEquals(6, methods);
     }
 }
