@@ -27,6 +27,8 @@ import jakarta.persistence.Table;
 @Table(name = "sales")
 public class Sale extends AuditableEntity {
 
+    public static final BigDecimal DEFAULT_PLATFORM_FEE_RATE = new BigDecimal("0.0500");
+
     @Column(name = "reference_code", nullable = false, unique = true, length = 24)
     private String referenceCode;
 
@@ -62,6 +64,25 @@ public class Sale extends AuditableEntity {
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal total;
+
+    @Column(name = "platform_fee_rate", nullable = false, precision = 5, scale = 4)
+    private BigDecimal platformFeeRate;
+
+    @Column(
+            name = "platform_fee_amount",
+            precision = 12,
+            scale = 2,
+            insertable = false,
+            updatable = false)
+    private BigDecimal platformFeeAmount;
+
+    @Column(
+            name = "organizer_net_amount",
+            precision = 12,
+            scale = 2,
+            insertable = false,
+            updatable = false)
+    private BigDecimal organizerNetAmount;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
@@ -106,6 +127,7 @@ public class Sale extends AuditableEntity {
         this.soldBy = soldBy;
         this.subtotal = BigDecimal.ZERO;
         this.total = BigDecimal.ZERO;
+        this.platformFeeRate = DEFAULT_PLATFORM_FEE_RATE;
     }
 
     public void addItem(TicketType ticketType, int quantity) {
@@ -180,6 +202,18 @@ public class Sale extends AuditableEntity {
 
     public BigDecimal getTotal() {
         return total;
+    }
+
+    public BigDecimal getPlatformFeeRate() {
+        return platformFeeRate;
+    }
+
+    public BigDecimal getPlatformFeeAmount() {
+        return platformFeeAmount;
+    }
+
+    public BigDecimal getOrganizerNetAmount() {
+        return organizerNetAmount;
     }
 
     public LocalDateTime getPaidAt() {
