@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,6 +24,8 @@ import com.jairomatias.eventix.reservation.dto.ReservationListItem;
 import com.jairomatias.eventix.reservation.dto.ReservationMetrics;
 import com.jairomatias.eventix.reservation.entity.Reservation;
 import com.jairomatias.eventix.reservation.entity.ReservationStatus;
+import com.jairomatias.eventix.reservation.event.ReservationCancelledEvent;
+import com.jairomatias.eventix.reservation.event.ReservationConfirmedEvent;
 import com.jairomatias.eventix.reservation.mapper.ReservationMapper;
 import com.jairomatias.eventix.reservation.repository.ReservationRepository;
 import com.jairomatias.eventix.role.entity.RoleName;
@@ -42,6 +45,7 @@ public class DefaultReservationService implements ReservationService {
     private final ReservationMapper reservationMapper;
     private final ReservationReferenceGenerator referenceGenerator;
     private final ReservationProperties properties;
+    private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
     @Autowired
@@ -51,7 +55,8 @@ public class DefaultReservationService implements ReservationService {
             UserRepository userRepository,
             ReservationMapper reservationMapper,
             ReservationReferenceGenerator referenceGenerator,
-            ReservationProperties properties) {
+            ReservationProperties properties,
+            ApplicationEventPublisher eventPublisher) {
         this(
                 reservationRepository,
                 eventRepository,
@@ -59,6 +64,7 @@ public class DefaultReservationService implements ReservationService {
                 reservationMapper,
                 referenceGenerator,
                 properties,
+                eventPublisher,
                 Clock.systemDefaultZone());
     }
 
@@ -70,12 +76,34 @@ public class DefaultReservationService implements ReservationService {
             ReservationReferenceGenerator referenceGenerator,
             ReservationProperties properties,
             Clock clock) {
+        this(
+                reservationRepository,
+                eventRepository,
+                userRepository,
+                reservationMapper,
+                referenceGenerator,
+                properties,
+                event -> {
+                },
+                clock);
+    }
+
+    DefaultReservationService(
+            ReservationRepository reservationRepository,
+            EventRepository eventRepository,
+            UserRepository userRepository,
+            ReservationMapper reservationMapper,
+            ReservationReferenceGenerator referenceGenerator,
+            ReservationProperties properties,
+            ApplicationEventPublisher eventPublisher,
+            Clock clock) {
         this.reservationRepository = reservationRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.reservationMapper = reservationMapper;
         this.referenceGenerator = referenceGenerator;
         this.properties = properties;
+        this.eventPublisher = eventPublisher;
         this.clock = clock;
     }
 
@@ -269,6 +297,7 @@ public class DefaultReservationService implements ReservationService {
         ensurePendingAndCurrent(reservation, now);
         ensureReservable(event, now);
         reservation.confirm(now);
+        eventPublisher.publishEvent(new ReservationConfirmedEvent(reservation.getId()));
     }
 
     @Override
@@ -299,6 +328,7 @@ public class DefaultReservationService implements ReservationService {
                     "No se puede cancelar una reservación después de iniciar el evento.");
         }
         reservation.cancel(form.getReason().trim(), now);
+        eventPublisher.publishEvent(new ReservationCancelledEvent(reservation.getId()));
     }
 
     @Override
