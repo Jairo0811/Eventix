@@ -55,7 +55,8 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/", "/login", "/css/**", "/js/**", "/images/**", "/error/**",
+                                "/", "/login", "/login/forgot-password", "/login/reset-password",
+                                "/css/**", "/js/**", "/images/**", "/error/**",
                                 "/.well-known/apple-developer-merchantid-domain-association",
                                 "/actuator/health", "/actuator/health/**")
                         .permitAll()
