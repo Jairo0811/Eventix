@@ -43,6 +43,14 @@
             <span sec:authorize="hasRole('ORGANIZER')">Ventas de mis eventos</span>
             <span sec:authorize="!hasRole('ORGANIZER')">Ventas y pagos</span>
         </a>
+        <a class="nav-link"
+           sec:authorize="hasAnyRole('ADMINISTRATOR', 'ORGANIZER')"
+           th:classappend="${activePage == 'commerce'} ? ' active'"
+           th:href="@{/commerce/revenue}">
+            <i class="bi bi-cash-stack" aria-hidden="true"></i>
+            <span sec:authorize="hasRole('ADMINISTRATOR')">Ingresos Eventix</span>
+            <span sec:authorize="hasRole('ORGANIZER')">Mis ingresos</span>
+        </a>
         <a class="nav-link" sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')" th:classappend="${activePage == 'tickets'} ? ' active'" th:href="@{/tickets}">
             <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
             <span sec:authorize="hasRole('ORGANIZER')">Boletas de mis eventos</span>
