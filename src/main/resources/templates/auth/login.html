@@ -63,7 +63,7 @@
                                required>
                     </div>
                 </div>
-                <div class="mb-4">
+                <div class="mb-2">
                     <label class="form-label fw-semibold" for="password">Contraseña</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white">
@@ -76,6 +76,11 @@
                                autocomplete="current-password"
                                required>
                     </div>
+                </div>
+                <div class="text-end mb-4">
+                    <a class="small text-decoration-none" th:href="@{/login/forgot-password}">
+                        ¿Olvidaste tu contraseña?
+                    </a>
                 </div>
                 <button class="btn btn-primary btn-lg w-100" type="submit">
                     Entrar a Eventix
