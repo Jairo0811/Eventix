@@ -27,16 +27,19 @@ import com.jairomatias.eventix.ticket.security.TicketCryptographyService;
 public class TicketDocumentService {
 
     private static final DateTimeFormatter DATE_TIME =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy · HH:mm");
+            DateTimeFormatter.ofPattern("dd/MM/yyyy  HH:mm");
 
-    private static final Color NAVY = new Color(4, 32, 43);
-    private static final Color GREEN = new Color(22, 163, 74);
-    private static final Color TEAL = new Color(5, 150, 105);
-    private static final Color TEXT = new Color(20, 32, 37);
-    private static final Color MUTED = new Color(93, 108, 113);
-    private static final Color BORDER = new Color(220, 228, 226);
+    private static final Color NAVY = new Color(3, 27, 38);
+    private static final Color NAVY_2 = new Color(4, 50, 55);
+    private static final Color GREEN = new Color(14, 149, 92);
+    private static final Color LIME = new Color(139, 214, 44);
+    private static final Color TEAL = new Color(4, 121, 98);
+    private static final Color TEXT = new Color(11, 27, 39);
+    private static final Color MUTED = new Color(82, 101, 108);
+    private static final Color BORDER = new Color(220, 229, 227);
     private static final Color SOFT = new Color(246, 249, 248);
-    private static final Color LIGHT_GREEN = new Color(232, 247, 238);
+    private static final Color SOFT_GREEN = new Color(237, 247, 242);
+    private static final Color WARNING = new Color(243, 180, 31);
 
     private final TicketCryptographyService cryptographyService;
 
@@ -50,8 +53,8 @@ public class TicketDocumentService {
             BitMatrix matrix = new QRCodeWriter().encode(
                     cryptographyService.createQrPayload(ticket),
                     BarcodeFormat.QR_CODE,
-                    420,
-                    420);
+                    520,
+                    520);
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(matrix, "PNG", output);
             return output.toByteArray();
@@ -67,6 +70,7 @@ public class TicketDocumentService {
                 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
+
             PDImageXObject qr = PDImageXObject.createFromByteArray(
                     document,
                     createQrPng(ticket),
@@ -75,12 +79,12 @@ public class TicketDocumentService {
             try (PDPageContentStream content =
                     new PDPageContentStream(document, page)) {
                 drawBackground(content);
-                drawBrandHeader(document, content);
-                drawEventHero(content, ticket);
-                drawDetailsCard(content, ticket);
-                drawQrCard(content, qr, ticket);
-                drawTicketDivider(content);
-                drawSecurityFooter(content, ticket);
+                drawHero(document, content, ticket);
+                drawMainBody(content, qr, ticket);
+                drawAccessStrip(content, ticket);
+                drawWarningStrip(content);
+                drawVerificationFooter(content, ticket);
+                drawBottomBrandBar(content);
             }
 
             document.save(output);
@@ -93,122 +97,336 @@ public class TicketDocumentService {
     }
 
     private void drawBackground(PDPageContentStream content) throws IOException {
-        fillRect(content, 0, 0, PDRectangle.A4.getWidth(),
-                PDRectangle.A4.getHeight(), SOFT);
-        fillRect(content, 28, 28, 539, 786, Color.WHITE);
+        fillRect(content, 0, 0,
+                PDRectangle.A4.getWidth(),
+                PDRectangle.A4.getHeight(),
+                SOFT);
+
+        roundRect(content, 22, 18, 551, 806, 12, Color.WHITE, BORDER);
     }
 
-    private void drawBrandHeader(
+    private void drawHero(
             PDDocument document,
-            PDPageContentStream content) throws IOException {
-        fillRect(content, 28, 704, 539, 110, NAVY);
-        fillRect(content, 28, 704, 8, 110, GREEN);
+            PDPageContentStream content,
+            DigitalTicket ticket) throws IOException {
+        fillRect(content, 22, 651, 551, 173, NAVY);
+        fillRect(content, 22, 651, 551, 8, GREEN);
+
+        fillRect(content, 312, 651, 261, 173, NAVY_2);
+        fillRect(content, 306, 651, 7, 173, LIME);
+
+        drawHeroAccent(content);
 
         PdfBranding.drawOfficialLogo(document, content,
-                48, 724, 116, 79);
+                48, 690, 198, 104);
 
-        writeText(content, "BOLETA DIGITAL", 181, 769, 11, true,
-                new Color(185, 232, 211));
-        writeText(content, "Tu acceso oficial Eventix", 181, 750, 8, false,
-                Color.WHITE);
-        writeText(content, "ACCESO OFICIAL", 432, 767, 9, true,
-                new Color(185, 232, 211));
-        writeText(content, "Seguro · rápido · verificable",
-                382, 747, 8, false, Color.WHITE);
-    }
+        writeText(content, "BOLETA DIGITAL", 386, 788, 13, true, Color.WHITE);
+        drawShortLine(content, 356, 783, 22, GREEN);
+        drawShortLine(content, 501, 783, 22, GREEN);
 
-    private void drawEventHero(
-            PDPageContentStream content,
-            DigitalTicket ticket) throws IOException {
-        writeText(content, "TU ENTRADA PARA", 50, 673, 9, true, TEAL);
-        writeText(content, safe(ticket.getEvent().getTitle(), 42),
-                50, 642, 24, true, TEXT);
         writeText(content,
-                ticket.getEvent().getStartAt().format(DATE_TIME),
-                50, 617, 11, true, MUTED);
-        writeText(content, safe(ticket.getEvent().getVenue(), 58),
-                50, 598, 11, false, MUTED);
-        writeText(content, safe(ticket.getEvent().getAddress(), 76),
-                50, 581, 9, false, MUTED);
+                safe(ticket.getEvent().getTitle(), 24).toUpperCase(),
+                353, 716, 27, true, Color.WHITE);
+
+        writeText(content,
+                "TU EVENTO. TU EXPERIENCIA.",
+                50, 675, 10, true, LIME);
     }
 
-    private void drawDetailsCard(
-            PDPageContentStream content,
-            DigitalTicket ticket) throws IOException {
-        strokeAndFillRect(content, 50, 388, 266, 163, Color.WHITE, BORDER);
-
-        label(content, "ASISTENTE", 68, 526);
-        writeText(content, safe(ticket.getAttendeeName(), 34),
-                68, 506, 14, true, TEXT);
-
-        label(content, "TIPO / ZONA", 68, 476);
-        writeText(content, safe(ticket.getTicketTypeName(), 32),
-                68, 456, 13, true, TEXT);
-
-        label(content, "CÓDIGO ÚNICO", 68, 426);
-        writeText(content, safe(ticket.getUniqueCode(), 34),
-                68, 406, 11, true, TEAL);
+    private void drawHeroAccent(PDPageContentStream content) throws IOException {
+        content.setStrokingColor(new Color(9, 99, 78));
+        content.setLineWidth(2f);
+        for (int i = 0; i < 5; i++) {
+            float y = 674 + (i * 18);
+            content.moveTo(330, y);
+            content.lineTo(548, y + 22);
+            content.stroke();
+        }
     }
 
-    private void drawQrCard(
+    private void drawMainBody(
             PDPageContentStream content,
             PDImageXObject qr,
             DigitalTicket ticket) throws IOException {
-        strokeAndFillRect(content, 330, 388, 215, 163, LIGHT_GREEN, BORDER);
-        content.drawImage(qr, 356, 411, 112, 112);
-
-        fillRect(content, 476, 482, 52, 23, GREEN);
-        writeText(content,
-                safe(ticket.getStatus().getDisplayName().toUpperCase(), 10),
-                484, 489, 8, true, Color.WHITE);
-        writeText(content, "ESCANEA EN EL ACCESO",
-                355, 396, 8, true, TEAL);
+        drawDetailsPanel(content, ticket);
+        drawQrPanel(content, qr, ticket);
     }
 
-    private void drawTicketDivider(PDPageContentStream content) throws IOException {
-        content.setStrokingColor(BORDER);
-        content.setLineDashPattern(new float[]{5, 5}, 0);
-        content.moveTo(50, 356);
-        content.lineTo(545, 356);
-        content.stroke();
-        content.setLineDashPattern(new float[]{}, 0);
-
-        fillRect(content, 28, 344, 12, 24, SOFT);
-        fillRect(content, 555, 344, 12, 24, SOFT);
-    }
-
-    private void drawSecurityFooter(
+    private void drawDetailsPanel(
             PDPageContentStream content,
             DigitalTicket ticket) throws IOException {
-        writeText(content, "BOLETA AUTÉNTICA", 50, 321, 10, true, GREEN);
-        writeText(content,
-                "Validada y firmada digitalmente por Eventix.",
-                50, 301, 10, false, TEXT);
+        float x = 48;
+        float y = 292;
+        float width = 250;
+        float height = 335;
 
-        label(content, "CÓDIGO ANTIFRAUDE", 50, 270);
-        writeText(content, safe(ticket.getAntiFraudCode(), 42),
-                50, 250, 10, true, TEXT);
+        roundRect(content, x, y, width, height, 12, Color.WHITE, Color.WHITE);
 
-        strokeAndFillRect(content, 50, 183, 495, 43, SOFT, BORDER);
-        writeText(content,
-                "Presenta el QR original en el acceso. No compartas capturas ni copias.",
-                66, 207, 9, true, NAVY);
-        writeText(content,
-                "Conserva esta boleta hasta finalizar el evento.",
-                66, 191, 8, false, MUTED);
+        drawInfoRow(content,
+                "A",
+                "ASISTENTE",
+                safe(ticket.getAttendeeName(), 32),
+                x + 18,
+                y + 270);
 
-        writeText(content, "Eventix · Ticketing & Access",
-                50, 145, 8, true, MUTED);
-        writeText(content, "Documento generado automáticamente",
-                378, 145, 8, false, MUTED);
+        drawSeparator(content, x + 18, y + 236, width - 36);
+
+        drawInfoRow(content,
+                "T",
+                "TIPO / ZONA",
+                safe(ticket.getTicketTypeName(), 30),
+                x + 18,
+                y + 190);
+
+        drawSeparator(content, x + 18, y + 156, width - 36);
+
+        drawInfoRow(content,
+                "F",
+                "FECHA Y HORA",
+                ticket.getEvent().getStartAt().format(DATE_TIME),
+                x + 18,
+                y + 110);
+
+        drawSeparator(content, x + 18, y + 76, width - 36);
+
+        drawInfoRow(content,
+                "L",
+                "LUGAR",
+                safe(ticket.getEvent().getVenue(), 31),
+                x + 18,
+                y + 30);
+
+        writeText(content,
+                safe(ticket.getEvent().getAddress(), 43),
+                x + 67,
+                y + 11,
+                8,
+                false,
+                MUTED);
     }
 
-    private void label(
+    private void drawInfoRow(
             PDPageContentStream content,
+            String icon,
+            String label,
             String value,
             float x,
             float y) throws IOException {
-        writeText(content, value, x, y, 8, true, MUTED);
+        drawCircle(content, x + 18, y + 18, 17, TEAL);
+        writeText(content, icon, x + 13, y + 12, 11, true, Color.WHITE);
+
+        writeText(content, label, x + 53, y + 27, 9, true, TEAL);
+        writeText(content, value, x + 53, y + 7, 15, true, TEXT);
+    }
+
+    private void drawQrPanel(
+            PDPageContentStream content,
+            PDImageXObject qr,
+            DigitalTicket ticket) throws IOException {
+        float x = 310;
+        float y = 292;
+        float width = 235;
+        float height = 335;
+
+        roundRect(content, x, y, width, height, 16, SOFT_GREEN, BORDER);
+
+        writeText(content, "ESCANEA PARA ACCESO", x + 55, y + 307,
+                10, true, TEAL);
+
+        roundRect(content, x + 39, y + 139, 157, 157, 9,
+                Color.WHITE, BORDER);
+        content.drawImage(qr, x + 48, y + 148, 139, 139);
+
+        labelCentered(content, "CÓDIGO ÚNICO", x, width, y + 118, TEAL);
+        roundRect(content, x + 20, y + 82, width - 40, 27, 13,
+                new Color(224, 239, 232), new Color(224, 239, 232));
+        labelCentered(content,
+                safe(ticket.getUniqueCode(), 31),
+                x + 20,
+                width - 40,
+                y + 91,
+                TEAL);
+
+        labelCentered(content, "CÓDIGO ANTIFRAUDE", x, width, y + 61, TEAL);
+        roundRect(content, x + 20, y + 26, width - 40, 27, 13,
+                new Color(239, 241, 241), new Color(239, 241, 241));
+        labelCentered(content,
+                safe(ticket.getAntiFraudCode(), 29),
+                x + 20,
+                width - 40,
+                y + 35,
+                TEXT);
+
+        drawStatusBadge(content,
+                safe(ticket.getStatus().getDisplayName().toUpperCase(), 12),
+                x + 71,
+                y - 7);
+    }
+
+    private void drawStatusBadge(
+            PDPageContentStream content,
+            String status,
+            float x,
+            float y) throws IOException {
+        roundRect(content, x, y, 94, 25, 12, TEAL, TEAL);
+        drawCircle(content, x + 15, y + 12.5f, 6, Color.WHITE);
+        writeText(content, "V", x + 12, y + 9, 7, true, TEAL);
+        writeText(content, status, x + 30, y + 8, 10, true, Color.WHITE);
+    }
+
+    private void drawAccessStrip(
+            PDPageContentStream content,
+            DigitalTicket ticket) throws IOException {
+        float x = 48;
+        float y = 226;
+        float width = 497;
+        float height = 52;
+
+        roundRect(content, x, y, width, height, 10, Color.WHITE, BORDER);
+
+        drawAccessItem(content, "ENTRADA", safe(ticket.getTicketTypeName(), 18),
+                x + 18, y + 15, 105);
+        drawVerticalDivider(content, x + 124, y + 10, height - 20);
+
+        drawAccessItem(content, "ACCESO", "QR oficial",
+                x + 139, y + 15, 94);
+        drawVerticalDivider(content, x + 245, y + 10, height - 20);
+
+        drawAccessItem(content, "INICIO",
+                ticket.getEvent().getStartAt().format(DateTimeFormatter.ofPattern("HH:mm")),
+                x + 260, y + 15, 84);
+        drawVerticalDivider(content, x + 356, y + 10, height - 20);
+
+        drawAccessItem(content, "ESTADO",
+                safe(ticket.getStatus().getDisplayName(), 14),
+                x + 371, y + 15, 105);
+    }
+
+    private void drawAccessItem(
+            PDPageContentStream content,
+            String label,
+            String value,
+            float x,
+            float y,
+            float width) throws IOException {
+        writeText(content, label, x, y + 20, 8, true, TEAL);
+        writeText(content, safe(value, 18), x, y + 5, 10, true, TEXT);
+    }
+
+    private void drawWarningStrip(PDPageContentStream content) throws IOException {
+        float x = 48;
+        float y = 156;
+        float width = 497;
+        float height = 54;
+
+        roundRect(content, x, y, width, height, 9, NAVY_2, NAVY_2);
+        drawCircle(content, x + 28, y + 27, 15, WARNING);
+        writeText(content, "!", x + 25, y + 20, 15, true, NAVY);
+
+        writeText(content, "IMPORTANTE:", x + 53, y + 33, 9, true, WARNING);
+        writeText(content,
+                "Presenta este QR en el acceso. No compartas esta boleta.",
+                x + 128, y + 33, 8.5f, true, Color.WHITE);
+        writeText(content,
+                "Una vez escaneada, la boleta quedará invalidada.",
+                x + 128, y + 16, 8, false, Color.WHITE);
+    }
+
+    private void drawVerificationFooter(
+            PDPageContentStream content,
+            DigitalTicket ticket) throws IOException {
+        float x = 48;
+        float y = 74;
+        float width = 497;
+        float height = 67;
+
+        roundRect(content, x, y, width, height, 9, SOFT, BORDER);
+
+        drawCircle(content, x + 29, y + 35, 19, TEAL);
+        writeText(content, "OK", x + 20, y + 31, 9, true, Color.WHITE);
+
+        writeText(content, "BOLETA VERIFICADA", x + 57, y + 46,
+                8, true, TEAL);
+        writeText(content, "Firma digital Eventix", x + 57, y + 29,
+                8.5f, true, TEXT);
+        writeText(content,
+                "Protegida con validación criptográfica y código antifraude.",
+                x + 57, y + 14, 7.5f, false, MUTED);
+
+        drawVerticalDivider(content, x + 350, y + 12, height - 24);
+
+        writeText(content, "GENERADA PARA", x + 365, y + 44,
+                7, true, TEAL);
+        writeText(content, safe(ticket.getAttendeeName(), 22),
+                x + 365, y + 29, 8.5f, true, TEXT);
+        writeText(content,
+                ticket.getEvent().getStartAt().format(DATE_TIME),
+                x + 365, y + 14, 7.5f, false, MUTED);
+    }
+
+    private void drawBottomBrandBar(PDPageContentStream content) throws IOException {
+        fillRect(content, 22, 18, 551, 32, NAVY);
+        fillRect(content, 22, 18, 551, 4, GREEN);
+        writeText(content,
+                "EVENTIX  -  PLATAFORMA OFICIAL DE GESTIÓN DE EVENTOS",
+                152, 30, 7.5f, true, Color.WHITE);
+    }
+
+    private void drawSeparator(
+            PDPageContentStream content,
+            float x,
+            float y,
+            float width) throws IOException {
+        content.setStrokingColor(BORDER);
+        content.setLineDashPattern(new float[]{4, 4}, 0);
+        content.moveTo(x, y);
+        content.lineTo(x + width, y);
+        content.stroke();
+        content.setLineDashPattern(new float[]{}, 0);
+    }
+
+    private void drawVerticalDivider(
+            PDPageContentStream content,
+            float x,
+            float y,
+            float height) throws IOException {
+        content.setStrokingColor(BORDER);
+        content.moveTo(x, y);
+        content.lineTo(x, y + height);
+        content.stroke();
+    }
+
+    private void drawShortLine(
+            PDPageContentStream content,
+            float x,
+            float y,
+            float width,
+            Color color) throws IOException {
+        content.setStrokingColor(color);
+        content.setLineWidth(1.5f);
+        content.moveTo(x, y);
+        content.lineTo(x + width, y);
+        content.stroke();
+    }
+
+    private void labelCentered(
+            PDPageContentStream content,
+            String value,
+            float x,
+            float width,
+            float y,
+            Color color) throws IOException {
+        String safeValue = pdfSafe(value);
+        float fontSize = 8.5f;
+        PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+        float textWidth = font.getStringWidth(safeValue) / 1000f * fontSize;
+        writeText(content,
+                safeValue,
+                x + ((width - textWidth) / 2f),
+                y,
+                fontSize,
+                true,
+                color);
     }
 
     private void fillRect(
@@ -223,18 +441,61 @@ public class TicketDocumentService {
         content.fill();
     }
 
-    private void strokeAndFillRect(
+    private void roundRect(
             PDPageContentStream content,
             float x,
             float y,
             float width,
             float height,
+            float radius,
             Color fill,
             Color stroke) throws IOException {
+        float k = 0.552284749831f;
+        float c = radius * k;
+        float right = x + width;
+        float top = y + height;
+
         content.setNonStrokingColor(fill);
         content.setStrokingColor(stroke);
-        content.addRect(x, y, width, height);
+
+        content.moveTo(x + radius, y);
+        content.lineTo(right - radius, y);
+        content.curveTo(right - radius + c, y, right, y + radius - c, right, y + radius);
+        content.lineTo(right, top - radius);
+        content.curveTo(right, top - radius + c, right - radius + c, top, right - radius, top);
+        content.lineTo(x + radius, top);
+        content.curveTo(x + radius - c, top, x, top - radius + c, x, top - radius);
+        content.lineTo(x, y + radius);
+        content.curveTo(x, y + radius - c, x + radius - c, y, x + radius, y);
+        content.closePath();
         content.fillAndStroke();
+    }
+
+    private void drawCircle(
+            PDPageContentStream content,
+            float centerX,
+            float centerY,
+            float radius,
+            Color color) throws IOException {
+        float k = 0.552284749831f;
+        float c = radius * k;
+
+        content.setNonStrokingColor(color);
+        content.moveTo(centerX + radius, centerY);
+        content.curveTo(centerX + radius, centerY + c,
+                centerX + c, centerY + radius,
+                centerX, centerY + radius);
+        content.curveTo(centerX - c, centerY + radius,
+                centerX - radius, centerY + c,
+                centerX - radius, centerY);
+        content.curveTo(centerX - radius, centerY - c,
+                centerX - c, centerY - radius,
+                centerX, centerY - radius);
+        content.curveTo(centerX + c, centerY - radius,
+                centerX + radius, centerY - c,
+                centerX + radius, centerY);
+        content.closePath();
+        content.fill();
     }
 
     private void writeText(
