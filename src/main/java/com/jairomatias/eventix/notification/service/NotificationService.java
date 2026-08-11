@@ -50,4 +50,15 @@ public class NotificationService {
                 "Recuerda que " + eventName + " se aproxima. Consulta tu boleta en Eventix antes de llegar."
         );
     }
+
+    public void sendPasswordReset(String recipient, String resetUrl) {
+        emailGateway.send(
+                recipient,
+                "Restablece tu contraseña | Eventix",
+                "Recibimos una solicitud para restablecer tu contraseña. "
+                        + "Usa este enlace dentro de los próximos 30 minutos: "
+                        + resetUrl
+                        + "\n\nSi no solicitaste este cambio, ignora este mensaje."
+        );
+    }
 }

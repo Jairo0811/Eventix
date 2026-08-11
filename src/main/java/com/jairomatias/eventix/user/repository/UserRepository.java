@@ -15,6 +15,8 @@ import com.jairomatias.eventix.role.entity.RoleName;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    Optional<User> findByEmailIgnoreCase(String email);
+
     Optional<User> findByEmailIgnoreCaseOrUsernameIgnoreCase(String email, String username);
 
     boolean existsByEmailIgnoreCase(String email);
