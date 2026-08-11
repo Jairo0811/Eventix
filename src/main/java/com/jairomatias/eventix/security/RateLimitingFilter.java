@@ -102,6 +102,12 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                     "login",
                     properties.getRateLimit().getLoginRequestsPerMinute());
         }
+        if ("POST".equals(request.getMethod())
+                && "/login/forgot-password".equals(path)) {
+            return new LimitRule(
+                    "password-recovery",
+                    properties.getRateLimit().getLoginRequestsPerMinute());
+        }
         if (path.startsWith("/api/wallet/apple/")) {
             return new LimitRule(
                     "wallet",

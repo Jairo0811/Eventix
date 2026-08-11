@@ -2,6 +2,7 @@ package com.jairomatias.eventix.auth.service;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 
@@ -14,17 +15,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.jairomatias.eventix.auth.entity.PasswordResetToken;
 import com.jairomatias.eventix.auth.event.PasswordResetRequestedEvent;
 import com.jairomatias.eventix.auth.repository.PasswordResetTokenRepository;
+import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.entity.UserStatus;
 import com.jairomatias.eventix.user.repository.UserRepository;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class PasswordRecoveryServiceTest {
@@ -94,5 +99,59 @@ class PasswordRecoveryServiceTest {
                 .thenReturn(Optional.empty());
 
         assertFalse(service.isTokenValid("expired-token"));
+    }
+
+    @Test
+    void inactiveAccountShouldNotReceiveResetToken() {
+        User user = mock(User.class);
+        when(user.getStatus()).thenReturn(UserStatus.INACTIVE);
+        when(userRepository.findByEmailIgnoreCase("inactive@example.com"))
+                .thenReturn(Optional.of(user));
+
+        service.requestReset("inactive@example.com");
+
+        verifyNoInteractions(tokenRepository, eventPublisher);
+    }
+
+    @Test
+    void validTokenShouldEncodePasswordAndInvalidateAllUserTokens() {
+        User user = mock(User.class);
+        when(user.getId()).thenReturn(10L);
+        when(user.getStatus()).thenReturn(UserStatus.ACTIVE);
+        when(user.getPasswordHash()).thenReturn("old-hash");
+        PasswordResetToken token = new PasswordResetToken(
+                user,
+                "stored-hash",
+                LocalDateTime.of(2026, 8, 10, 18, 30));
+        when(tokenRepository.findByTokenHash(anyString()))
+                .thenReturn(Optional.of(token));
+        when(passwordEncoder.matches("NewPassword1!", "old-hash"))
+                .thenReturn(false);
+        when(passwordEncoder.encode("NewPassword1!"))
+                .thenReturn("new-hash");
+
+        service.resetPassword(
+                "valid-token",
+                "NewPassword1!",
+                "NewPassword1!");
+
+        verify(user).setPasswordHash("new-hash");
+        verify(user).setMustChangePassword(false);
+        verify(tokenRepository).deleteAllByUser_Id(10L);
+    }
+
+    @Test
+    void invalidTokenShouldNeverChangePassword() {
+        when(tokenRepository.findByTokenHash(anyString()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                BusinessRuleException.class,
+                () -> service.resetPassword(
+                        "invalid-token",
+                        "NewPassword1!",
+                        "NewPassword1!"));
+
+        verifyNoInteractions(passwordEncoder);
     }
 }

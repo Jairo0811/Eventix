@@ -21,19 +21,36 @@ class RateLimitingFilterTest {
                 properties,
                 Clock.fixed(Instant.parse("2026-08-08T12:00:10Z"), ZoneOffset.UTC));
 
-        assertThat(execute(filter).getStatus()).isEqualTo(200);
-        assertThat(execute(filter).getStatus()).isEqualTo(200);
-        MockHttpServletResponse rejected = execute(filter);
+        assertThat(execute(filter, "/login").getStatus()).isEqualTo(200);
+        assertThat(execute(filter, "/login").getStatus()).isEqualTo(200);
+        MockHttpServletResponse rejected = execute(filter, "/login");
 
         assertThat(rejected.getStatus()).isEqualTo(429);
         assertThat(rejected.getHeader("Retry-After")).isEqualTo("50");
         assertThat(rejected.getContentAsString()).contains("Demasiadas solicitudes");
     }
 
-    private MockHttpServletResponse execute(RateLimitingFilter filter)
+    @Test
+    void rejectsPasswordRecoveryRequestsAboveLoginLimit() throws Exception {
+        EventixSecurityProperties properties = new EventixSecurityProperties();
+        properties.getRateLimit().setLoginRequestsPerMinute(1);
+        RateLimitingFilter filter = new RateLimitingFilter(
+                properties,
+                Clock.fixed(Instant.parse("2026-08-08T12:00:10Z"), ZoneOffset.UTC));
+
+        assertThat(execute(filter, "/login/forgot-password").getStatus())
+                .isEqualTo(200);
+
+        assertThat(execute(filter, "/login/forgot-password").getStatus())
+                .isEqualTo(429);
+    }
+
+    private MockHttpServletResponse execute(
+            RateLimitingFilter filter,
+            String path)
             throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest(
-                "POST", "/login");
+                "POST", path);
         request.setRemoteAddr("192.0.2.10");
         MockHttpServletResponse response = new MockHttpServletResponse();
         filter.doFilter(request, response, new MockFilterChain());

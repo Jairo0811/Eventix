@@ -1,6 +1,7 @@
 package com.jairomatias.eventix.auth.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Objects;
+
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -30,12 +31,6 @@ public class AuthController {
     private final UserService userService;
     private final PasswordRecoveryService passwordRecoveryService;
 
-    public AuthController(UserService userService) {
-        this.userService = userService;
-        this.passwordRecoveryService = null;
-    }
-
-    @Autowired
     public AuthController(
             UserService userService,
             PasswordRecoveryService passwordRecoveryService) {
@@ -99,7 +94,9 @@ public class AuthController {
     public String resetPassword(
             @Valid @ModelAttribute("resetPasswordForm") ResetPasswordForm form,
             BindingResult bindingResult) {
-        if (!form.getNewPassword().equals(form.getConfirmPassword())) {
+        if (!Objects.equals(
+                form.getNewPassword(),
+                form.getConfirmPassword())) {
             bindingResult.rejectValue(
                     "confirmPassword",
                     "password.mismatch",
@@ -143,7 +140,8 @@ public class AuthController {
             HttpServletRequest request,
             HttpServletResponse response) {
 
-        if (!form.getNewPassword().equals(
+        if (!Objects.equals(
+                form.getNewPassword(),
                 form.getConfirmPassword())) {
 
             bindingResult.rejectValue(
