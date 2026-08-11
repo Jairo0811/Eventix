@@ -12,7 +12,7 @@
 
 **Plataforma web empresarial para gestión integral de eventos, reservaciones, ventas, pagos, ticketing digital y control de acceso.**
 
-[![Estado](https://img.shields.io/badge/Estado-1.0.0%20completado-15803D?style=for-the-badge)](#-estado-del-proyecto)
+[![Estado](https://img.shields.io/badge/Estado-1.1.0%20estable-15803D?style=for-the-badge)](#-estado-del-proyecto)
 [![Eventix CI](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml/badge.svg)](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -22,7 +22,7 @@
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)](https://www.thymeleaf.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 
-> **Estado actual:** versión 1.0.0 completada, estabilizada y preparada como proyecto de portafolio. Incluye Home público, Dashboard ejecutivo, pagos digitales, Apple Pay, Google Pay, ticketing con QR, Wallet passes, control de acceso, reportes, auditoría y pipeline de seguridad.
+> **Estado actual:** versión 1.1.0 estable y preparada como proyecto de portafolio y base para despliegue profesional. Incorpora recuperación segura de contraseña, perfil, promociones, liquidaciones, notificaciones transaccionales, ticketing digital, control de acceso, observabilidad y un pipeline integral de calidad y seguridad.
 
 </div>
 
@@ -474,7 +474,7 @@ Consulta [`docs/operations-runbook.md`](docs/operations-runbook.md) para
 despliegue, SMTP, backups, restauración, rotación de claves, health checks y
 diagnóstico por `X-Correlation-ID`.
 
-## 🗺️ Roadmap posterior a v1.0
+## 🗺️ Roadmap posterior a v1.1
 
 - Integrar un proveedor comercial real de correo con métricas/SLA.
 - Automatizar despliegue a un entorno administrado con TLS y gestor de secretos.
@@ -492,6 +492,13 @@ Modernización y reconstrucción profesional: 2026.
 
 ## 📄 Licencia
 
-Consulta el archivo `LICENSE` del repositorio para conocer los términos aplicables.
+El repositorio no declara actualmente una licencia de distribución. Todos los
+derechos permanecen reservados hasta que el autor publique una licencia explícita.
+
+## 🏷️ Versiones
+
+Consulta [`CHANGELOG.md`](CHANGELOG.md) para conocer los cambios incluidos en
+cada versión. El tag histórico `v1.0.0` se conserva sin reescribir; la entrega
+estable actual corresponde a `v1.1.0`.
 
 ---
