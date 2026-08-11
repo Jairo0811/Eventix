@@ -56,16 +56,21 @@ CREATE TABLE coupon_events
         FOREIGN KEY (event_id) REFERENCES events(id)
 );
 
-ALTER TABLE sales ADD
+EXEC(N'
+ALTER TABLE dbo.sales ADD
     coupon_id BIGINT NULL,
     coupon_code NVARCHAR(40) NULL,
     coupon_discount_type NVARCHAR(20) NULL,
     coupon_discount_value DECIMAL(12,2) NULL;
+');
 
-ALTER TABLE sales ADD CONSTRAINT FK_sales_coupon
+EXEC(N'
+ALTER TABLE dbo.sales ADD CONSTRAINT FK_sales_coupon
     FOREIGN KEY (coupon_id) REFERENCES coupons(id);
+');
 
-ALTER TABLE sales ADD CONSTRAINT CK_sales_coupon_snapshot CHECK (
+EXEC(N'
+ALTER TABLE dbo.sales ADD CONSTRAINT CK_sales_coupon_snapshot CHECK (
     (
         coupon_id IS NULL
         AND coupon_code IS NULL
@@ -77,11 +82,12 @@ ALTER TABLE sales ADD CONSTRAINT CK_sales_coupon_snapshot CHECK (
     (
         coupon_id IS NOT NULL
         AND coupon_code IS NOT NULL
-        AND coupon_discount_type IN ('PERCENTAGE', 'FIXED_AMOUNT')
+        AND coupon_discount_type IN (''PERCENTAGE'', ''FIXED_AMOUNT'')
         AND coupon_discount_value > 0
         AND discount_total >= 0
     )
 );
+');
 
 CREATE TABLE coupon_redemptions
 (
@@ -125,8 +131,10 @@ CREATE INDEX IX_coupons_active_dates
 CREATE INDEX IX_coupon_events_event
     ON coupon_events(event_id, coupon_id);
 
+EXEC(N'
 CREATE INDEX IX_sales_coupon
-    ON sales(coupon_id);
+    ON dbo.sales(coupon_id);
+');
 
 CREATE INDEX IX_coupon_redemptions_coupon_buyer_status
     ON coupon_redemptions(coupon_id, buyer_email, status);
