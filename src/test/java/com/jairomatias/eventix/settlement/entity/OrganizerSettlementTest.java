@@ -25,6 +25,7 @@ class OrganizerSettlementTest {
     @Test
     void saleAndRefundProduceAuditableZeroNetAdjustment() {
         prepareSaleAmounts();
+        when(sale.getTotal()).thenReturn(new BigDecimal("900.00"));
         OrganizerSettlement settlement = settlement();
 
         settlement.addSale(sale);
@@ -76,7 +77,6 @@ class OrganizerSettlementTest {
     private void prepareSaleAmounts() {
         when(sale.getSubtotal()).thenReturn(new BigDecimal("1000.00"));
         when(sale.getDiscountTotal()).thenReturn(new BigDecimal("100.00"));
-        when(sale.getTotal()).thenReturn(new BigDecimal("900.00"));
         when(sale.getPlatformFeeAmount()).thenReturn(new BigDecimal("45.00"));
         when(sale.getOrganizerNetAmount()).thenReturn(new BigDecimal("855.00"));
     }
