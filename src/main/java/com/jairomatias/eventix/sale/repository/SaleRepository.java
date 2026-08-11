@@ -1,6 +1,8 @@
 package com.jairomatias.eventix.sale.repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -150,4 +152,51 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             WHERE :organizerId IS NULL OR s.event.organizer.id = :organizerId
             """)
     long countByOrganizer(@Param("organizerId") Long organizerId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @EntityGraph(attributePaths = {"event", "event.organizer"})
+    @Query("""
+            SELECT s
+            FROM Sale s
+            WHERE s.event.organizer.id = :organizerId
+            AND s.status IN :statuses
+            AND s.paidAt >= :fromDate
+            AND s.paidAt < :toDate
+            AND NOT EXISTS (
+                SELECT line.id
+                FROM OrganizerSettlementLine line
+                WHERE line.sale = s
+                AND line.lineType = com.jairomatias.eventix.settlement.entity.SettlementLineType.SALE
+                AND line.active = true
+            )
+            ORDER BY s.paidAt ASC, s.id ASC
+            """)
+    List<Sale> findUnsettledSalesForUpdate(
+            @Param("organizerId") Long organizerId,
+            @Param("statuses") Collection<SaleStatus> statuses,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @EntityGraph(attributePaths = {"event", "event.organizer"})
+    @Query("""
+            SELECT s
+            FROM Sale s
+            WHERE s.event.organizer.id = :organizerId
+            AND s.status = com.jairomatias.eventix.sale.entity.SaleStatus.REFUNDED
+            AND s.refundedAt >= :fromDate
+            AND s.refundedAt < :toDate
+            AND NOT EXISTS (
+                SELECT line.id
+                FROM OrganizerSettlementLine line
+                WHERE line.sale = s
+                AND line.lineType = com.jairomatias.eventix.settlement.entity.SettlementLineType.REFUND
+                AND line.active = true
+            )
+            ORDER BY s.refundedAt ASC, s.id ASC
+            """)
+    List<Sale> findUnsettledRefundsForUpdate(
+            @Param("organizerId") Long organizerId,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate);
 }

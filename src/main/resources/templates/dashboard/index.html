@@ -22,7 +22,10 @@
                     <p sec:authorize="hasRole('ADMINISTRATOR')">
                         Supervisa ingresos, ventas, eventos, reservaciones y disponibilidad desde una sola vista ejecutiva.
                     </p>
-                    <p sec:authorize="!hasRole('ADMINISTRATOR')">
+                    <p sec:authorize="hasRole('ORGANIZER')">
+                        Supervisa el rendimiento comercial, la ocupación y las liquidaciones de tus eventos.
+                    </p>
+                    <p sec:authorize="!hasAnyRole('ADMINISTRATOR', 'ORGANIZER')">
                         Consulta tu actividad y accede rápidamente a las herramientas disponibles para tu rol.
                     </p>
                     <div class="dashboard-role">
@@ -39,10 +42,174 @@
                             Gestionar eventos
                         </a>
                     </div>
+                    <div class="dashboard-hero-actions" sec:authorize="hasRole('ORGANIZER')">
+                        <a class="btn btn-light" th:href="@{/events}">
+                            <i class="bi bi-calendar-event me-2" aria-hidden="true"></i>
+                            Mis eventos
+                        </a>
+                        <a class="btn btn-outline-light" th:href="@{/settlements}">
+                            <i class="bi bi-bank me-2" aria-hidden="true"></i>
+                            Mis liquidaciones
+                        </a>
+                    </div>
                 </div>
                 <img class="dashboard-hero-logo"
                      th:src="@{/images/eventix-logo.svg}"
                      alt="Eventix">
+            </div>
+        </section>
+
+        <section sec:authorize="hasRole('ORGANIZER')"
+                 aria-labelledby="organizer-commercial-title">
+            <div class="dashboard-section-heading mb-3">
+                <div>
+                    <h2 id="organizer-commercial-title">Resumen comercial</h2>
+                    <p>Indicadores calculados únicamente con tus eventos y operaciones.</p>
+                </div>
+                <span class="badge rounded-pill text-bg-light border px-3 py-2">
+                    <i class="bi bi-shield-lock me-1 text-success" aria-hidden="true"></i>
+                    Datos privados del organizador
+                </span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-sm-6 col-xl-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-cash-coin" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Ventas brutas</div>
+                        <div class="dashboard-kpi-value"
+                             th:text="|DOP ${#numbers.formatDecimal(organizerSummary.grossSales, 1, 'COMMA', 2, 'POINT')}|">0</div>
+                        <div class="dashboard-kpi-caption">Subtotal histórico antes de descuentos</div>
+                    </article>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-ticket-perforated-fill" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Entradas vendidas</div>
+                        <div class="dashboard-kpi-value" th:text="${organizerSummary.ticketsSold}">0</div>
+                        <div class="dashboard-kpi-caption">Boletas asociadas con ventas pagadas</div>
+                    </article>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-pie-chart-fill" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Ocupación publicada</div>
+                        <div class="dashboard-kpi-value"
+                             th:text="|${#numbers.formatDecimal(organizerSummary.occupancyRate, 1, 2)} %|">0 %</div>
+                        <div class="dashboard-kpi-caption">Entradas pagadas sobre capacidad publicada</div>
+                    </article>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <article class="dashboard-kpi">
+                        <span class="dashboard-kpi-icon"><i class="bi bi-wallet2" aria-hidden="true"></i></span>
+                        <div class="dashboard-kpi-label">Neto estimado</div>
+                        <div class="dashboard-kpi-value text-success"
+                             th:text="|DOP ${#numbers.formatDecimal(organizerSummary.estimatedNet, 1, 'COMMA', 2, 'POINT')}|">0</div>
+                        <div class="dashboard-kpi-caption">Ventas pagadas menos comisión Eventix</div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section sec:authorize="hasRole('ORGANIZER')" aria-label="Operación del organizador">
+            <div class="row g-3">
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <div class="dashboard-kpi-label">Próximos eventos</div>
+                        <div class="dashboard-kpi-value" th:text="${organizerSummary.upcomingEvents}">0</div>
+                    </article>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <div class="dashboard-kpi-label">Eventos publicados</div>
+                        <div class="dashboard-kpi-value" th:text="${organizerSummary.publishedEvents}">0</div>
+                    </article>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <div class="dashboard-kpi-label">Reservaciones activas</div>
+                        <div class="dashboard-kpi-value" th:text="${organizerSummary.activeReservations}">0</div>
+                    </article>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <article class="dashboard-kpi">
+                        <div class="dashboard-kpi-label">Reembolsos</div>
+                        <div class="dashboard-kpi-value text-danger"
+                             th:text="|DOP ${#numbers.formatDecimal(organizerSummary.refunds, 1, 'COMMA', 2, 'POINT')}|">0</div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section sec:authorize="hasRole('ORGANIZER')" aria-labelledby="organizer-events-title">
+            <div class="dashboard-section-heading mb-3">
+                <div>
+                    <h2 id="organizer-events-title">Próximos eventos</h2>
+                    <p>Ventas, reservaciones y ocupación sin cargar colecciones completas.</p>
+                </div>
+                <a class="btn btn-sm btn-outline-primary" th:href="@{/events}">Ver todos</a>
+            </div>
+            <article class="dashboard-panel">
+                <div class="table-responsive" th:if="${!#lists.isEmpty(organizerSummary.upcoming)}">
+                    <table class="table align-middle">
+                        <thead><tr><th>Evento</th><th>Fecha</th><th>Vendidas</th><th>Reservaciones</th><th>Ocupación</th><th class="text-end">Neto estimado</th></tr></thead>
+                        <tbody><tr th:each="event : ${organizerSummary.upcoming}">
+                            <td><a class="fw-semibold text-decoration-none" th:href="@{/events/{id}(id=${event.id})}" th:text="${event.title}">Evento</a></td>
+                            <td th:text="${#temporals.format(event.startAt, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                            <td th:text="${event.ticketsSold}">0</td>
+                            <td th:text="${event.activeReservations}">0</td>
+                            <td th:text="|${#numbers.formatDecimal(event.occupancyRate, 1, 2)} %|">0 %</td>
+                            <td class="text-end fw-bold text-success"
+                                th:text="|DOP ${#numbers.formatDecimal(event.estimatedNet, 1, 'COMMA', 2, 'POINT')}|">0</td>
+                        </tr></tbody>
+                    </table>
+                </div>
+                <p class="dashboard-empty mb-0" th:if="${#lists.isEmpty(organizerSummary.upcoming)}">
+                    No tienes eventos publicados próximos.
+                </p>
+            </article>
+        </section>
+
+        <section sec:authorize="hasRole('ORGANIZER')" aria-labelledby="organizer-finance-title">
+            <div class="dashboard-section-heading mb-3">
+                <div>
+                    <h2 id="organizer-finance-title">Rendimiento y liquidaciones</h2>
+                    <p>Desglose financiero acumulado e ingresos mensuales del año.</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-xl-7">
+                    <article class="dashboard-panel h-100">
+                        <div class="dashboard-panel-title">
+                            <h3>Ingresos mensuales</h3>
+                            <a class="btn btn-sm btn-outline-primary" th:href="@{/reports}">Reportes</a>
+                        </div>
+                        <div class="dashboard-trend-list" th:if="${!#lists.isEmpty(organizerSummary.monthlyRevenue)}">
+                            <div class="dashboard-trend-item" th:each="row : ${organizerSummary.monthlyRevenue}">
+                                <span class="dashboard-trend-period" th:text="${row.period}">Mes</span>
+                                <strong class="dashboard-trend-value"
+                                        th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</strong>
+                            </div>
+                        </div>
+                        <p class="dashboard-empty mb-0" th:if="${#lists.isEmpty(organizerSummary.monthlyRevenue)}">
+                            Aún no hay ventas pagadas este año.
+                        </p>
+                    </article>
+                </div>
+                <div class="col-xl-5">
+                    <article class="dashboard-panel h-100">
+                        <div class="dashboard-panel-title">
+                            <h3>Estado financiero</h3>
+                            <a class="btn btn-sm btn-outline-primary" th:href="@{/settlements}">Abrir</a>
+                        </div>
+                        <div class="dashboard-stat-row"><span>Descuentos aplicados</span><strong th:text="|DOP ${#numbers.formatDecimal(organizerSummary.discounts, 1, 'COMMA', 2, 'POINT')}|">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Comisión Eventix</span><strong th:text="|DOP ${#numbers.formatDecimal(organizerSummary.platformCommission, 1, 'COMMA', 2, 'POINT')}|">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Liquidaciones pendientes</span><strong th:text="${organizerSummary.pendingSettlements}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Neto pendiente</span><strong th:text="|DOP ${#numbers.formatDecimal(organizerSummary.pendingSettlementNet, 1, 'COMMA', 2, 'POINT')}|">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Liquidaciones pagadas</span><strong th:text="${organizerSummary.paidSettlements}">0</strong></div>
+                        <div class="dashboard-stat-row"><span>Neto pagado</span><strong class="text-success" th:text="|DOP ${#numbers.formatDecimal(organizerSummary.paidSettlementNet, 1, 'COMMA', 2, 'POINT')}|">0</strong></div>
+                    </article>
+                </div>
             </div>
         </section>
 
@@ -340,7 +507,8 @@
             </div>
         </section>
 
-        <section class="dashboard-panel" sec:authorize="!hasRole('ADMINISTRATOR')">
+        <section class="dashboard-panel"
+                 sec:authorize="!hasAnyRole('ADMINISTRATOR', 'ORGANIZER')">
             <div class="d-flex align-items-start gap-3">
                 <span class="dashboard-panel-icon flex-shrink-0"><i class="bi bi-stars" aria-hidden="true"></i></span>
                 <div>

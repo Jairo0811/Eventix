@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head('Liquidaciones')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('settlements')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <p class="text-success fw-semibold mb-1">Operación financiera</p>
+            <h1 class="page-title" sec:authorize="hasRole('ADMINISTRATOR')">
+                Liquidaciones a organizadores
+            </h1>
+            <h1 class="page-title" sec:authorize="hasRole('ORGANIZER')">
+                Mis liquidaciones
+            </h1>
+            <p class="page-subtitle">
+                Trazabilidad de ventas, descuentos, reembolsos, comisión y neto.
+            </p>
+        </div>
+        <a class="btn btn-primary" sec:authorize="hasRole('ADMINISTRATOR')"
+           th:href="@{/settlements/new}">
+            <i class="bi bi-plus-circle-fill me-2" aria-hidden="true"></i>
+            Crear liquidación
+        </a>
+    </div>
+
+    <section class="content-card">
+        <form class="row g-3 mb-4" method="get" th:action="@{/settlements}">
+            <div class="col-md-10">
+                <label class="form-label" for="status">Estado</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    <option th:each="status : ${settlementStatuses}"
+                            th:value="${status}"
+                            th:selected="${status == selectedStatus}"
+                            th:text="${status.displayName}">Estado</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-outline-primary w-100" type="submit">
+                    Filtrar
+                </button>
+            </div>
+        </form>
+
+        <div class="table-responsive" th:if="${settlements.hasContent()}">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th sec:authorize="hasRole('ADMINISTRATOR')">Organizador</th>
+                    <th>Período</th>
+                    <th>Ventas brutas</th>
+                    <th>Reembolsos</th>
+                    <th>Neto</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="settlement : ${settlements.content}">
+                    <td class="fw-semibold" sec:authorize="hasRole('ADMINISTRATOR')"
+                        th:text="${settlement.organizerName}">Organizador</td>
+                    <td>
+                        <span th:text="${#temporals.format(settlement.periodFrom, 'dd/MM/yyyy')}">Inicio</span>
+                        <span class="text-secondary"
+                              th:text="|– ${#temporals.format(settlement.periodTo, 'dd/MM/yyyy')}|">Fin</span>
+                    </td>
+                    <td th:text="|RD$ ${#numbers.formatDecimal(settlement.grossSales, 1, 'COMMA', 2, 'POINT')}|">
+                        RD$ 0.00
+                    </td>
+                    <td class="text-danger"
+                        th:text="|RD$ ${#numbers.formatDecimal(settlement.refunds, 1, 'COMMA', 2, 'POINT')}|">
+                        RD$ 0.00
+                    </td>
+                    <td class="fw-bold"
+                        th:classappend="${settlement.organizerNet.signum() < 0} ? ' text-danger'"
+                        th:text="|RD$ ${#numbers.formatDecimal(settlement.organizerNet, 1, 'COMMA', 2, 'POINT')}|">
+                        RD$ 0.00
+                    </td>
+                    <td>
+                        <span class="badge-status"
+                              th:classappend="| badge-settlement-${#strings.toLowerCase(settlement.status.name())}|"
+                              th:text="${settlement.status.displayName}">Estado</span>
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary"
+                           th:href="@{/settlements/{id}(id=${settlement.id})}">
+                            Abrir
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" th:unless="${settlements.hasContent()}">
+            <i class="bi bi-bank fs-1 d-block mb-3" aria-hidden="true"></i>
+            <h2 class="h5 text-dark">No hay liquidaciones</h2>
+            <p class="mb-0">No existen registros para el estado seleccionado.</p>
+        </div>
+
+        <nav class="d-flex justify-content-between align-items-center mt-4"
+             aria-label="Paginación de liquidaciones"
+             th:if="${settlements.totalPages > 1}">
+            <span class="text-secondary small"
+                  th:text="|Página ${settlements.number + 1} de ${settlements.totalPages}|">
+                Página 1
+            </span>
+            <div class="btn-group">
+                <a class="btn btn-sm btn-outline-secondary"
+                   th:classappend="${settlements.first} ? ' disabled'"
+                   th:href="@{/settlements(status=${selectedStatus},page=${settlements.number - 1})}">
+                    Anterior
+                </a>
+                <a class="btn btn-sm btn-outline-secondary"
+                   th:classappend="${settlements.last} ? ' disabled'"
+                   th:href="@{/settlements(status=${selectedStatus},page=${settlements.number + 1})}">
+                    Siguiente
+                </a>
+            </div>
+        </nav>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

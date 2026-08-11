@@ -51,6 +51,14 @@
             <span sec:authorize="hasRole('ADMINISTRATOR')">Ingresos Eventix</span>
             <span sec:authorize="hasRole('ORGANIZER')">Mis ingresos</span>
         </a>
+        <a class="nav-link"
+           sec:authorize="hasAnyRole('ADMINISTRATOR', 'ORGANIZER')"
+           th:classappend="${activePage == 'settlements'} ? ' active'"
+           th:href="@{/settlements}">
+            <i class="bi bi-bank" aria-hidden="true"></i>
+            <span sec:authorize="hasRole('ADMINISTRATOR')">Liquidaciones</span>
+            <span sec:authorize="hasRole('ORGANIZER')">Mis liquidaciones</span>
+        </a>
         <a class="nav-link" sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')" th:classappend="${activePage == 'tickets'} ? ' active'" th:href="@{/tickets}">
             <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
             <span sec:authorize="hasRole('ORGANIZER')">Boletas de mis eventos</span>
