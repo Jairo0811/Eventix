@@ -83,7 +83,7 @@
                 <div class="event-card-cover">
                     <img th:src="${event.coverImageUrl != null
                                   ? event.coverImageUrl
-                                  : '/images/eventix-logo.svg'}"
+                                  : '/images/eventix-logo.png'}"
                          th:alt="|Portada de ${event.title}|">
                     <span class="badge-status event-status-badge"
                           th:classappend="| badge-event-${#strings.toLowerCase(event.status.name())}|"

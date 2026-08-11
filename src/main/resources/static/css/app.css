@@ -98,9 +98,10 @@ a:hover {
 }
 
 .auth-logo {
+    width: 220px;
+    max-width: 100%;
     height: auto;
-    max-width: 270px;
-    width: 100%;
+    object-fit: contain;
 }
 
 .auth-tagline {
@@ -160,8 +161,10 @@ a:hover {
 
 .sidebar-logo {
     display: block;
-    margin: 0.25rem 0.65rem 2rem;
-    width: 185px;
+    width: 165px;
+    height: auto;
+    object-fit: contain;
+    margin: 0 auto 1.5rem;
 }
 
 .sidebar-label {

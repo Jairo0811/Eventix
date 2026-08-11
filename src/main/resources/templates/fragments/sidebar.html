@@ -4,10 +4,10 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <aside class="app-sidebar" th:fragment="sidebar(activePage)">
     <a sec:authorize="!hasRole('USER')" th:href="@{/dashboard}" aria-label="Ir al dashboard">
-        <img class="sidebar-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
+        <img class="sidebar-logo" th:src="@{/images/eventix-logo.png}" alt="Eventix">
     </a>
     <a sec:authorize="hasRole('USER')" th:href="@{/my}" aria-label="Ir a Mi Eventix">
-        <img class="sidebar-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
+ <img class="sidebar-logo" th:src="@{/images/eventix-logo.png}" alt="Eventix">
     </a>
 
     <p class="sidebar-label">Principal</p>

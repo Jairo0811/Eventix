@@ -5,9 +5,7 @@
 <main class="auth-page">
     <section class="auth-visual" aria-label="Presentación de Eventix">
         <div class="auth-visual-content">
-            <a th:href="@{/}" aria-label="Volver al inicio de Eventix">
-                <img class="auth-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
-            </a>
+         <img class="auth-logo" th:src="@{/images/eventix-logo.png}" alt="Eventix">
             <h2 class="auth-tagline">Transforma tus eventos.<br>Conecta experiencias.</h2>
             <p class="auth-copy">
                 Administra eventos, reservaciones, ventas y accesos desde una plataforma
@@ -19,16 +17,9 @@
     <section class="auth-panel">
         <div class="auth-form">
             <div class="d-lg-none bg-dark rounded-4 p-3 mb-4 text-center">
-                <a th:href="@{/}" aria-label="Volver al inicio de Eventix">
-                    <img class="auth-logo" th:src="@{/images/eventix-logo.svg}" alt="Eventix">
-                </a>
+                <img class="auth-logo" th:src="@{/images/eventix-logo.png}" alt="Eventix">
             </div>
 
-            <a class="small text-decoration-none d-inline-flex align-items-center gap-1 mb-4"
-               th:href="@{/}">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                Volver al inicio
-            </a>
             <p class="text-success fw-semibold mb-2">Bienvenido de nuevo</p>
             <h1>Inicia sesión</h1>
             <p class="text-secondary mb-4">Accede al panel de administración de Eventix.</p>
@@ -45,9 +36,6 @@
             </div>
             <div class="alert alert-success" role="alert" th:if="${param.passwordChanged}">
                 Contraseña actualizada. Ya puedes iniciar sesión.
-            </div>
-            <div class="alert alert-success" role="alert" th:if="${param.profileUpdated}">
-                Perfil actualizado. Inicia sesión con tu nuevo correo.
             </div>
 
             <form th:action="@{/login}" method="post" novalidate>
@@ -66,7 +54,7 @@
                                required>
                     </div>
                 </div>
-                <div class="mb-2">
+                <div class="mb-4">
                     <label class="form-label fw-semibold" for="password">Contraseña</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white">
@@ -79,11 +67,6 @@
                                autocomplete="current-password"
                                required>
                     </div>
-                </div>
-                <div class="text-end mb-4">
-                    <a class="small text-decoration-none" th:href="@{/login/forgot-password}">
-                        ¿Olvidaste tu contraseña?
-                    </a>
                 </div>
                 <button class="btn btn-primary btn-lg w-100" type="submit">
                     Entrar a Eventix
