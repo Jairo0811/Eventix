@@ -30,15 +30,17 @@
 
 ## 🧭 Continuidad académica
 
-Eventix nació como proyecto final de **Programación II** en el Instituto Tecnológico de Las Américas (ITLA), cursada con el profesor **Raydelto Hernández Perera** durante el período **2017-C2**.
+**Eventix** representa el primer proyecto de una trayectoria académica de tres asignaturas cursadas con el profesor **Raydelto Hernández Perera** en el Instituto Tecnológico de Las Américas (ITLA). La relación entre estos proyectos es **formativa y cronológica**: no son dependencias técnicas ni secuelas de una misma aplicación, sino evidencias de una progresión en distintas áreas del desarrollo de software.
 
-| Orden | Asignatura | Proyecto | Período |
-|---:|---|---|---|
-| 1 | Programación II | **Eventix** | 2017-C2 |
-| 2 | Estructuras de Datos | [Aerolinea](https://github.com/Jairo0811/Aerolinea) | 2018-C1 |
-| 3 | Programación WEB | [ITLA Crush](https://github.com/Jairo0811/ITLAcrushReact) | 2018-C2 |
+La secuencia comenzó en **2017-C2** con **Programación II (SOF-004)**, donde Eventix fue desarrollado como proyecto final. Continuó en **2018-C1** con **Estructuras de Datos (SOF-012)** y el proyecto [**Aerolinea**](https://github.com/Jairo0811/Aerolinea), y culminó en **2018-C2** con **Programación WEB (SOF-011)** y [**ITLA Crush**](https://github.com/Jairo0811/ITLAcrushReact).
 
-Actualmente Eventix ha sido reconstruido y modernizado con estándares profesionales de arquitectura, seguridad, pruebas y despliegue.
+| Orden | Código | Asignatura | Proyecto | Período | Enfoque académico |
+|---:|---|---|---|---|---|
+| 1 | SOF-004 | Programación II | **Eventix** | 2017-C2 | Programación orientada a objetos, lógica de negocio y construcción de una aplicación completa |
+| 2 | SOF-012 | Estructuras de Datos | [**Aerolinea**](https://github.com/Jairo0811/Aerolinea) | 2018-C1 | Estructuras de datos, modelado de relaciones y resolución de rutas |
+| 3 | SOF-011 | Programación WEB | [**ITLA Crush**](https://github.com/Jairo0811/ITLAcrushReact) | 2018-C2 | Desarrollo web, JavaScript, React y Firebase |
+
+Vistos en conjunto, los tres proyectos documentan una evolución desde la construcción de aplicaciones orientadas a objetos, pasando por estructuras y algoritmos, hasta el desarrollo de aplicaciones web modernas. Cada repositorio conserva su identidad académica original y, cuando aplica, incorpora una restauración o modernización posterior orientada a estándares profesionales y portafolio.
 
 ---
 
