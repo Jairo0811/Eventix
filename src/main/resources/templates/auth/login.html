@@ -46,6 +46,9 @@
             <div class="alert alert-success" role="alert" th:if="${param.passwordChanged}">
                 Contraseña actualizada. Ya puedes iniciar sesión.
             </div>
+            <div class="alert alert-success" role="alert" th:if="${param.profileUpdated}">
+                Perfil actualizado. Inicia sesión con tu nuevo correo.
+            </div>
 
             <form th:action="@{/login}" method="post" novalidate>
                 <div class="mb-3">

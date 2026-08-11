@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.jairomatias.eventix.notification.service.NotificationService;
+import com.jairomatias.eventix.notification.service.NotificationPreferenceService;
 import com.jairomatias.eventix.reservation.entity.Reservation;
 import com.jairomatias.eventix.reservation.event.ReservationCancelledEvent;
 import com.jairomatias.eventix.reservation.event.ReservationConfirmedEvent;
@@ -16,14 +17,17 @@ import com.jairomatias.eventix.sale.event.SaleRefundedEvent;
 import com.jairomatias.eventix.sale.repository.SaleRepository;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class TransactionalNotificationListenerTest {
 
     private NotificationService notificationService;
+    private NotificationPreferenceService preferenceService;
     private ReservationRepository reservationRepository;
     private SaleRepository saleRepository;
     private TransactionalNotificationListener listener;
@@ -31,12 +35,17 @@ class TransactionalNotificationListenerTest {
     @BeforeEach
     void setUp() {
         notificationService = mock(NotificationService.class);
+        preferenceService = mock(NotificationPreferenceService.class);
         reservationRepository = mock(ReservationRepository.class);
         saleRepository = mock(SaleRepository.class);
         listener = new TransactionalNotificationListener(
                 notificationService,
+                preferenceService,
                 reservationRepository,
                 saleRepository);
+        when(preferenceService.allowsReservationNotifications(
+                anyString()))
+                .thenReturn(true);
     }
 
     @Test
@@ -63,6 +72,22 @@ class TransactionalNotificationListenerTest {
         verify(notificationService).sendCancellation(
                 "guest@example.com",
                 "RSV-101");
+    }
+
+    @Test
+    void shouldRespectReservationNotificationPreference() {
+        Reservation reservation = reservation("RSV-102", "user@example.com");
+        when(reservationRepository.findDetailedById(12L))
+                .thenReturn(Optional.of(reservation));
+        when(preferenceService.allowsReservationNotifications(
+                "user@example.com"))
+                .thenReturn(false);
+
+        listener.onReservationConfirmed(new ReservationConfirmedEvent(12L));
+
+        verify(notificationService, never()).sendReservationConfirmation(
+                "user@example.com",
+                "RSV-102");
     }
 
     @Test

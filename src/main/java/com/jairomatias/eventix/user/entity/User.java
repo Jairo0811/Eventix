@@ -50,6 +50,12 @@ public class User extends AuditableEntity {
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
+    @Column(name = "reservation_notifications_enabled", nullable = false)
+    private boolean reservationNotificationsEnabled = true;
+
+    @Column(name = "event_reminder_notifications_enabled", nullable = false)
+    private boolean eventReminderNotificationsEnabled = true;
+
     protected User() {
     }
 
@@ -146,5 +152,23 @@ public class User extends AuditableEntity {
 
     public void recordLogin(LocalDateTime loginTime) {
         this.lastLoginAt = loginTime;
+    }
+
+    public boolean isReservationNotificationsEnabled() {
+        return reservationNotificationsEnabled;
+    }
+
+    public void setReservationNotificationsEnabled(
+            boolean reservationNotificationsEnabled) {
+        this.reservationNotificationsEnabled = reservationNotificationsEnabled;
+    }
+
+    public boolean isEventReminderNotificationsEnabled() {
+        return eventReminderNotificationsEnabled;
+    }
+
+    public void setEventReminderNotificationsEnabled(
+            boolean eventReminderNotificationsEnabled) {
+        this.eventReminderNotificationsEnabled = eventReminderNotificationsEnabled;
     }
 }
