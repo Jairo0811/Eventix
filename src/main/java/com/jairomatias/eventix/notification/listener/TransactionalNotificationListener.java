@@ -7,6 +7,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.jairomatias.eventix.auth.event.PasswordResetRequestedEvent;
+import com.jairomatias.eventix.notification.service.NotificationPreferenceService;
 import com.jairomatias.eventix.notification.service.NotificationService;
 import com.jairomatias.eventix.reservation.entity.Reservation;
 import com.jairomatias.eventix.reservation.event.ReservationCancelledEvent;
@@ -24,14 +25,17 @@ public class TransactionalNotificationListener {
             TransactionalNotificationListener.class);
 
     private final NotificationService notificationService;
+    private final NotificationPreferenceService preferenceService;
     private final ReservationRepository reservationRepository;
     private final SaleRepository saleRepository;
 
     public TransactionalNotificationListener(
             NotificationService notificationService,
+            NotificationPreferenceService preferenceService,
             ReservationRepository reservationRepository,
             SaleRepository saleRepository) {
         this.notificationService = notificationService;
+        this.preferenceService = preferenceService;
         this.reservationRepository = reservationRepository;
         this.saleRepository = saleRepository;
     }
@@ -83,12 +87,20 @@ public class TransactionalNotificationListener {
     }
 
     private void sendReservationConfirmation(Reservation reservation) {
+        if (!preferenceService.allowsReservationNotifications(
+                reservation.getAttendeeEmail())) {
+            return;
+        }
         notificationService.sendReservationConfirmation(
                 reservation.getAttendeeEmail(),
                 reservation.getReferenceCode());
     }
 
     private void sendReservationCancellation(Reservation reservation) {
+        if (!preferenceService.allowsReservationNotifications(
+                reservation.getAttendeeEmail())) {
+            return;
+        }
         notificationService.sendCancellation(
                 reservation.getAttendeeEmail(),
                 reservation.getReferenceCode());

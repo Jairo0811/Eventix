@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mi perfil')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('profile')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <section class="mb-4">
+        <p class="text-success fw-semibold mb-1">Cuenta Eventix</p>
+        <h1 class="page-title">Mi perfil</h1>
+        <p class="page-subtitle">
+            Administra tus datos personales, preferencias y seguridad sin alterar permisos de la cuenta.
+        </p>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <section class="content-card mb-4">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="user-avatar">
+                        <i class="bi bi-person-fill" aria-hidden="true"></i>
+                    </span>
+                    <div>
+                        <h2 class="h4 mb-1" th:text="${account.fullName}">Usuario Eventix</h2>
+                        <span class="badge text-bg-success" th:text="${account.role.displayName}">Rol</span>
+                    </div>
+                </div>
+
+                <form th:action="@{/profile}" th:object="${profileForm}" method="post" novalidate>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold" for="firstName">Nombre</label>
+                            <input class="form-control"
+                                   th:errorclass="is-invalid"
+                                   id="firstName"
+                                   th:field="*{firstName}"
+                                   autocomplete="given-name">
+                            <div class="invalid-feedback" th:errors="*{firstName}"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold" for="lastName">Apellido</label>
+                            <input class="form-control"
+                                   th:errorclass="is-invalid"
+                                   id="lastName"
+                                   th:field="*{lastName}"
+                                   autocomplete="family-name">
+                            <div class="invalid-feedback" th:errors="*{lastName}"></div>
+                        </div>
+                        <div class="col-12 col-md-7">
+                            <label class="form-label fw-semibold" for="email">Correo electrónico</label>
+                            <input class="form-control"
+                                   th:errorclass="is-invalid"
+                                   id="email"
+                                   th:field="*{email}"
+                                   type="email"
+                                   autocomplete="email">
+                            <div class="invalid-feedback" th:errors="*{email}"></div>
+                            <div class="form-text">
+                                Si cambias el correo, cerraremos la sesión para renovar tu identidad de acceso.
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-5">
+                            <label class="form-label fw-semibold" for="phone">Teléfono</label>
+                            <input class="form-control"
+                                   th:errorclass="is-invalid"
+                                   id="phone"
+                                   th:field="*{phone}"
+                                   type="tel"
+                                   autocomplete="tel">
+                            <div class="invalid-feedback" th:errors="*{phone}"></div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <h3 class="h5 mb-3">Preferencias de notificación</h3>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input"
+                               id="reservationNotificationsEnabled"
+                               type="checkbox"
+                               th:field="*{reservationNotificationsEnabled}">
+                        <label class="form-check-label" for="reservationNotificationsEnabled">
+                            <strong class="d-block">Actualizaciones de reservaciones</strong>
+                            <span class="text-secondary small">
+                                Recibe confirmaciones y cancelaciones relacionadas con tus reservaciones.
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input"
+                               id="eventReminderNotificationsEnabled"
+                               type="checkbox"
+                               th:field="*{eventReminderNotificationsEnabled}">
+                        <label class="form-check-label" for="eventReminderNotificationsEnabled">
+                            <strong class="d-block">Recordatorios de eventos</strong>
+                            <span class="text-secondary small">
+                                Recibe un aviso antes de los eventos asociados con tus boletas.
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="alert alert-light border small">
+                        Las notificaciones de seguridad, compras y reembolsos permanecen activas porque protegen
+                        la cuenta y documentan operaciones financieras.
+                    </div>
+
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>
+                        Guardar cambios
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <section class="content-card mb-4">
+                <h2 class="h5 mb-3">Información de la cuenta</h2>
+                <dl class="mb-0">
+                    <dt class="text-secondary small">Usuario</dt>
+                    <dd class="fw-semibold" th:text="${account.username}">usuario</dd>
+
+                    <dt class="text-secondary small">Estado</dt>
+                    <dd><span class="badge text-bg-light" th:text="${account.status.displayName}">Activo</span></dd>
+
+                    <dt class="text-secondary small">Creada</dt>
+                    <dd th:text="${#temporals.format(account.createdAt, 'dd/MM/yyyy HH:mm')}">10/08/2026</dd>
+
+                    <dt class="text-secondary small">Último acceso</dt>
+                    <dd th:text="${account.lastLoginAt != null ? #temporals.format(account.lastLoginAt, 'dd/MM/yyyy HH:mm') : 'Sin registro'}">
+                        Sin registro
+                    </dd>
+                </dl>
+                <p class="text-secondary small mb-0">
+                    El rol, el estado y los identificadores internos solo pueden gestionarse desde los controles
+                    administrativos autorizados.
+                </p>
+            </section>
+
+            <section class="content-card">
+                <h2 class="h5 mb-2">Seguridad</h2>
+                <p class="text-secondary small">
+                    Para cambiar la contraseña debes confirmar primero la contraseña actual.
+                </p>
+                <a class="btn btn-outline-primary w-100" th:href="@{/auth/change-password}">
+                    <i class="bi bi-shield-lock me-2" aria-hidden="true"></i>
+                    Cambiar contraseña
+                </a>
+            </section>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

@@ -60,10 +60,7 @@ public class UserPortalController {
     }
 
     @GetMapping("/profile")
-    public String profile(
-            @AuthenticationPrincipal UserPrincipal principal,
-            Model model) {
-        model.addAttribute("principal", principal);
-        return "user-portal/profile";
+    public String profile() {
+        return "redirect:/profile";
     }
 }

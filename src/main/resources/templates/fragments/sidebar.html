@@ -30,7 +30,7 @@
         <a class="nav-link" sec:authorize="hasRole('USER')" th:classappend="${activePage == 'my-tickets'} ? ' active'" th:href="@{/my/tickets}">
             <i class="bi bi-ticket-perforated-fill" aria-hidden="true"></i>Mis boletas
         </a>
-        <a class="nav-link" sec:authorize="hasRole('USER')" th:classappend="${activePage == 'my-profile'} ? ' active'" th:href="@{/my/profile}">
+        <a class="nav-link" th:classappend="${activePage == 'profile'} ? ' active'" th:href="@{/profile}">
             <i class="bi bi-person-circle" aria-hidden="true"></i>Mi perfil
         </a>
         <a class="nav-link" sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')" th:classappend="${activePage == 'reservations'} ? ' active'" th:href="@{/reservations}">
