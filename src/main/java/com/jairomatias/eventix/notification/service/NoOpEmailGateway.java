@@ -10,10 +10,20 @@ import org.springframework.stereotype.Component;
         havingValue = "false",
         matchIfMissing = true
 )
-public class NoOpEmailGateway implements EmailGateway {
+public class NoOpEmailGateway
+        implements EmailGateway, EmailAttachmentGateway {
 
     @Override
     public void send(String recipient, String subject, String body) {
+        // Email delivery is intentionally disabled for this environment.
+    }
+
+    @Override
+    public void sendWithAttachments(
+            String recipient,
+            String subject,
+            String body,
+            java.util.List<EmailAttachment> attachments) {
         // Email delivery is intentionally disabled for this environment.
     }
 }

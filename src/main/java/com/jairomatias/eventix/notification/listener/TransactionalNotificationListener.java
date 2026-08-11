@@ -9,6 +9,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.jairomatias.eventix.auth.event.PasswordResetRequestedEvent;
 import com.jairomatias.eventix.notification.service.NotificationPreferenceService;
 import com.jairomatias.eventix.notification.service.NotificationService;
+import com.jairomatias.eventix.notification.service.TicketPurchaseNotificationService;
 import com.jairomatias.eventix.reservation.entity.Reservation;
 import com.jairomatias.eventix.reservation.event.ReservationCancelledEvent;
 import com.jairomatias.eventix.reservation.event.ReservationConfirmedEvent;
@@ -28,16 +29,19 @@ public class TransactionalNotificationListener {
     private final NotificationPreferenceService preferenceService;
     private final ReservationRepository reservationRepository;
     private final SaleRepository saleRepository;
+    private final TicketPurchaseNotificationService purchaseNotificationService;
 
     public TransactionalNotificationListener(
             NotificationService notificationService,
             NotificationPreferenceService preferenceService,
             ReservationRepository reservationRepository,
-            SaleRepository saleRepository) {
+            SaleRepository saleRepository,
+            TicketPurchaseNotificationService purchaseNotificationService) {
         this.notificationService = notificationService;
         this.preferenceService = preferenceService;
         this.reservationRepository = reservationRepository;
         this.saleRepository = saleRepository;
+        this.purchaseNotificationService = purchaseNotificationService;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -107,7 +111,8 @@ public class TransactionalNotificationListener {
     }
 
     private void sendPurchaseConfirmation(Sale sale) {
-        notificationService.sendPurchaseConfirmation(
+        purchaseNotificationService.sendPurchaseConfirmation(
+                sale.getId(),
                 sale.getBuyerEmail(),
                 sale.getReferenceCode());
     }

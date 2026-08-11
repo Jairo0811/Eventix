@@ -47,6 +47,9 @@ spring:
       mail:
         smtp:
           auth: ${MAIL_SMTP_AUTH:false}
+          connectiontimeout: ${MAIL_CONNECTION_TIMEOUT_MS:5000}
+          timeout: ${MAIL_READ_TIMEOUT_MS:5000}
+          writetimeout: ${MAIL_WRITE_TIMEOUT_MS:5000}
           starttls:
             enable: ${MAIL_STARTTLS_ENABLED:false}
 
@@ -57,8 +60,12 @@ spring:
   thymeleaf:
     cache: false
 
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
 server:
   port: ${APP_PORT:8080}
+  shutdown: graceful
 
   error:
     include-message: never
@@ -119,6 +126,14 @@ eventix:
     email:
       enabled: ${EVENTIX_EMAIL_ENABLED:false}
       from: ${EVENTIX_EMAIL_FROM:no-reply@eventix.local}
+    reminders:
+      enabled: ${EVENTIX_REMINDERS_ENABLED:false}
+      advance: ${EVENTIX_REMINDER_ADVANCE:PT24H}
+      scan-interval: ${EVENTIX_REMINDER_SCAN_INTERVAL:PT5M}
+      retry-delay: ${EVENTIX_REMINDER_RETRY_DELAY:PT15M}
+      maximum-attempts: ${EVENTIX_REMINDER_MAX_ATTEMPTS:5}
+      candidate-batch-size: ${EVENTIX_REMINDER_CANDIDATE_BATCH_SIZE:500}
+      delivery-batch-size: ${EVENTIX_REMINDER_DELIVERY_BATCH_SIZE:100}
 
   maps:
     google:

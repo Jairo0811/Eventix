@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import com.jairomatias.eventix.notification.service.NotificationService;
 import com.jairomatias.eventix.notification.service.NotificationPreferenceService;
+import com.jairomatias.eventix.notification.service.TicketPurchaseNotificationService;
 import com.jairomatias.eventix.reservation.entity.Reservation;
 import com.jairomatias.eventix.reservation.event.ReservationCancelledEvent;
 import com.jairomatias.eventix.reservation.event.ReservationConfirmedEvent;
@@ -30,6 +31,7 @@ class TransactionalNotificationListenerTest {
     private NotificationPreferenceService preferenceService;
     private ReservationRepository reservationRepository;
     private SaleRepository saleRepository;
+    private TicketPurchaseNotificationService purchaseNotificationService;
     private TransactionalNotificationListener listener;
 
     @BeforeEach
@@ -38,11 +40,14 @@ class TransactionalNotificationListenerTest {
         preferenceService = mock(NotificationPreferenceService.class);
         reservationRepository = mock(ReservationRepository.class);
         saleRepository = mock(SaleRepository.class);
+        purchaseNotificationService = mock(
+                TicketPurchaseNotificationService.class);
         listener = new TransactionalNotificationListener(
                 notificationService,
                 preferenceService,
                 reservationRepository,
-                saleRepository);
+                saleRepository,
+                purchaseNotificationService);
         when(preferenceService.allowsReservationNotifications(
                 anyString()))
                 .thenReturn(true);
@@ -93,12 +98,14 @@ class TransactionalNotificationListenerTest {
     @Test
     void shouldNotifyWhenSaleIsPaid() {
         Sale sale = sale("SALE-100", "buyer@example.com");
+        when(sale.getId()).thenReturn(20L);
         when(saleRepository.findDetailedById(20L))
                 .thenReturn(Optional.of(sale));
 
         listener.onSalePaid(new SalePaidEvent(20L));
 
-        verify(notificationService).sendPurchaseConfirmation(
+        verify(purchaseNotificationService).sendPurchaseConfirmation(
+                20L,
                 "buyer@example.com",
                 "SALE-100");
     }
@@ -119,11 +126,15 @@ class TransactionalNotificationListenerTest {
     @Test
     void deliveryFailureShouldNotEscapeAfterCommitListener() {
         Sale sale = sale("SALE-102", "buyer@example.com");
+        when(sale.getId()).thenReturn(22L);
         when(saleRepository.findDetailedById(22L))
                 .thenReturn(Optional.of(sale));
         doThrow(new IllegalStateException("SMTP unavailable"))
-                .when(notificationService)
-                .sendPurchaseConfirmation("buyer@example.com", "SALE-102");
+                .when(purchaseNotificationService)
+                .sendPurchaseConfirmation(
+                        22L,
+                        "buyer@example.com",
+                        "SALE-102");
 
         assertDoesNotThrow(() -> listener.onSalePaid(new SalePaidEvent(22L)));
     }
