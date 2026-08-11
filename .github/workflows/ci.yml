@@ -24,7 +24,6 @@ jobs:
 
       - name: Review dependency changes
         uses: actions/dependency-review-action@v5
-        continue-on-error: true
         with:
           fail-on-severity: high
 
@@ -51,6 +50,8 @@ jobs:
           echo "MSSQL_SA_PASSWORD=Sa$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
           echo "EVENTIX_DB_PASSWORD=Ev$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
           echo "EVENTIX_MIGRATOR_PASSWORD=Mg$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
+          echo "EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN=true" >> "$GITHUB_ENV"
+          echo "TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY=true" >> "$GITHUB_ENV"
 
       - name: Verify with Maven
         run: mvn --batch-mode --no-transfer-progress clean verify
@@ -77,6 +78,10 @@ jobs:
           curl --fail --silent --show-error http://localhost:8080/actuator/health/readiness
           curl --fail --silent --show-error --dump-header /tmp/eventix-headers.txt http://localhost:8080/login --output /tmp/eventix-login.html
           grep --ignore-case "content-security-policy:" /tmp/eventix-headers.txt
+          grep --ignore-case "x-content-type-options: nosniff" /tmp/eventix-headers.txt
+          grep --ignore-case "x-frame-options: deny" /tmp/eventix-headers.txt
+          grep --ignore-case "referrer-policy: no-referrer" /tmp/eventix-headers.txt
+          grep --ignore-case "permissions-policy:" /tmp/eventix-headers.txt
           grep --ignore-case "x-correlation-id:" /tmp/eventix-headers.txt
           grep --quiet "Eventix" /tmp/eventix-login.html
 

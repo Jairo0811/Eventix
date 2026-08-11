@@ -92,6 +92,10 @@ El panel principal ofrece una lectura moderna del estado operativo y comercial d
 - Inicio y cierre de sesión con Spring Security.
 - Acceso mediante correo electrónico o nombre de usuario.
 - Contraseñas BCrypt y cambio obligatorio de contraseña temporal.
+- Recuperación de contraseña con tokens de un solo uso, hash persistido,
+  expiración, revocación y respuesta anti-enumeración.
+- Perfil autenticado separado de administración y recuperación: datos básicos,
+  cambio con contraseña actual y preferencias de notificación.
 - Gestión segura de sesiones y protección CSRF.
 - Autorización por rutas, servicios, roles y propiedad del recurso.
 - Roles `ADMINISTRATOR`, `OPERATOR`, `ORGANIZER`, `ACCESS_STAFF` y `USER`.
@@ -120,6 +124,9 @@ El panel principal ofrece una lectura moderna del estado operativo y comercial d
 - Estados de venta pendiente, pagada, reembolsada y cancelada.
 - Cancelaciones y reembolsos justificados.
 - Comprobantes imprimibles y exportables a PDF.
+- Cupones por porcentaje o monto fijo, límites globales/por comprador,
+  vigencia, eventos e importe mínimo calculados exclusivamente en backend.
+- Snapshots de subtotal, descuento, total y cupón para reconstrucción histórica.
 
 ### 💰 Pagos
 
@@ -159,6 +166,22 @@ El panel principal ofrece una lectura moderna del estado operativo y comercial d
 - Auditoría de autenticación, CRUD, ventas, reservaciones, cambios de estado, escaneos, exportaciones y errores.
 - Health checks de liveness/readiness.
 - Métricas Prometheus y logs JSON en producción.
+
+### 🏦 Liquidaciones y centro del organizador
+
+- Libro persistente de ventas, descuentos, reembolsos, comisión y neto.
+- Estados transaccionales pendiente, procesando, pagada, fallida y cancelada.
+- Prevención de doble liquidación mediante bloqueo e índice único filtrado.
+- Centro comercial privado por organizador con ocupación, próximos eventos,
+  rendimiento histórico y liquidaciones pendientes/pagadas.
+
+### ✉️ Notificaciones
+
+- Confirmaciones de reserva, compra, cancelación, reembolso y recuperación.
+- Boletas PDF adjuntas; varias boletas se agrupan en un único ZIP.
+- Recordatorios persistentes, deduplicados, reintentables y sujetos a la
+  preferencia del usuario.
+- Entrega transaccional `AFTER_COMMIT`: un fallo SMTP no revierte una venta.
 
 ---
 
@@ -300,6 +323,7 @@ flowchart LR
     Azul --> ApplePay["Apple Pay"]
     Azul --> GooglePay["Google Pay"]
     Service --> Ticketing["Ticketing · QR · Wallet Passes"]
+    Service --> Notifications["SMTP · boletas · recordatorios"]
     Flyway["Flyway"] --> Database
     Metrics["Actuator · Prometheus"] --> Service
     Service --> Audit["Auditoría"]
@@ -368,7 +392,47 @@ mvn clean verify
 mvn spring-boot:run
 ```
 
-La solución también incluye configuración Docker Compose para levantar Eventix junto con SQL Server. Deben definirse previamente las variables de entorno requeridas por la base de datos.
+### Configuración y variables de entorno
+
+Copia el archivo de ejemplo y reemplaza sus valores locales:
+
+```bash
+cp .env.example .env
+```
+
+Variables esenciales:
+
+| Variable | Uso |
+|---|---|
+| `MSSQL_SA_PASSWORD` | Inicialización de SQL Server; no la usa Eventix. |
+| `EVENTIX_DB_PASSWORD` | Usuario de mínimo privilegio `eventix_app`. |
+| `EVENTIX_MIGRATOR_PASSWORD` | Usuario separado `eventix_migrator`. |
+| `APP_PROFILE` | `dev` local o `prod` detrás de HTTPS. |
+| `APP_BASE_URL` | URL pública absoluta, usada también en recuperación. |
+| `EVENTIX_BOOTSTRAP_ADMIN_PASSWORD` | Bootstrap explícito; obligatorio si se habilita. |
+| `EVENTIX_EMAIL_ENABLED` | Activa la entrega SMTP. |
+| `MAIL_HOST`, `MAIL_PORT` | Endpoint SMTP. |
+| `MAIL_USERNAME`, `MAIL_PASSWORD` | Credenciales SMTP, siempre externas. |
+| `EVENTIX_REMINDERS_ENABLED` | Activa recordatorios cuando SMTP funciona. |
+| `TICKETING_SIGNING_PRIVATE_KEY` | Clave Ed25519 persistente en producción. |
+
+El resto de variables opcionales para AZUL, Apple/Google Wallet y Maps está
+documentado en `.env.example`. Ninguna credencial real debe versionarse.
+
+### Docker Compose
+
+```bash
+docker compose up --detach --build --wait --wait-timeout 300
+curl --fail http://localhost:8080/actuator/health/readiness
+docker compose down
+```
+
+Compose crea SQL Server, aprovisiona usuarios separados, ejecuta Flyway y espera
+readiness. El volumen `eventix-sqlserver-data` conserva la base entre reinicios.
+No uses `docker compose down --volumes` salvo que quieras eliminar datos locales.
+
+Para producción configura `APP_PROFILE=prod`, una `APP_BASE_URL` HTTPS, cookies
+seguras, claves Ed25519 persistentes y secretos desde el gestor de la plataforma.
 
 > Las integraciones reales con AZUL, Apple Pay, Google Pay, Apple Wallet y Google Wallet requieren credenciales externas y configuración específica del proveedor. Nunca deben almacenarse secretos reales en el repositorio.
 
@@ -380,6 +444,41 @@ La solución también incluye configuración Docker Compose para levantar Eventi
 - Esquema administrado mediante Flyway.
 - Usuario de ejecución separado del usuario de migraciones.
 - Pruebas de integración contra SQL Server real mediante Testcontainers.
+
+---
+
+## 🧭 Estructura principal
+
+Los paquetes bajo `com.jairomatias.eventix` están organizados por dominio:
+`auth`, `profile`, `user`, `event`, `reservation`, `sale`, `promotion`,
+`settlement`, `payment`, `ticket`, `notification`, `reporting`, `audit`,
+`security`, `observability` y `shared`. Cada módulo conserva controladores,
+servicios, repositorios, DTO y entidades según corresponda.
+
+## 👥 Roles
+
+| Rol | Alcance principal |
+|---|---|
+| `ADMINISTRATOR` | Configuración, usuarios, promociones, auditoría y liquidaciones. |
+| `ORGANIZER` | Sus eventos, ventas, reservaciones, reportes y liquidaciones. |
+| `OPERATOR` | Operación de reservaciones, ventas y pagos. |
+| `ACCESS_STAFF` | Validación de acceso autorizada. |
+| `USER` | Perfil y boletas asociadas a su correo. |
+
+La visibilidad del frontend no sustituye la autorización: rutas y servicios
+aplican rol y propiedad del recurso para evitar IDOR.
+
+## 🔧 Operación y diagnóstico
+
+Consulta [`docs/operations-runbook.md`](docs/operations-runbook.md) para
+despliegue, SMTP, backups, restauración, rotación de claves, health checks y
+diagnóstico por `X-Correlation-ID`.
+
+## 🗺️ Roadmap posterior a v1.0
+
+- Integrar un proveedor comercial real de correo con métricas/SLA.
+- Automatizar despliegue a un entorno administrado con TLS y gestor de secretos.
+- Evaluar OpenTelemetry solo cuando exista infraestructura de trazas distribuida.
 
 ---
 
