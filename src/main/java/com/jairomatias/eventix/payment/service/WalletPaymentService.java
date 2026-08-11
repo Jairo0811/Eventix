@@ -17,6 +17,7 @@ import com.jairomatias.eventix.payment.gateway.PaymentGatewayRegistry;
 import com.jairomatias.eventix.payment.gateway.PaymentResult;
 import com.jairomatias.eventix.payment.gateway.SimulationOutcome;
 import com.jairomatias.eventix.payment.repository.PaymentTransactionRepository;
+import com.jairomatias.eventix.promotion.service.PromotionService;
 import com.jairomatias.eventix.sale.entity.Sale;
 import com.jairomatias.eventix.sale.entity.SaleStatus;
 import com.jairomatias.eventix.sale.event.SalePaidEvent;
@@ -40,6 +41,7 @@ public class WalletPaymentService {
     private final PaymentGatewayRegistry gatewayRegistry;
     private final TransactionReferenceGenerator referenceGenerator;
     private final ApplicationEventPublisher eventPublisher;
+    private final PromotionService promotionService;
     private final Clock clock;
 
     public WalletPaymentService(
@@ -48,13 +50,15 @@ public class WalletPaymentService {
             PaymentTransactionRepository paymentRepository,
             PaymentGatewayRegistry gatewayRegistry,
             TransactionReferenceGenerator referenceGenerator,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            PromotionService promotionService) {
         this.saleRepository = saleRepository;
         this.userRepository = userRepository;
         this.paymentRepository = paymentRepository;
         this.gatewayRegistry = gatewayRegistry;
         this.referenceGenerator = referenceGenerator;
         this.eventPublisher = eventPublisher;
+        this.promotionService = promotionService;
         this.clock = Clock.systemDefaultZone();
     }
 
@@ -112,6 +116,7 @@ public class WalletPaymentService {
             return false;
         }
         sale.markPaid(processedAt);
+        promotionService.consumeForSale(sale.getId(), processedAt);
         eventPublisher.publishEvent(new SalePaidEvent(sale.getId()));
         return true;
     }

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.jairomatias.eventix.payment.dto.PaymentTransactionView;
+import com.jairomatias.eventix.promotion.entity.DiscountType;
 import com.jairomatias.eventix.sale.entity.SaleStatus;
 
 public record SaleDetailsView(
@@ -23,6 +24,9 @@ public record SaleDetailsView(
         BigDecimal subtotal,
         BigDecimal discountTotal,
         BigDecimal total,
+        String couponCode,
+        DiscountType couponDiscountType,
+        BigDecimal couponDiscountValue,
         LocalDateTime paidAt,
         LocalDateTime refundedAt,
         String refundReason,

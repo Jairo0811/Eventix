@@ -84,7 +84,15 @@
                     </table>
                 </div>
                 <div class="border-top pt-3 mt-3 text-end">
-                    <span class="text-secondary me-3">Total</span>
+                    <div class="text-secondary small mb-1"
+                         th:text="|Subtotal: RD$ ${#numbers.formatDecimal(sale.subtotal, 1, 'COMMA', 2, 'POINT')}|">
+                        Subtotal
+                    </div>
+                    <div class="text-success small mb-1" th:if="${sale.couponCode != null}"
+                         th:text="|Cupón ${sale.couponCode}: − RD$ ${#numbers.formatDecimal(sale.discountTotal, 1, 'COMMA', 2, 'POINT')}|">
+                        Cupón
+                    </div>
+                    <span class="text-secondary me-3">Total pagable</span>
                     <strong class="fs-5"
                             th:text="|RD$ ${#numbers.formatDecimal(sale.total, 1, 'COMMA', 2, 'POINT')}|">0</strong>
                 </div>

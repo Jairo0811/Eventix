@@ -14,6 +14,9 @@ public class SaleForm {
     @NotNull(message = "Selecciona una reservación confirmada.")
     private Long reservationId;
 
+    @Size(max = 40, message = "El código de cupón admite hasta 40 caracteres.")
+    private String couponCode;
+
     @Valid
     @Size(min = 1, max = 6, message = "La venta admite hasta seis tipos de entrada.")
     private List<SaleLineForm> items = defaultItems();
@@ -24,6 +27,14 @@ public class SaleForm {
 
     public void setReservationId(Long reservationId) {
         this.reservationId = reservationId;
+    }
+
+    public String getCouponCode() {
+        return couponCode;
+    }
+
+    public void setCouponCode(String couponCode) {
+        this.couponCode = couponCode;
     }
 
     public List<SaleLineForm> getItems() {

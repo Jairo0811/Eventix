@@ -31,6 +31,7 @@ import com.jairomatias.eventix.payment.gateway.PaymentGatewayRegistry;
 import com.jairomatias.eventix.payment.gateway.PaymentResult;
 import com.jairomatias.eventix.payment.gateway.SimulationOutcome;
 import com.jairomatias.eventix.payment.repository.PaymentTransactionRepository;
+import com.jairomatias.eventix.promotion.service.PromotionService;
 import com.jairomatias.eventix.reservation.entity.Reservation;
 import com.jairomatias.eventix.reservation.dto.EventReservationOption;
 import com.jairomatias.eventix.reservation.entity.ReservationStatus;
@@ -74,6 +75,7 @@ public class DefaultSaleService implements SaleService {
     private final PaymentGatewayRegistry gatewayRegistry;
     private final TransactionReferenceGenerator referenceGenerator;
     private final ApplicationEventPublisher eventPublisher;
+    private final PromotionService promotionService;
     private final String currency;
     private final Clock clock;
 
@@ -89,6 +91,7 @@ public class DefaultSaleService implements SaleService {
             PaymentGatewayRegistry gatewayRegistry,
             TransactionReferenceGenerator referenceGenerator,
             ApplicationEventPublisher eventPublisher,
+            PromotionService promotionService,
             @Value("${app.currency:DOP}") String currency) {
         this(
                 saleRepository,
@@ -101,6 +104,7 @@ public class DefaultSaleService implements SaleService {
                 gatewayRegistry,
                 referenceGenerator,
                 eventPublisher,
+                promotionService,
                 currency,
                 Clock.systemDefaultZone());
     }
@@ -116,6 +120,7 @@ public class DefaultSaleService implements SaleService {
             PaymentGatewayRegistry gatewayRegistry,
             TransactionReferenceGenerator referenceGenerator,
             ApplicationEventPublisher eventPublisher,
+            PromotionService promotionService,
             String currency,
             Clock clock) {
         this.saleRepository = saleRepository;
@@ -128,6 +133,7 @@ public class DefaultSaleService implements SaleService {
         this.gatewayRegistry = gatewayRegistry;
         this.referenceGenerator = referenceGenerator;
         this.eventPublisher = eventPublisher;
+        this.promotionService = promotionService;
         this.currency = normalizeCurrency(currency);
         this.clock = clock;
     }
@@ -324,6 +330,10 @@ public class DefaultSaleService implements SaleService {
         }
 
         Sale saved = saleRepository.save(sale);
+        promotionService.reserveForSale(
+                form.getCouponCode(),
+                saved,
+                now());
         if (saved.getTotal().compareTo(BigDecimal.ZERO) == 0) {
             LocalDateTime processedAt = now();
             saved.markPaid(processedAt);
@@ -339,6 +349,7 @@ public class DefaultSaleService implements SaleService {
                     "Venta sin costo aprobada automáticamente.",
                     processedAt,
                     actor));
+            promotionService.consumeForSale(saved.getId(), processedAt);
             eventPublisher.publishEvent(new SalePaidEvent(saved.getId()));
         }
         return saved.getId();
@@ -383,6 +394,7 @@ public class DefaultSaleService implements SaleService {
 
         if (result.status() == PaymentStatus.APPROVED) {
             sale.markPaid(processedAt);
+            promotionService.consumeForSale(sale.getId(), processedAt);
             eventPublisher.publishEvent(new SalePaidEvent(sale.getId()));
             return true;
         }
@@ -465,6 +477,7 @@ public class DefaultSaleService implements SaleService {
         ensureEventHasNotStarted(sale.getEvent());
         LocalDateTime cancelledAt = now();
         sale.cancel(reason, cancelledAt);
+        promotionService.releaseForSale(sale.getId(), cancelledAt);
         cancelLinkedReservation(sale, reason, cancelledAt);
     }
 
@@ -659,6 +672,9 @@ public class DefaultSaleService implements SaleService {
                 sale.getSubtotal(),
                 sale.getDiscountTotal(),
                 sale.getTotal(),
+                sale.getCouponCode(),
+                sale.getCouponDiscountType(),
+                sale.getCouponDiscountValue(),
                 sale.getPaidAt(),
                 sale.getRefundedAt(),
                 sale.getRefundReason(),

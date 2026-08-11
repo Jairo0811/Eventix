@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .hasAnyRole("ADMINISTRATOR", "ORGANIZER", "OPERATOR", "ACCESS_STAFF")
                         .requestMatchers("/users/**").hasRole("ADMINISTRATOR")
                         .requestMatchers("/categories/**").hasRole("ADMINISTRATOR")
+                        .requestMatchers("/promotions/**").hasRole("ADMINISTRATOR")
                         .requestMatchers("/events/*/ticket-types/**")
                         .hasAnyRole("ADMINISTRATOR", "ORGANIZER")
                         .requestMatchers("/events/new", "/events/*/edit")
