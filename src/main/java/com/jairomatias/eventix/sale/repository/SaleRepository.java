@@ -48,6 +48,7 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             "reservation",
             "event",
             "event.organizer",
+            "coupon",
             "soldBy",
             "items",
             "items.ticketType"
@@ -60,6 +61,7 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             "reservation",
             "event",
             "event.organizer",
+            "coupon",
             "soldBy",
             "items",
             "items.ticketType"

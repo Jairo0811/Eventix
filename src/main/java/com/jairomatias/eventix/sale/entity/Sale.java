@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.jairomatias.eventix.event.entity.Event;
+import com.jairomatias.eventix.promotion.entity.Coupon;
+import com.jairomatias.eventix.promotion.entity.DiscountType;
 import com.jairomatias.eventix.reservation.entity.Reservation;
 import com.jairomatias.eventix.shared.entity.AuditableEntity;
 import com.jairomatias.eventix.user.entity.User;
@@ -64,6 +66,20 @@ public class Sale extends AuditableEntity {
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal total;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
+
+    @Column(name = "coupon_code", length = 40)
+    private String couponCode;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "coupon_discount_type", length = 20)
+    private DiscountType couponDiscountType;
+
+    @Column(name = "coupon_discount_value", precision = 12, scale = 2)
+    private BigDecimal couponDiscountValue;
 
     @Column(name = "platform_fee_rate", nullable = false, precision = 5, scale = 4)
     private BigDecimal platformFeeRate;
@@ -136,6 +152,22 @@ public class Sale extends AuditableEntity {
         recalculateTotals();
     }
 
+    public void applyCoupon(
+            Coupon appliedCoupon,
+            BigDecimal discountAmount) {
+        if (discountAmount.compareTo(BigDecimal.ZERO) < 0
+                || discountAmount.compareTo(subtotal) > 0) {
+            throw new IllegalArgumentException(
+                    "El descuento debe estar entre cero y el subtotal.");
+        }
+        coupon = appliedCoupon;
+        couponCode = appliedCoupon.getCode();
+        couponDiscountType = appliedCoupon.getDiscountType();
+        couponDiscountValue = appliedCoupon.getValue();
+        discountTotal = discountAmount;
+        recalculateTotals();
+    }
+
     public void markPaid(LocalDateTime paidAt) {
         this.status = SaleStatus.PAID;
         this.paidAt = paidAt;
@@ -202,6 +234,18 @@ public class Sale extends AuditableEntity {
 
     public BigDecimal getTotal() {
         return total;
+    }
+
+    public String getCouponCode() {
+        return couponCode;
+    }
+
+    public DiscountType getCouponDiscountType() {
+        return couponDiscountType;
+    }
+
+    public BigDecimal getCouponDiscountValue() {
+        return couponDiscountValue;
     }
 
     public BigDecimal getPlatformFeeRate() {

@@ -43,6 +43,8 @@ class RoleBoundaryIntegrationTest {
         mockMvc.perform(get("/access-control")).andExpect(status().isForbidden());
         mockMvc.perform(get("/users")).andExpect(status().isForbidden());
         mockMvc.perform(get("/categories")).andExpect(status().isForbidden());
+        mockMvc.perform(get("/promotions/coupons"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -51,6 +53,8 @@ class RoleBoundaryIntegrationTest {
         mockMvc.perform(get("/users")).andExpect(status().isForbidden());
         mockMvc.perform(get("/categories")).andExpect(status().isForbidden());
         mockMvc.perform(get("/audit")).andExpect(status().isForbidden());
+        mockMvc.perform(get("/promotions/coupons"))
+                .andExpect(status().isForbidden());
         mockMvc.perform(get("/actuator/prometheus")).andExpect(status().isForbidden());
     }
 }

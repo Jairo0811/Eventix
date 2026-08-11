@@ -69,6 +69,9 @@
         <a class="nav-link" sec:authorize="hasRole('ADMINISTRATOR')" th:classappend="${activePage == 'categories'} ? ' active'" th:href="@{/categories}">
             <i class="bi bi-tags-fill" aria-hidden="true"></i>Categorías
         </a>
+        <a class="nav-link" sec:authorize="hasRole('ADMINISTRATOR')" th:classappend="${activePage == 'coupons'} ? ' active'" th:href="@{/promotions/coupons}">
+            <i class="bi bi-percent" aria-hidden="true"></i>Cupones
+        </a>
         <a class="nav-link" sec:authorize="hasRole('ADMINISTRATOR')" th:classappend="${activePage == 'audit'} ? ' active'" th:href="@{/audit}">
             <i class="bi bi-shield-check" aria-hidden="true"></i>Auditoría
         </a>

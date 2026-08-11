@@ -89,6 +89,21 @@
                     </div>
                 </div>
             </div>
+            <div class="col-12 mt-4">
+                <div class="border-top pt-4">
+                    <label class="form-label" for="couponCode">
+                        Código de cupón <span class="text-secondary">(opcional)</span>
+                    </label>
+                    <input class="form-control text-uppercase" id="couponCode"
+                           th:field="*{couponCode}" th:errorclass="is-invalid"
+                           maxlength="40" autocomplete="off"
+                           placeholder="EVENTIX10">
+                    <div class="invalid-feedback" th:errors="*{couponCode}"></div>
+                    <div class="form-text">
+                        El descuento se valida y calcula en el servidor al crear la venta.
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="d-flex flex-wrap justify-content-end gap-2 mt-4"

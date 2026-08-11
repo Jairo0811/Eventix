@@ -35,6 +35,7 @@ import com.jairomatias.eventix.payment.gateway.PaymentGatewayRegistry;
 import com.jairomatias.eventix.payment.gateway.PaymentResult;
 import com.jairomatias.eventix.payment.gateway.SimulationOutcome;
 import com.jairomatias.eventix.payment.repository.PaymentTransactionRepository;
+import com.jairomatias.eventix.promotion.service.PromotionService;
 import com.jairomatias.eventix.reservation.entity.Reservation;
 import com.jairomatias.eventix.reservation.entity.ReservationStatus;
 import com.jairomatias.eventix.reservation.repository.ReservationRepository;
@@ -70,6 +71,7 @@ class DefaultSaleServiceTest {
     @Mock private PaymentGatewayRegistry gatewayRegistry;
     @Mock private TransactionReferenceGenerator referenceGenerator;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private PromotionService promotionService;
     @Mock private PaymentGateway gateway;
     @Mock private User operator;
     @Mock private User reservedBy;
@@ -93,6 +95,7 @@ class DefaultSaleServiceTest {
                 gatewayRegistry,
                 referenceGenerator,
                 eventPublisher,
+                promotionService,
                 "DOP",
                 clock);
     }
@@ -175,6 +178,7 @@ class DefaultSaleServiceTest {
         assertThat(approved).isTrue();
         assertThat(sale.getStatus()).isEqualTo(SaleStatus.PAID);
         verify(eventPublisher).publishEvent(new SalePaidEvent(55L));
+        verify(promotionService).consumeForSale(55L, NOW);
         verify(paymentRepository).save(any(PaymentTransaction.class));
     }
 
