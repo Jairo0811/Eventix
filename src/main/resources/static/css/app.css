@@ -560,6 +560,27 @@ a:hover {
     color: #991b1b;
 }
 
+.badge-settlement-pending {
+    background: #fff7ed;
+    color: #9a3412;
+}
+
+.badge-settlement-processing {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.badge-settlement-paid {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.badge-settlement-failed,
+.badge-settlement-cancelled {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
 .sale-reference {
     background: #ecfdf5;
     border-radius: 0.4rem;
