@@ -45,6 +45,25 @@ Programa un respaldo completo diario y respaldos de log según el RPO cuando pro
 4. Configura `eventix_migrator`, inicia Eventix y deja que Flyway aplique versiones posteriores.
 5. Confirma readiness, login, reportes y escaneo antes de abrir tráfico.
 
+## Rotación de credenciales de base de datos
+
+1. Actualiza `EVENTIX_DB_PASSWORD` y `EVENTIX_MIGRATOR_PASSWORD` en el
+   almacén de secretos; conserva valores distintos para cada login.
+2. Recrea el configurador y la aplicación sin eliminar el volumen:
+
+   ```bash
+   docker compose up --detach --force-recreate --wait --wait-timeout 300
+   ```
+
+3. Confirma que `sqlserver` y `app` estén saludables y que
+   `sqlserver-configure` termine con código `0`.
+4. Revoca las credenciales anteriores en cualquier almacén externo.
+
+El configurador compara las claves actuales y ejecuta `ALTER LOGIN` solo
+cuando cambiaron. La rotación de `sa` es una operación administrativa separada:
+actualiza primero el login dentro de SQL Server y después
+`MSSQL_SA_PASSWORD`. Nunca elimines el volumen para rotar credenciales.
+
 ## SMTP y recordatorios
 
 Configura `EVENTIX_EMAIL_ENABLED=true`, remitente, host, puerto y credenciales.
@@ -86,3 +105,4 @@ y sus boletas permanecen válidas y el fallo se diagnostica por correlation ID.
 
 No pegues volcados completos que contengan tokens de recuperación, credenciales,
 datos de pago ni secretos de wallet en tickets de soporte.
+

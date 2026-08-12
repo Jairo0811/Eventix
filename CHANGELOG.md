@@ -5,6 +5,29 @@ Todos los cambios relevantes de Eventix se documentan en este archivo.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 
+## [1.1.2] - 2026-08-12
+
+### Corregido
+
+- Docker Compose espera que una base persistente termine su recuperación antes
+  de ejecutar la configuración.
+- El configurador sincroniza de forma idempotente las contraseñas de
+  `eventix_app` y `eventix_migrator` cuando cambian los secretos.
+- Las credenciales con comillas simples se escapan antes de enviarse a
+  `sqlcmd`.
+
+### Pruebas
+
+- CI recrea SQL Server sobre el volumen existente, rota ambas credenciales y
+  comprueba los logins y la readiness de la aplicación.
+
+## [1.1.1] - 2026-08-11
+
+### Cambiado
+
+- Publicación de mantenimiento sin cambios funcionales adicionales respecto a
+  `1.1.0`.
+
 ## [1.1.0] - 2026-08-11
 
 ### Añadido
@@ -52,5 +75,8 @@ el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 - Integraciones preparadas para AZUL, Apple Pay, Google Pay, Apple Wallet y
   Google Wallet mediante configuración externa segura.
 
+[1.1.2]: https://github.com/Jairo0811/Eventix/compare/v1.1.1...v1.1.2
+[1.1.1]: https://github.com/Jairo0811/Eventix/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/Jairo0811/Eventix/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Jairo0811/Eventix/releases/tag/v1.0.0
+
