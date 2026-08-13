@@ -26,8 +26,8 @@ public class HomeController {
 
         model.addAttribute("authenticated", authenticated);
         model.addAttribute("featuredEvent", upcoming.isEmpty() ? null : upcoming.getFirst());
-        model.addAttribute("upcomingEvents", upcoming.stream().skip(1).toList());
-        model.addAttribute("thisWeekEvents", eventDiscoveryService.thisWeekEvents());
+        model.addAttribute("upcomingEvents", upcoming.stream().skip(1).limit(7).toList());
+        model.addAttribute("nextSevenEvents", eventDiscoveryService.nextSevenEvents());
         return "home/index";
     }
 }
