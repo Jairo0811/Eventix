@@ -12,7 +12,7 @@
 
 **Plataforma web empresarial para gestión integral de eventos, reservaciones, ventas, pagos, ticketing digital y control de acceso.**
 
-[![Estado](https://img.shields.io/badge/Estado-1.1.0%20estable-15803D?style=for-the-badge)](#-estado-del-proyecto)
+[![Estado](https://img.shields.io/badge/Estado-1.1.2%20estable-15803D?style=for-the-badge)](#-estado-del-proyecto)
 [![Eventix CI](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml/badge.svg)](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -22,7 +22,7 @@
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)](https://www.thymeleaf.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 
-> **Estado actual:** versión 1.1.0 estable y preparada como proyecto de portafolio y base para despliegue profesional. Incorpora recuperación segura de contraseña, perfil, promociones, liquidaciones, notificaciones transaccionales, ticketing digital, control de acceso, observabilidad y un pipeline integral de calidad y seguridad.
+> **Estado actual:** versión 1.1.2 estable y preparada como proyecto de portafolio y base para despliegue profesional. Incorpora recuperación segura de contraseña, perfil, promociones, liquidaciones, notificaciones transaccionales, ticketing digital, control de acceso, carga persistente de portadas, observabilidad y un pipeline integral de calidad y seguridad.
 
 </div>
 
@@ -56,13 +56,36 @@ La aplicación está construida como un **monolito modular por dominio**, manten
 
 ### 🌐 Home público
 
-La ruta `/` presenta ahora una **landing page pública y responsiva** con identidad visual propia, propuesta de valor, módulos principales, flujo operativo y llamadas a la acción.
+La ruta `/` presenta una **landing page pública y responsiva** con identidad visual propia, propuesta de valor, módulos principales, flujo operativo y llamadas a la acción.
 
 - Navegación pública sin exponer módulos administrativos.
 - Acceso directo al login para visitantes.
 - Acceso contextual al Dashboard para usuarios autenticados.
 - Login enlazado nuevamente con el Home.
+- Footer corporativo con mejor contraste, branding reforzado y mensaje orientado al producto.
 - Diseño responsive integrado con la identidad visual de Eventix.
+
+### 🖼️ Portadas de eventos persistentes
+
+La gestión de eventos permite cargar la portada directamente desde el equipo del usuario, sin depender de una URL externa.
+
+- Carga manual de imágenes `JPG`, `PNG` y `WEBP`.
+- Límite de 5 MB por portada y validación del tipo MIME.
+- Nombres internos generados mediante UUID.
+- Persistencia fuera del JAR en `data/event-covers`.
+- Volumen Docker `eventix-app-data` para conservar las imágenes entre recreaciones del contenedor.
+- Renderizado con proporciones conservadas para evitar recortes innecesarios.
+- Reemplazo seguro de portadas durante la edición y limpieza de archivos administrados cuando corresponde.
+- Resolución defensiva de rutas para impedir traversal fuera del directorio configurado.
+
+### 🛡️ Estabilización 1.1.2
+
+- Recursos inexistentes devuelven HTTP `404` mediante la vista dedicada en lugar de convertirse en errores `500`.
+- Hibernate detecta automáticamente el dialecto de SQL Server.
+- Eliminado el conflicto de `commons-logging` con `spring-jcl` en PDFBox.
+- `info.app.version` alineado con Maven en `1.1.2`.
+- GitHub Actions actualizado a `actions/setup-java@v5`.
+- Pipeline validado con Maven, Checkstyle, pruebas, Docker Compose, readiness, rotación de credenciales, Trivy y SBOM.
 
 ### 💳 Apple Pay y Google Pay mediante AZUL
 
@@ -103,12 +126,16 @@ El panel principal ofrece una lectura moderna del estado operativo y comercial d
 - Roles `ADMINISTRATOR`, `OPERATOR`, `ORGANIZER`, `ACCESS_STAFF` y `USER`.
 - CRUD de usuarios, filtros, paginación, activación/desactivación y restablecimiento de contraseña.
 - Rate limiting, CSP, HSTS, Permissions Policy e identificadores de correlación.
+- Manejo diferenciado de recursos no encontrados mediante HTTP `404`.
 
 ### 📅 Eventos
 
 - CRUD completo de eventos y categorías.
 - Estados borrador, publicado, cancelado y finalizado.
 - Fechas, lugar, dirección, capacidad, organizador y portada.
+- Carga manual de portadas `JPG`, `PNG` o `WEBP` de hasta 5 MB.
+- Persistencia de imágenes en almacenamiento configurable y volumen Docker dedicado.
+- Presentación de portadas conservando sus proporciones sin recorte forzado.
 - Eventos gratuitos o de pago.
 - Reglas de transición de estado y validaciones de negocio.
 - Búsqueda, filtros y paginación.
@@ -212,6 +239,7 @@ El panel principal ofrece una lectura moderna del estado operativo y comercial d
 | Construcción | Apache Maven |
 | Documentos y QR | Apache PDFBox y ZXing |
 | Criptografía | Ed25519 y Bouncy Castle |
+| Archivos de portada | Spring Multipart + almacenamiento local persistente |
 | Observabilidad | Spring Boot Actuator, Micrometer y Prometheus |
 
 ## 🎨 Frontend
@@ -233,7 +261,7 @@ El panel principal ofrece una lectura moderna del estado operativo y comercial d
 | Estilos | CSS3 y Bootstrap 5 |
 | Interactividad | JavaScript |
 | Componentes visuales | Bootstrap Icons |
-| Diseño | Home público, login y Dashboard responsivos con identidad visual de Eventix |
+| Diseño | Home público, login, eventos y Dashboard responsivos con identidad visual de Eventix |
 
 ## 🗄️ Base de datos
 
@@ -320,6 +348,7 @@ flowchart LR
     Controller --> Service["Service Layer"]
     Service --> Repository["Repositories"]
     Repository --> Database[(SQL Server 2022)]
+    Service --> CoverStorage["Event Cover Storage"]
     Service --> Payments["Payment Strategies"]
     Payments --> Azul["AZUL"]
     Azul --> ApplePay["Apple Pay"]
@@ -337,7 +366,7 @@ Flujo principal:
 Controller → Service → Repository → Database
 ```
 
-Las integraciones externas permanecen desacopladas de las reglas centrales mediante servicios y estrategias específicas.
+Las integraciones externas y el almacenamiento de archivos permanecen desacoplados de las reglas centrales mediante servicios y estrategias específicas.
 
 ---
 
@@ -366,10 +395,11 @@ El pipeline de Eventix valida automáticamente:
 6. Dependency Review.
 7. Arranque completo mediante Docker Compose.
 8. Readiness, autenticación y headers de seguridad.
-9. Escaneo de imagen con Trivy.
-10. Generación de SBOM SPDX.
+9. Reinicio persistente con rotación de credenciales de base de datos.
+10. Escaneo de imagen con Trivy.
+11. Generación de SBOM SPDX.
 
-Las integraciones de **Home público + Apple Pay + Google Pay/AZUL** fueron verificadas conjuntamente por el pipeline antes de incorporarse a `main`.
+La estabilización **1.1.2**, el Home público y la carga persistente de portadas fueron verificados por el pipeline completo antes de incorporarse a `main`.
 
 ---
 
@@ -411,6 +441,7 @@ Variables esenciales:
 | `EVENTIX_MIGRATOR_PASSWORD` | Usuario separado `eventix_migrator`. |
 | `APP_PROFILE` | `dev` local o `prod` detrás de HTTPS. |
 | `APP_BASE_URL` | URL pública absoluta, usada también en recuperación. |
+| `EVENT_COVER_STORAGE_PATH` | Directorio persistente para portadas; Compose usa `/app/data/event-covers`. |
 | `EVENTIX_BOOTSTRAP_ADMIN_PASSWORD` | Bootstrap explícito; obligatorio si se habilita. |
 | `EVENTIX_EMAIL_ENABLED` | Activa la entrega SMTP. |
 | `MAIL_HOST`, `MAIL_PORT` | Endpoint SMTP. |
@@ -430,11 +461,14 @@ docker compose down
 ```
 
 Compose crea SQL Server, aprovisiona usuarios separados, ejecuta Flyway y espera
-readiness. El volumen `eventix-sqlserver-data` conserva la base entre reinicios.
-No uses `docker compose down --volumes` salvo que quieras eliminar datos locales.
+readiness. El volumen `eventix-sqlserver-data` conserva la base entre reinicios y
+`eventix-app-data` conserva las portadas cargadas en `/app/data/event-covers`.
+No uses `docker compose down --volumes` salvo que quieras eliminar tanto los datos
+de SQL Server como los archivos persistentes de la aplicación.
 
 Para producción configura `APP_PROFILE=prod`, una `APP_BASE_URL` HTTPS, cookies
-seguras, claves Ed25519 persistentes y secretos desde el gestor de la plataforma.
+seguras, claves Ed25519 persistentes, almacenamiento persistente para portadas y
+secretos desde el gestor de la plataforma.
 
 > Las integraciones reales con AZUL, Apple Pay, Google Pay, Apple Wallet y Google Wallet requieren credenciales externas y configuración específica del proveedor. Nunca deben almacenarse secretos reales en el repositorio.
 
@@ -476,10 +510,11 @@ Consulta [`docs/operations-runbook.md`](docs/operations-runbook.md) para
 despliegue, SMTP, backups, restauración, rotación de claves, health checks y
 diagnóstico por `X-Correlation-ID`.
 
-## 🗺️ Roadmap posterior a v1.1
+## 🗺️ Roadmap posterior a v1.1.2
 
 - Integrar un proveedor comercial real de correo con métricas/SLA.
 - Automatizar despliegue a un entorno administrado con TLS y gestor de secretos.
+- Evaluar almacenamiento de objetos para portadas cuando se despliegue Eventix en múltiples instancias.
 - Evaluar OpenTelemetry solo cuando exista infraestructura de trazas distribuida.
 
 ---
@@ -500,7 +535,7 @@ derechos permanecen reservados hasta que el autor publique una licencia explíci
 ## 🏷️ Versiones
 
 Consulta [`CHANGELOG.md`](CHANGELOG.md) para conocer los cambios incluidos en
-cada versión. El tag histórico `v1.0.0` se conserva sin reescribir; la entrega
-estable actual corresponde a `v1.1.0`.
+cada versión. El tag histórico `v1.0.0` se conserva sin reescribir; la versión
+de aplicación estable actual corresponde a `1.1.2`.
 
 ---
