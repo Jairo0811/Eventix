@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.jairomatias.eventix.event.entity.EventStatus;
 
@@ -70,11 +71,13 @@ public class EventForm {
     @NotNull(message = "Selecciona un organizador responsable.")
     private Long organizerId;
 
-    @Size(max = 500, message = "La URL no puede superar 500 caracteres.")
+    @Size(max = 500, message = "La ruta de portada no puede superar 500 caracteres.")
     @Pattern(
-            regexp = "^(|https?://.+)$",
-            message = "La portada debe usar una URL HTTP o HTTPS válida.")
+            regexp = "^(|/events/media/[A-Za-z0-9._-]+|https?://.+)$",
+            message = "La referencia de portada no es válida.")
     private String coverImageUrl;
+
+    private MultipartFile coverImage;
 
     @NotNull
     private Boolean freeEvent = true;
@@ -183,6 +186,14 @@ public class EventForm {
 
     public void setCoverImageUrl(String coverImageUrl) {
         this.coverImageUrl = coverImageUrl;
+    }
+
+    public MultipartFile getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(MultipartFile coverImage) {
+        this.coverImage = coverImage;
     }
 
     public Boolean getFreeEvent() {
