@@ -57,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/login", "/login/forgot-password", "/login/reset-password",
                                 "/css/**", "/js/**", "/images/**", "/error/**",
+                                "/events/media/**",
                                 "/.well-known/apple-developer-merchantid-domain-association",
                                 "/actuator/health", "/actuator/health/**")
                         .permitAll()
