@@ -53,24 +53,26 @@ class EventDiscoveryServiceTest {
     }
 
     @Test
-    void shouldLimitThisWeekToFourEvents() {
+    void shouldExposeTheNextSevenPublishedEventsRegardlessOfCalendarDay() {
         List<Event> events = List.of(
                 event(1L, "Evento 1", "Música"),
                 event(2L, "Evento 2", "Teatro"),
                 event(3L, "Evento 3", "Deportes"),
                 event(4L, "Evento 4", "Cultura"),
-                event(5L, "Evento 5", "Comedia"));
-        when(eventRepository.findAllByStatusAndStartAtBetweenOrderByStartAtAsc(
+                event(5L, "Evento 5", "Comedia"),
+                event(6L, "Evento 6", "Concierto"),
+                event(7L, "Evento 7", "Festival"));
+        when(eventRepository.findAllByStatusAndStartAtAfterOrderByStartAtAsc(
                 eq(EventStatus.PUBLISHED),
                 any(LocalDateTime.class),
-                any(LocalDateTime.class)))
+                any(Pageable.class)))
                 .thenReturn(events);
 
-        var result = service.thisWeekEvents();
+        var result = service.nextSevenEvents();
 
-        assertThat(result).hasSize(4);
+        assertThat(result).hasSize(7);
         assertThat(result).extracting(view -> view.id())
-                .containsExactly(1L, 2L, 3L, 4L);
+                .containsExactly(1L, 2L, 3L, 4L, 5L, 6L, 7L);
     }
 
     private Event event(Long id, String title, String categoryName) {
