@@ -12,10 +12,11 @@ import com.jairomatias.eventix.audit.service.AuditService;
 
 class GlobalExceptionHandlerTest {
 
+    private final AuditService auditService = mock(AuditService.class);
+    private final GlobalExceptionHandler handler = new GlobalExceptionHandler(auditService);
+
     @Test
     void shouldRenderNotFoundForMissingStaticResourceWithoutAuditingAsServerError() {
-        AuditService auditService = mock(AuditService.class);
-        GlobalExceptionHandler handler = new GlobalExceptionHandler(auditService);
         NoResourceFoundException exception = mock(NoResourceFoundException.class);
         ExtendedModelMap model = new ExtendedModelMap();
 
