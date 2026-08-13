@@ -24,6 +24,7 @@
                 <img th:src="@{/images/eventix-logo.png}" alt="Eventix" />
             </a>
             <div class="d-flex align-items-center gap-2">
+                <a class="btn btn-link home-nav-link" href="#discover">Eventos</a>
                 <a class="btn btn-link home-nav-link" href="#features">Plataforma</a>
                 <a class="btn btn-link home-nav-link" href="#workflow">¿Cómo funciona?</a>
                 <div class="theme-selector" data-theme-control role="group" aria-label="Seleccionar tema">
@@ -63,15 +64,12 @@
                                     class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Entrar a Eventix</a>
                             <a class="btn btn-success btn-lg px-4" th:if="${authenticated}" th:href="@{/dashboard}"><i
                                     class="bi bi-speedometer2 me-2" aria-hidden="true"></i>Abrir Dashboard</a>
-                            <a class="btn btn-outline-light btn-lg px-4" href="#features">Explorar plataforma</a>
+                            <a class="btn btn-outline-light btn-lg px-4" href="#discover">Descubrir eventos</a>
                         </div>
                         <div class="home-trust-row">
-                            <span><i class="bi bi-shield-check" aria-hidden="true"></i>
-                                Seguridad por roles</span>
-                            <span><i class="bi bi-qr-code" aria-hidden="true"></i> Boletas con
-                                QR</span>
-                            <span><i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
-                                Métricas ejecutivas</span>
+                            <span><i class="bi bi-shield-check" aria-hidden="true"></i> Seguridad por roles</span>
+                            <span><i class="bi bi-qr-code" aria-hidden="true"></i> Boletas con QR</span>
+                            <span><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> Métricas ejecutivas</span>
                         </div>
                     </div>
                     <div class="col-lg-5">
@@ -81,49 +79,123 @@
                             </div>
                             <div class="home-console-body">
                                 <div class="home-console-title">
-                                    <div>
-                                        <small>Operación centralizada</small><strong>Todo bajo control</strong>
-                                    </div>
-                                    <div class="home-console-icon">
-                                        <i class="bi bi-calendar2-event" aria-hidden="true"></i>
-                                    </div>
+                                    <div><small>Operación centralizada</small><strong>Todo bajo control</strong></div>
+                                    <div class="home-console-icon"><i class="bi bi-calendar2-event" aria-hidden="true"></i></div>
                                 </div>
                                 <div class="home-metric-grid">
-                                    <article>
-                                        <i class="bi bi-calendar-check"
-                                            aria-hidden="true"></i><strong>Eventos</strong><span>Planifica y
-                                            publica</span>
-                                    </article>
-                                    <article>
-                                        <i class="bi bi-ticket-perforated"
-                                            aria-hidden="true"></i><strong>Entradas</strong><span>Venta e
-                                            inventario</span>
-                                    </article>
-                                    <article>
-                                        <i class="bi bi-wallet2"
-                                            aria-hidden="true"></i><strong>Pagos</strong><span>Apple Pay y Google
-                                            Pay</span>
-                                    </article>
-                                    <article>
-                                        <i class="bi bi-upc-scan"
-                                            aria-hidden="true"></i><strong>Acceso</strong><span>Validación
-                                            antifraude</span>
-                                    </article>
+                                    <article><i class="bi bi-calendar-check" aria-hidden="true"></i><strong>Eventos</strong><span>Planifica y publica</span></article>
+                                    <article><i class="bi bi-ticket-perforated" aria-hidden="true"></i><strong>Entradas</strong><span>Venta e inventario</span></article>
+                                    <article><i class="bi bi-wallet2" aria-hidden="true"></i><strong>Pagos</strong><span>Apple Pay y Google Pay</span></article>
+                                    <article><i class="bi bi-upc-scan" aria-hidden="true"></i><strong>Acceso</strong><span>Validación antifraude</span></article>
                                 </div>
                                 <div class="home-chart-card">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span>Rendimiento del evento</span><strong>Operativo</strong>
                                     </div>
                                     <div class="home-bars" aria-hidden="true">
-                                        <span style="height: 38%"></span><span style="height: 55%"></span><span
-                                            style="height: 47%"></span><span style="height: 72%"></span><span
-                                            style="height: 64%"></span><span style="height: 88%"></span><span
-                                            style="height: 78%"></span>
+                                        <span style="height: 38%"></span><span style="height: 55%"></span><span style="height: 47%"></span><span style="height: 72%"></span><span style="height: 64%"></span><span style="height: 88%"></span><span style="height: 78%"></span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-discovery-section" id="discover">
+            <div class="container">
+                <div class="home-section-heading home-discovery-heading">
+                    <span>Descubre lo que viene</span>
+                    <h2>Encuentra tu próxima experiencia.</h2>
+                    <p>Una selección dinámica de los eventos publicados que están más cerca de comenzar.</p>
+                </div>
+
+                <div th:if="${featuredEvent != null}">
+                    <article class="home-featured-event">
+                        <div class="home-featured-media">
+                            <img th:if="${featuredEvent.coverImageUrl != null and !#strings.isEmpty(featuredEvent.coverImageUrl)}"
+                                 th:src="${featuredEvent.coverImageUrl}"
+                                 th:alt="${'Portada de ' + featuredEvent.title}" />
+                            <div class="home-event-placeholder"
+                                 th:if="${featuredEvent.coverImageUrl == null or #strings.isEmpty(featuredEvent.coverImageUrl)}">
+                                <i class="bi bi-calendar2-event" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="home-featured-content">
+                            <span class="home-event-kicker">Evento destacado · <span th:text="${featuredEvent.categoryName}">Categoría</span></span>
+                            <h3 th:text="${featuredEvent.title}">Evento destacado</h3>
+                            <div class="home-event-meta">
+                                <span><i class="bi bi-calendar3" aria-hidden="true"></i> <span th:text="${featuredEvent.dateLabel}">sáb 15 ago</span></span>
+                                <span><i class="bi bi-clock" aria-hidden="true"></i> <span th:text="${featuredEvent.timeLabel}">8:00 PM</span></span>
+                                <span><i class="bi bi-geo-alt" aria-hidden="true"></i> <span th:text="${featuredEvent.venue}">Recinto</span></span>
+                            </div>
+                            <div class="home-event-action-row">
+                                <strong th:text="${featuredEvent.freeEvent ? 'Entrada gratuita' : 'Desde RD$ ' + featuredEvent.basePrice}">Entrada gratuita</strong>
+                                <a class="btn btn-success"
+                                   th:href="${authenticated} ? @{/events/{id}(id=${featuredEvent.id})} : @{/login}">
+                                    <span th:text="${authenticated ? 'Ver evento' : 'Inicia sesión para continuar'}">Ver evento</span>
+                                    <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <div class="home-discovery-block" th:if="${!upcomingEvents.isEmpty()}">
+                        <div class="home-discovery-title-row">
+                            <div><span>Próximamente</span><h3>Más eventos en camino</h3></div>
+                            <small>Ordenados por fecha</small>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6 col-xl-4" th:each="event : ${upcomingEvents}">
+                                <article class="home-event-card">
+                                    <div class="home-event-card-media">
+                                        <img th:if="${event.coverImageUrl != null and !#strings.isEmpty(event.coverImageUrl)}"
+                                             th:src="${event.coverImageUrl}"
+                                             th:alt="${'Portada de ' + event.title}" />
+                                        <div class="home-event-placeholder"
+                                             th:if="${event.coverImageUrl == null or #strings.isEmpty(event.coverImageUrl)}">
+                                            <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+                                        </div>
+                                        <span class="home-event-date-badge" th:text="${event.dateLabel}">sáb 15 ago</span>
+                                    </div>
+                                    <div class="home-event-card-body">
+                                        <span class="home-event-category" th:text="${event.categoryName}">Categoría</span>
+                                        <h4 th:text="${event.title}">Nombre del evento</h4>
+                                        <p><i class="bi bi-geo-alt" aria-hidden="true"></i> <span th:text="${event.venue}">Recinto</span></p>
+                                        <div class="home-event-card-footer">
+                                            <strong th:text="${event.freeEvent ? 'Gratis' : 'Desde RD$ ' + event.basePrice}">Gratis</strong>
+                                            <a th:href="${authenticated} ? @{/events/{id}(id=${event.id})} : @{/login}" aria-label="Ver evento">
+                                                <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="home-week-strip" th:if="${!thisWeekEvents.isEmpty()}">
+                        <div class="home-week-intro">
+                            <span>Esta semana en Eventix</span>
+                            <h3>Planes que empiezan pronto.</h3>
+                            <p>Los próximos siete días, en una vista rápida para decidir sin recorrer un catálogo completo.</p>
+                        </div>
+                        <div class="home-week-list">
+                            <a class="home-week-item" th:each="event : ${thisWeekEvents}"
+                               th:href="${authenticated} ? @{/events/{id}(id=${event.id})} : @{/login}">
+                                <div><strong th:text="${event.dateLabel}">sáb 15 ago</strong><span th:text="${event.timeLabel}">8:00 PM</span></div>
+                                <div><h4 th:text="${event.title}">Evento</h4><span th:text="${event.venue}">Recinto</span></div>
+                                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="home-discovery-empty" th:if="${featuredEvent == null}">
+                    <div><i class="bi bi-stars" aria-hidden="true"></i></div>
+                    <h3>La próxima experiencia está por anunciarse.</h3>
+                    <p>Cuando un evento sea publicado con una fecha futura, aparecerá aquí automáticamente.</p>
                 </div>
             </div>
         </section>
@@ -132,64 +204,14 @@
             <div class="container">
                 <div class="home-section-heading">
                     <span>Plataforma integral</span>
-                    <h2>
-                        Una operación completa, no un conjunto de pantallas aisladas.
-                    </h2>
-                    <p>
-                        Cada módulo comparte el mismo flujo operativo para que la
-                        información avance desde la planificación hasta el control de
-                        acceso sin duplicidades.
-                    </p>
+                    <h2>Una operación completa, no un conjunto de pantallas aisladas.</h2>
+                    <p>Cada módulo comparte el mismo flujo operativo para que la información avance desde la planificación hasta el control de acceso sin duplicidades.</p>
                 </div>
                 <div class="row g-4">
-                    <div class="col-md-6 col-xl-3">
-                        <article class="home-feature-card">
-                            <div class="home-feature-icon">
-                                <i class="bi bi-calendar3" aria-hidden="true"></i>
-                            </div>
-                            <h3>Gestión de eventos</h3>
-                            <p>
-                                Organización, categorías, capacidad, fechas, estados,
-                                responsables y precios.
-                            </p>
-                        </article>
-                    </div>
-                    <div class="col-md-6 col-xl-3">
-                        <article class="home-feature-card">
-                            <div class="home-feature-icon">
-                                <i class="bi bi-receipt" aria-hidden="true"></i>
-                            </div>
-                            <h3>Reservas y ventas</h3>
-                            <p>
-                                Cupos protegidos, tipos de entrada, pagos, reembolsos y
-                                trazabilidad comercial.
-                            </p>
-                        </article>
-                    </div>
-                    <div class="col-md-6 col-xl-3">
-                        <article class="home-feature-card">
-                            <div class="home-feature-icon">
-                                <i class="bi bi-qr-code-scan" aria-hidden="true"></i>
-                            </div>
-                            <h3>Ticketing digital</h3>
-                            <p>
-                                Boletas individuales con QR, firma digital, antifraude y
-                                soporte de wallets.
-                            </p>
-                        </article>
-                    </div>
-                    <div class="col-md-6 col-xl-3">
-                        <article class="home-feature-card">
-                            <div class="home-feature-icon">
-                                <i class="bi bi-bar-chart-line" aria-hidden="true"></i>
-                            </div>
-                            <h3>Control ejecutivo</h3>
-                            <p>
-                                Dashboard, reportes, auditoría y métricas para decidir con
-                                datos operativos reales.
-                            </p>
-                        </article>
-                    </div>
+                    <div class="col-md-6 col-xl-3"><article class="home-feature-card"><div class="home-feature-icon"><i class="bi bi-calendar3" aria-hidden="true"></i></div><h3>Gestión de eventos</h3><p>Organización, categorías, capacidad, fechas, estados, responsables y precios.</p></article></div>
+                    <div class="col-md-6 col-xl-3"><article class="home-feature-card"><div class="home-feature-icon"><i class="bi bi-receipt" aria-hidden="true"></i></div><h3>Reservas y ventas</h3><p>Cupos protegidos, tipos de entrada, pagos, reembolsos y trazabilidad comercial.</p></article></div>
+                    <div class="col-md-6 col-xl-3"><article class="home-feature-card"><div class="home-feature-icon"><i class="bi bi-qr-code-scan" aria-hidden="true"></i></div><h3>Ticketing digital</h3><p>Boletas individuales con QR, firma digital, antifraude y soporte de wallets.</p></article></div>
+                    <div class="col-md-6 col-xl-3"><article class="home-feature-card"><div class="home-feature-icon"><i class="bi bi-bar-chart-line" aria-hidden="true"></i></div><h3>Control ejecutivo</h3><p>Dashboard, reportes, auditoría y métricas para decidir con datos operativos reales.</p></article></div>
                 </div>
             </div>
         </section>
@@ -197,144 +219,33 @@
         <section class="home-section home-workflow-section" id="workflow">
             <div class="container">
                 <div class="row g-5 align-items-center">
-                    <div class="col-lg-5">
-                        <div class="home-section-heading text-start mb-0">
-                            <span>Flujo Eventix</span>
-                            <h2>Desde la publicación hasta la entrada al recinto.</h2>
-                            <p>
-                                El diseño de Eventix mantiene conectadas las decisiones
-                                comerciales y operativas para reducir tareas manuales y
-                                conservar trazabilidad.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-lg-7">
-                        <div class="home-workflow">
-                            <article>
-                                <strong>01</strong>
-                                <div>
-                                    <h3>Publica</h3>
-                                    <p>Configura el evento y su inventario.</p>
-                                </div>
-                            </article>
-                            <article>
-                                <strong>02</strong>
-                                <div>
-                                    <h3>Reserva</h3>
-                                    <p>Protege cupos y confirma asistentes.</p>
-                                </div>
-                            </article>
-                            <article>
-                                <strong>03</strong>
-                                <div>
-                                    <h3>Vende</h3>
-                                    <p>Procesa entradas y registra el pago.</p>
-                                </div>
-                            </article>
-                            <article>
-                                <strong>04</strong>
-                                <div>
-                                    <h3>Emite</h3>
-                                    <p>Genera boletas seguras y verificables.</p>
-                                </div>
-                            </article>
-                            <article>
-                                <strong>05</strong>
-                                <div>
-                                    <h3>Valida</h3>
-                                    <p>Controla el acceso y registra cada intento.</p>
-                                </div>
-                            </article>
-                        </div>
-                    </div>
+                    <div class="col-lg-5"><div class="home-section-heading text-start mb-0"><span>Flujo Eventix</span><h2>Desde la publicación hasta la entrada al recinto.</h2><p>El diseño de Eventix mantiene conectadas las decisiones comerciales y operativas para reducir tareas manuales y conservar trazabilidad.</p></div></div>
+                    <div class="col-lg-7"><div class="home-workflow">
+                        <article><strong>01</strong><div><h3>Publica</h3><p>Configura el evento y su inventario.</p></div></article>
+                        <article><strong>02</strong><div><h3>Reserva</h3><p>Protege cupos y confirma asistentes.</p></div></article>
+                        <article><strong>03</strong><div><h3>Vende</h3><p>Procesa entradas y registra el pago.</p></div></article>
+                        <article><strong>04</strong><div><h3>Emite</h3><p>Genera boletas seguras y verificables.</p></div></article>
+                        <article><strong>05</strong><div><h3>Valida</h3><p>Controla el acceso y registra cada intento.</p></div></article>
+                    </div></div>
                 </div>
             </div>
         </section>
 
-        <section class="home-cta-section">
-            <div class="container">
-                <div class="home-cta-card">
-                    <div>
-                        <span>Eventix</span>
-                        <h2>Tu operación empieza aquí.</h2>
-                        <p>
-                            Accede al panel y continúa gestionando tus eventos con una vista
-                            centralizada.
-                        </p>
-                    </div>
-                    <a class="btn btn-light btn-lg px-4" th:href="${authenticated} ? @{/dashboard} : @{/login}"><span
-                            th:text="${authenticated} ? 'Ir al Dashboard' : 'Iniciar sesión'">Iniciar sesión</span><i
-                            class="bi bi-arrow-right ms-2" aria-hidden="true"></i></a>
-                </div>
-            </div>
-        </section>
+        <section class="home-cta-section"><div class="container"><div class="home-cta-card">
+            <div><span>Eventix</span><h2>Tu operación empieza aquí.</h2><p>Accede al panel y continúa gestionando tus eventos con una vista centralizada.</p></div>
+            <a class="btn btn-light btn-lg px-4" th:href="${authenticated} ? @{/dashboard} : @{/login}"><span th:text="${authenticated} ? 'Ir al Dashboard' : 'Iniciar sesión'">Iniciar sesión</span><i class="bi bi-arrow-right ms-2" aria-hidden="true"></i></a>
+        </div></div></section>
     </main>
-    <footer class="home-footer">
-        <div class="container">
-            <div class="row g-4 py-5">
-                <div class="col-lg-5">
-                    <a class="home-footer-brand" th:href="@{/}" aria-label="Eventix inicio">
-                        <img th:src="@{/images/eventix-logo.png}" alt="Eventix" />
-                    </a>
 
-                    <p class="home-footer-description">
-                        Plataforma integral para la gestión de eventos, reservaciones,
-                        ventas, ticketing digital y control de acceso.
-                    </p>
-
-                    <div class="home-footer-badges">
-                        <span>
-                            <i class="bi bi-shield-check" aria-hidden="true"></i>
-                            Operación segura
-                        </span>
-                        <span>
-                            <i class="bi bi-qr-code" aria-hidden="true"></i>
-                            Ticketing digital
-                        </span>
-                    </div>
-                </div>
-
-                <div class="col-6 col-lg-2 offset-lg-1">
-                    <h2>Plataforma</h2>
-                    <nav class="home-footer-links" aria-label="Enlaces de plataforma">
-                        <a href="#features">Características</a>
-                        <a href="#workflow">¿Cómo funciona?</a>
-                        <a th:href="${authenticated} ? @{/dashboard} : @{/login}">
-                            Dashboard
-                        </a>
-                    </nav>
-                </div>
-
-                <div class="col-6 col-lg-2">
-                    <h2>Eventix</h2>
-                    <nav class="home-footer-links" aria-label="Enlaces de Eventix">
-                        <a th:href="@{/}">Inicio</a>
-                        <a th:if="${!authenticated}" th:href="@{/login}">
-                            Iniciar sesión
-                        </a>
-                        <a th:if="${authenticated}" th:href="@{/profile}"> Mi perfil </a>
-                    </nav>
-                </div>
-
-                <div class="col-lg-2">
-                    <h2>Tecnología</h2>
-                    <p class="home-footer-tech">
-                        Una plataforma moderna, segura y preparada para gestionar eventos de principio a fin.
-                    </p>
-                </div>
-            </div>
-
-            <div class="home-footer-bottom">
-                <p class="mb-0">
-                    &copy;
-                    <span th:text="${#dates.year(#dates.createNow())}">2026</span>
-                    Eventix. Todos los derechos reservados.
-                </p>
-
-                <p class="mb-0">Gestión profesional de eventos.</p>
-            </div>
+    <footer class="home-footer"><div class="container">
+        <div class="row g-4 py-5">
+            <div class="col-lg-5"><a class="home-footer-brand" th:href="@{/}" aria-label="Eventix inicio"><img th:src="@{/images/eventix-logo.png}" alt="Eventix" /></a><p class="home-footer-description">Plataforma integral para la gestión de eventos, reservaciones, ventas, ticketing digital y control de acceso.</p><div class="home-footer-badges"><span><i class="bi bi-shield-check" aria-hidden="true"></i> Operación segura</span><span><i class="bi bi-qr-code" aria-hidden="true"></i> Ticketing digital</span></div></div>
+            <div class="col-6 col-lg-2 offset-lg-1"><h2>Plataforma</h2><nav class="home-footer-links" aria-label="Enlaces de plataforma"><a href="#discover">Eventos</a><a href="#features">Características</a><a href="#workflow">¿Cómo funciona?</a><a th:href="${authenticated} ? @{/dashboard} : @{/login}">Dashboard</a></nav></div>
+            <div class="col-6 col-lg-2"><h2>Eventix</h2><nav class="home-footer-links" aria-label="Enlaces de Eventix"><a th:href="@{/}">Inicio</a><a th:if="${!authenticated}" th:href="@{/login}">Iniciar sesión</a><a th:if="${authenticated}" th:href="@{/profile}">Mi perfil</a></nav></div>
+            <div class="col-lg-2"><h2>Tecnología</h2><p class="home-footer-tech">Una plataforma moderna, segura y preparada para gestionar eventos de principio a fin.</p></div>
         </div>
-    </footer>
+        <div class="home-footer-bottom"><p class="mb-0">&copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Eventix. Todos los derechos reservados.</p><p class="mb-0">Gestión profesional de eventos.</p></div>
+    </div></footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
