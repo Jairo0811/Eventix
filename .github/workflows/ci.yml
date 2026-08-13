@@ -85,6 +85,19 @@ jobs:
           grep --ignore-case "x-correlation-id:" /tmp/eventix-headers.txt
           grep --quiet "Eventix" /tmp/eventix-login.html
 
+      - name: Verify persistent restart and credential rotation
+        run: |
+          export EVENTIX_DB_PASSWORD="Ev'$(openssl rand -hex 16)!"
+          export EVENTIX_MIGRATOR_PASSWORD="Mg'$(openssl rand -hex 16)!"
+          docker compose up --detach --force-recreate --wait --wait-timeout 300
+          docker compose exec -T sqlserver /opt/mssql-tools18/bin/sqlcmd \
+            -S localhost -U eventix_app -P "$EVENTIX_DB_PASSWORD" \
+            -C -b -d EventixDb -Q "SELECT 1"
+          docker compose exec -T sqlserver /opt/mssql-tools18/bin/sqlcmd \
+            -S localhost -U eventix_migrator -P "$EVENTIX_MIGRATOR_PASSWORD" \
+            -C -b -d EventixDb -Q "SELECT 1"
+          curl --fail --silent --show-error http://localhost:8080/actuator/health/readiness
+
       - name: Show Docker diagnostics after failure
         if: ${{ failure() && steps.start_eventix.outcome != 'skipped' }}
         run: |

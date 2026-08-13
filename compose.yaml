@@ -18,7 +18,10 @@ services:
           SQLCMD=/opt/mssql-tools18/bin/sqlcmd;
           [ -x "$$SQLCMD" ] || SQLCMD=/opt/mssql-tools/bin/sqlcmd;
           "$$SQLCMD" -S localhost -U sa -P "$$MSSQL_SA_PASSWORD"
-          -C -b -Q "SELECT 1"
+          -C -b -Q "IF DB_ID(N'EventixDb') IS NOT NULL
+          AND DATABASEPROPERTYEX(N'EventixDb', N'Status') <> N'ONLINE'
+          BEGIN THROW 51000, N'EventixDb is not online.', 1; END;
+          SELECT 1"
       interval: 10s
       timeout: 5s
       retries: 18
@@ -36,9 +39,11 @@ services:
       - |
         SQLCMD=/opt/mssql-tools18/bin/sqlcmd
         [ -x "$$SQLCMD" ] || SQLCMD=/opt/mssql-tools/bin/sqlcmd
+        EVENTIX_DB_PASSWORD_SQL=$${EVENTIX_DB_PASSWORD//\'/\'\'}
+        EVENTIX_MIGRATOR_PASSWORD_SQL=$${EVENTIX_MIGRATOR_PASSWORD//\'/\'\'}
         "$$SQLCMD" -S sqlserver -U sa -P "$$MSSQL_SA_PASSWORD" \
-          -C -b -v EVENTIX_DB_PASSWORD="$$EVENTIX_DB_PASSWORD" \
-          EVENTIX_MIGRATOR_PASSWORD="$$EVENTIX_MIGRATOR_PASSWORD" \
+          -C -b -v EVENTIX_DB_PASSWORD="$$EVENTIX_DB_PASSWORD_SQL" \
+          EVENTIX_MIGRATOR_PASSWORD="$$EVENTIX_MIGRATOR_PASSWORD_SQL" \
           -i /scripts/EventixDb.docker.sql
     volumes:
       - ./docker/EventixDb.docker.sql:/scripts/EventixDb.docker.sql:ro

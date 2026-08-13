@@ -7,8 +7,18 @@ BEGIN
 END;
 GO
 
+IF DATABASEPROPERTYEX(N'EventixDb', N'Status') <> N'ONLINE'
+BEGIN
+    THROW 51000, N'EventixDb is not online.', 1;
+END;
+GO
+
 ALTER DATABASE EventixDb SET RECOVERY SIMPLE;
 GO
+
+DECLARE @eventix_app_password NVARCHAR(128) =
+    N'$(EVENTIX_DB_PASSWORD)';
+DECLARE @eventix_app_login_sql NVARCHAR(MAX);
 
 IF NOT EXISTS
 (
@@ -17,16 +27,40 @@ IF NOT EXISTS
     WHERE name = N'eventix_app'
 )
 BEGIN
-    DECLARE @create_login NVARCHAR(MAX);
-
-    SET @create_login =
+    SET @eventix_app_login_sql =
         N'CREATE LOGIN eventix_app WITH PASSWORD = '
-        + QUOTENAME(N'$(EVENTIX_DB_PASSWORD)', '''')
+        + QUOTENAME(@eventix_app_password, '''')
         + N', CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;';
+END
+ELSE IF ISNULL
+(
+    PWDCOMPARE
+    (
+        @eventix_app_password,
+        (
+            SELECT password_hash
+            FROM sys.sql_logins
+            WHERE name = N'eventix_app'
+        )
+    ),
+    0
+) = 0
+BEGIN
+    SET @eventix_app_login_sql =
+        N'ALTER LOGIN eventix_app WITH PASSWORD = '
+        + QUOTENAME(@eventix_app_password, '''')
+        + N';';
+END;
 
-    EXEC sys.sp_executesql @create_login;
+IF @eventix_app_login_sql IS NOT NULL
+BEGIN
+    EXEC sys.sp_executesql @eventix_app_login_sql;
 END;
 GO
+
+DECLARE @eventix_migrator_password NVARCHAR(128) =
+    N'$(EVENTIX_MIGRATOR_PASSWORD)';
+DECLARE @eventix_migrator_login_sql NVARCHAR(MAX);
 
 IF NOT EXISTS
 (
@@ -35,14 +69,34 @@ IF NOT EXISTS
     WHERE name = N'eventix_migrator'
 )
 BEGIN
-    DECLARE @create_migrator_login NVARCHAR(MAX);
-
-    SET @create_migrator_login =
+    SET @eventix_migrator_login_sql =
         N'CREATE LOGIN eventix_migrator WITH PASSWORD = '
-        + QUOTENAME(N'$(EVENTIX_MIGRATOR_PASSWORD)', '''')
+        + QUOTENAME(@eventix_migrator_password, '''')
         + N', CHECK_POLICY = ON, CHECK_EXPIRATION = OFF;';
+END
+ELSE IF ISNULL
+(
+    PWDCOMPARE
+    (
+        @eventix_migrator_password,
+        (
+            SELECT password_hash
+            FROM sys.sql_logins
+            WHERE name = N'eventix_migrator'
+        )
+    ),
+    0
+) = 0
+BEGIN
+    SET @eventix_migrator_login_sql =
+        N'ALTER LOGIN eventix_migrator WITH PASSWORD = '
+        + QUOTENAME(@eventix_migrator_password, '''')
+        + N';';
+END;
 
-    EXEC sys.sp_executesql @create_migrator_login;
+IF @eventix_migrator_login_sql IS NOT NULL
+BEGIN
+    EXEC sys.sp_executesql @eventix_migrator_login_sql;
 END;
 GO
 
@@ -106,3 +160,4 @@ BEGIN
     ALTER ROLE db_ddladmin ADD MEMBER eventix_migrator;
 END;
 GO
+
