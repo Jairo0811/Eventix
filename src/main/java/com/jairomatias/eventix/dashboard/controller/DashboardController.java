@@ -23,6 +23,11 @@ public class DashboardController {
         this.organizerDashboardService = organizerDashboardService;
     }
 
+    @GetMapping("/home")
+    public String home() {
+        return "redirect:/dashboard";
+    }
+
     @GetMapping("/dashboard")
     @PreAuthorize(
             "hasAnyRole('ADMINISTRATOR', 'ORGANIZER', 'OPERATOR', 'ACCESS_STAFF')")
@@ -30,6 +35,7 @@ public class DashboardController {
             @AuthenticationPrincipal UserPrincipal principal,
             Model model) {
         model.addAttribute("principal", principal);
+
         if ("ADMINISTRATOR".equals(principal.getRoleName())) {
             model.addAttribute("summary", dashboardService.getSummary());
         } else if ("ORGANIZER".equals(principal.getRoleName())) {
@@ -38,6 +44,7 @@ public class DashboardController {
                     organizerDashboardService.getSummary(
                             principal.getUsername()));
         }
+
         return "dashboard/index";
     }
 }

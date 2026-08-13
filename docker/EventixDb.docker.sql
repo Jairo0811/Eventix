@@ -7,7 +7,13 @@ BEGIN
 END;
 GO
 
-IF DATABASEPROPERTYEX(N'EventixDb', N'Status') <> N'ONLINE'
+IF ISNULL(
+    CONVERT(
+        NVARCHAR(60),
+        DATABASEPROPERTYEX(N'EventixDb', N'Status')
+    ),
+    N''
+) <> N'ONLINE'
 BEGIN
     THROW 51000, N'EventixDb is not online.', 1;
 END;
@@ -160,4 +166,3 @@ BEGIN
     ALTER ROLE db_ddladmin ADD MEMBER eventix_migrator;
 END;
 GO
-
