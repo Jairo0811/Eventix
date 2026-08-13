@@ -15,6 +15,9 @@ import com.jairomatias.eventix.home.dto.HomeEventView;
 @Service
 public class EventDiscoveryService {
 
+    private static final int UPCOMING_EVENTS_LIMIT = 8;
+    private static final int DISCOVERY_EVENTS_LIMIT = 7;
+
     private final EventRepository eventRepository;
 
     public EventDiscoveryService(EventRepository eventRepository) {
@@ -27,21 +30,20 @@ public class EventDiscoveryService {
         return eventRepository.findAllByStatusAndStartAtAfterOrderByStartAtAsc(
                 EventStatus.PUBLISHED,
                 now,
-                PageRequest.of(0, 7))
+                PageRequest.of(0, UPCOMING_EVENTS_LIMIT))
                 .stream()
                 .map(this::toView)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<HomeEventView> thisWeekEvents() {
+    public List<HomeEventView> nextSevenEvents() {
         LocalDateTime now = LocalDateTime.now();
-        return eventRepository.findAllByStatusAndStartAtBetweenOrderByStartAtAsc(
+        return eventRepository.findAllByStatusAndStartAtAfterOrderByStartAtAsc(
                 EventStatus.PUBLISHED,
                 now,
-                now.plusDays(7))
+                PageRequest.of(0, DISCOVERY_EVENTS_LIMIT))
                 .stream()
-                .limit(4)
                 .map(this::toView)
                 .toList();
     }
