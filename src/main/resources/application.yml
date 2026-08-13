@@ -26,7 +26,6 @@ spring:
 
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.SQLServerDialect
         format_sql: true
 
         jdbc:
@@ -101,7 +100,7 @@ management:
 info:
   app:
     name: Eventix
-    version: 1.0.0
+    version: 1.1.2
     description: Plataforma profesional de gestión de eventos y ticketing digital.
 
 app:
