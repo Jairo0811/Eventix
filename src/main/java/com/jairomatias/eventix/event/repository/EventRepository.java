@@ -54,6 +54,18 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             LocalDateTime startAt);
 
     @EntityGraph(attributePaths = {"category", "organizer"})
+    List<Event> findAllByStatusAndStartAtAfterOrderByStartAtAsc(
+            EventStatus status,
+            LocalDateTime startAt,
+            Pageable pageable);
+
+    @EntityGraph(attributePaths = {"category", "organizer"})
+    List<Event> findAllByStatusAndStartAtBetweenOrderByStartAtAsc(
+            EventStatus status,
+            LocalDateTime startAt,
+            LocalDateTime endAt);
+
+    @EntityGraph(attributePaths = {"category", "organizer"})
     List<Event> findAllByOrganizer_IdOrderByStartAtDesc(Long organizerId);
 
     @Query(
