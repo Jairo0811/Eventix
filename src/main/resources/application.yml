@@ -5,6 +5,11 @@ spring:
   profiles:
     default: dev
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
   datasource:
     url: ${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true}
     username: ${DB_USERNAME:eventix_app}
@@ -109,6 +114,9 @@ app:
   timezone: America/Santo_Domingo
 
   currency: DOP
+
+  event-cover:
+    storage-path: ${EVENT_COVER_STORAGE_PATH:data/event-covers}
 
 eventix:
   security:
