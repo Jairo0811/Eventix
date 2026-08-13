@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.jairomatias.eventix.audit.service.AuditService;
 
@@ -20,6 +21,8 @@ import jakarta.servlet.http.HttpServletRequest;
 public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final String NOT_FOUND_MESSAGE = "No se encontró el recurso solicitado.";
+
     private final AuditService auditService;
 
     public GlobalExceptionHandler(AuditService auditService) {
@@ -30,6 +33,14 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleNotFound(ResourceNotFoundException exception, Model model) {
         model.addAttribute("message", exception.getMessage());
+        return "error/404";
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleNoResourceFound(NoResourceFoundException exception, Model model) {
+        LOGGER.debug("Recurso no encontrado: {}", exception.getResourcePath());
+        model.addAttribute("message", NOT_FOUND_MESSAGE);
         return "error/404";
     }
 
