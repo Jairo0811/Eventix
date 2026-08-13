@@ -30,6 +30,7 @@
                          : @{/events/{id}(id=${eventId})}"
               th:object="${eventForm}"
               method="post"
+              enctype="multipart/form-data"
               novalidate>
 
             <div class="alert alert-danger"
@@ -256,19 +257,22 @@
                     <h2 class="form-section-title">Portada y precio</h2>
                 </div>
                 <div class="col-md-7">
-                    <label class="form-label fw-semibold" for="coverImageUrl">
-                        URL de la portada
+                    <label class="form-label fw-semibold" for="coverImage">
+                        Portada del evento
                     </label>
+                    <input type="hidden" th:field="*{coverImageUrl}">
                     <input class="form-control"
-                           th:errorclass="is-invalid"
-                           id="coverImageUrl"
-                           th:field="*{coverImageUrl}"
-                           type="url"
-                           maxlength="500"
-                           placeholder="https://...">
-                    <div class="invalid-feedback" th:errors="*{coverImageUrl}"></div>
+                           id="coverImage"
+                           th:field="*{coverImage}"
+                           type="file"
+                           accept="image/jpeg,image/png,image/webp">
                     <div class="form-text">
-                        Admite una imagen pública mediante HTTP o HTTPS.
+                        Sube una imagen JPG, PNG o WEBP de hasta 5 MB. La imagen conservará sus proporciones y no se recortará.
+                    </div>
+                    <div class="event-cover-upload-preview"
+                         th:if="${eventForm.coverImageUrl != null and !#strings.isEmpty(eventForm.coverImageUrl)}">
+                        <img th:src="${eventForm.coverImageUrl}"
+                             alt="Portada actual del evento">
                     </div>
                 </div>
                 <div class="col-md-2">

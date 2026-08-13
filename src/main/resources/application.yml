@@ -5,6 +5,11 @@ spring:
   profiles:
     default: dev
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
   datasource:
     url: ${DB_URL:jdbc:sqlserver://localhost:1433;databaseName=EventixDb;encrypt=true;trustServerCertificate=true}
     username: ${DB_USERNAME:eventix_app}
@@ -26,7 +31,6 @@ spring:
 
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.SQLServerDialect
         format_sql: true
 
         jdbc:
@@ -101,7 +105,7 @@ management:
 info:
   app:
     name: Eventix
-    version: 1.0.0
+    version: 1.1.2
     description: Plataforma profesional de gestión de eventos y ticketing digital.
 
 app:
@@ -110,6 +114,9 @@ app:
   timezone: America/Santo_Domingo
 
   currency: DOP
+
+  event-cover:
+    storage-path: ${EVENT_COVER_STORAGE_PATH:data/event-covers}
 
 eventix:
   security:

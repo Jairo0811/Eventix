@@ -395,7 +395,7 @@
 .home-footer {
     background: #06151d;
     border-top: 1px solid rgb(255 255 255 / 8%);
-    color: #8fa7aa;
+    color: #b6c7ca;
     padding: 2rem 0;
 }
 
@@ -405,15 +405,16 @@
 }
 
 .home-footer-brand img {
-    height: 42px;
-    width: auto;
+    height: auto;
+    max-width: 100%;
+    width: 148px;
 }
 
 .home-footer-description {
     line-height: 1.7;
     margin-bottom: 1.5rem;
     max-width: 440px;
-    opacity: 0.75;
+    opacity: 0.9;
 }
 
 .home-footer h2 {
@@ -432,7 +433,7 @@
 
 .home-footer-links a {
     color: inherit;
-    opacity: 0.7;
+    opacity: 0.82;
     text-decoration: none;
     transition:
         opacity 0.2s ease,
@@ -456,7 +457,7 @@
     display: inline-flex;
     font-size: 0.85rem;
     gap: 0.5rem;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
 .home-footer-badges i {
@@ -466,7 +467,7 @@
 .home-footer-tech {
     font-size: 0.9rem;
     line-height: 1.7;
-    opacity: 0.7;
+    opacity: 0.85;
 }
 
 .home-footer-bottom {
@@ -476,7 +477,7 @@
     font-size: 0.85rem;
     gap: 1rem;
     justify-content: space-between;
-    opacity: 0.65;
+    opacity: 0.8;
     padding: 1.5rem 0;
 }
 

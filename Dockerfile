@@ -14,7 +14,9 @@ RUN apt-get update \
     && apt-get install --yes --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --system eventix \
-    && useradd --system --gid eventix --home-dir /app eventix
+    && useradd --system --gid eventix --home-dir /app eventix \
+    && mkdir -p /app/data \
+    && chown -R eventix:eventix /app
 
 WORKDIR /app
 

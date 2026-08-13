@@ -11,22 +11,35 @@ public class EventManagementFacade {
 
     private final EventService eventService;
     private final EventLocationService eventLocationService;
+    private final EventCoverImageStorage coverImageStorage;
 
     public EventManagementFacade(
             EventService eventService,
-            EventLocationService eventLocationService) {
+            EventLocationService eventLocationService,
+            EventCoverImageStorage coverImageStorage) {
         this.eventService = eventService;
         this.eventLocationService = eventLocationService;
+        this.coverImageStorage = coverImageStorage;
     }
 
     @Transactional
     @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'ORGANIZER')")
     public Long create(EventForm form, String authenticatedLogin) {
-        Long eventId = eventService.create(form, authenticatedLogin);
-        eventLocationService.updateGoogleMapsUrl(
-                eventId,
-                form.getGoogleMapsUrl());
-        return eventId;
+        String uploadedCover = coverImageStorage.store(form.getCoverImage());
+        if (uploadedCover != null) {
+            form.setCoverImageUrl(uploadedCover);
+        }
+
+        try {
+            Long eventId = eventService.create(form, authenticatedLogin);
+            eventLocationService.updateGoogleMapsUrl(
+                    eventId,
+                    form.getGoogleMapsUrl());
+            return eventId;
+        } catch (RuntimeException exception) {
+            coverImageStorage.deleteManaged(uploadedCover);
+            throw exception;
+        }
     }
 
     @Transactional
@@ -35,9 +48,24 @@ public class EventManagementFacade {
             Long eventId,
             EventForm form,
             String authenticatedLogin) {
-        eventService.update(eventId, form, authenticatedLogin);
-        eventLocationService.updateGoogleMapsUrl(
-                eventId,
-                form.getGoogleMapsUrl());
+        String previousCover = form.getCoverImageUrl();
+        String uploadedCover = coverImageStorage.store(form.getCoverImage());
+        if (uploadedCover != null) {
+            form.setCoverImageUrl(uploadedCover);
+        }
+
+        try {
+            eventService.update(eventId, form, authenticatedLogin);
+            eventLocationService.updateGoogleMapsUrl(
+                    eventId,
+                    form.getGoogleMapsUrl());
+            if (uploadedCover != null) {
+                coverImageStorage.deleteManaged(previousCover);
+            }
+        } catch (RuntimeException exception) {
+            coverImageStorage.deleteManaged(uploadedCover);
+            form.setCoverImageUrl(previousCover);
+            throw exception;
+        }
     }
 }
