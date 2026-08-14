@@ -48,6 +48,34 @@ class AccessibilityFoundationTest {
         assertThat(css).contains("max-width: 100%");
     }
 
+    @Test
+    void authenticationFormsAssociateValidationErrorsWithInputs() throws IOException {
+        String forgot = resource("templates/auth/forgot-password.html");
+        String reset = resource("templates/auth/reset-password.html");
+        String change = resource("templates/auth/change-password.html");
+
+        assertThat(forgot)
+                .contains("th:aria-invalid=\"${#fields.hasErrors('email')}\"")
+                .contains("aria-describedby=\"email-error\"")
+                .contains("id=\"email-error\" role=\"alert\"");
+        assertThat(reset)
+                .contains("aria-describedby=\"newPassword-help newPassword-error\"")
+                .contains("id=\"confirmPassword-error\" role=\"alert\"");
+        assertThat(change)
+                .contains("aria-describedby=\"currentPassword-error\"")
+                .contains("aria-live=\"assertive\"");
+    }
+
+    @Test
+    void loginAnnouncesAuthenticationStateAndExposesMainContent() throws IOException {
+        String login = resource("templates/auth/login.html");
+
+        assertThat(login).contains("<main class=\"auth-page\" id=\"main-content\"");
+        assertThat(login).contains("aria-labelledby=\"login-title\"");
+        assertThat(login).contains("aria-live=\"assertive\"");
+        assertThat(login).contains("aria-live=\"polite\"");
+    }
+
     private String resource(String path) throws IOException {
         try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
             assertThat(stream).as("classpath resource %s", path).isNotNull();
