@@ -69,9 +69,7 @@ html[data-theme="dark"] .bg-body-secondary {
     color: var(--eventix-aa-text) !important;
 }
 
-.table > :not(caption) > * > * {
-    color: inherit;
-}
+.table > :not(caption) > * > * { color: inherit; }
 
 html[data-theme="dark"] .table {
     --bs-table-color: var(--eventix-aa-text);
@@ -91,14 +89,9 @@ html[data-theme="dark"] thead.table-light {
 }
 
 .table caption,
-caption {
-    color: var(--eventix-aa-muted);
-}
+caption { color: var(--eventix-aa-muted); }
 
-.alert {
-    border-width: 1px;
-}
-
+.alert { border-width: 1px; }
 .alert-success { --bs-alert-color: var(--eventix-aa-success); }
 .alert-danger { --bs-alert-color: var(--eventix-aa-danger); }
 .alert-warning { --bs-alert-color: var(--eventix-aa-warning); }
@@ -131,9 +124,7 @@ html[data-theme="dark"] .text-info { color: var(--eventix-aa-info) !important; }
 
 .invalid-feedback,
 .validation-message,
-.field-error {
-    color: var(--eventix-aa-danger);
-}
+.field-error { color: var(--eventix-aa-danger); }
 
 html[data-theme="dark"] .form-control:disabled,
 html[data-theme="dark"] .form-select:disabled,
@@ -174,57 +165,31 @@ a:not(.btn):not(.nav-link):not(.dropdown-item) {
     text-underline-offset: 0.15em;
 }
 
-html[data-theme="dark"] a:not(.btn):not(.nav-link):not(.dropdown-item) {
-    color: var(--eventix-aa-link);
-}
+html[data-theme="dark"] a:not(.btn):not(.nav-link):not(.dropdown-item) { color: var(--eventix-aa-link); }
 
 .theme-selector button,
-.theme-floating-control button {
-    color: var(--eventix-aa-muted);
-}
-
+.theme-floating-control button { color: var(--eventix-aa-muted); }
 .theme-selector button.active,
-.theme-floating-control button.active {
-    border: 1px solid currentColor;
-}
+.theme-floating-control button.active { border: 1px solid currentColor; }
 
 html[data-theme="dark"] .swal2-popup,
 html[data-theme="dark"] .swal2-title,
-html[data-theme="dark"] .swal2-html-container {
-    color: var(--eventix-aa-text);
-}
+html[data-theme="dark"] .swal2-html-container { color: var(--eventix-aa-text); }
+html[data-theme="dark"] .swal2-cancel { color: #f4f7f8 !important; }
 
-html[data-theme="dark"] .swal2-cancel {
-    color: #f4f7f8 !important;
-}
-
-/* Dashboard: custom colors bypass Bootstrap, so they need explicit AA variants. */
+/* Dashboard */
 .dashboard-section-heading p,
 .dashboard-kpi-label,
 .dashboard-kpi-caption,
 .dashboard-stat-row span,
 .dashboard-quick-action small,
-.dashboard-empty {
-    color: var(--eventix-aa-muted) !important;
-}
-
-.dashboard-trend-period {
-    color: #3f5064;
-}
-
-.dashboard-trend-value {
-    color: #125e32;
-}
-
-.dashboard-quick-action {
-    color: var(--eventix-aa-text);
-}
-
+.dashboard-empty { color: var(--eventix-aa-muted) !important; }
+.dashboard-trend-period { color: #3f5064; }
+.dashboard-trend-value { color: #125e32; }
+.dashboard-quick-action { color: var(--eventix-aa-text); }
 .dashboard-quick-action i,
 .dashboard-kpi-icon,
-.dashboard-panel-icon {
-    color: #126b36;
-}
+.dashboard-panel-icon { color: #126b36; }
 
 html[data-theme="dark"] .dashboard-kpi,
 html[data-theme="dark"] .dashboard-panel,
@@ -246,16 +211,12 @@ html[data-theme="dark"] .dashboard-kpi-label,
 html[data-theme="dark"] .dashboard-kpi-caption,
 html[data-theme="dark"] .dashboard-stat-row span,
 html[data-theme="dark"] .dashboard-quick-action small,
-html[data-theme="dark"] .dashboard-empty {
-    color: var(--eventix-aa-muted) !important;
-}
+html[data-theme="dark"] .dashboard-empty { color: var(--eventix-aa-muted) !important; }
 
 html[data-theme="dark"] .dashboard-trend-value,
 html[data-theme="dark"] .dashboard-quick-action i,
 html[data-theme="dark"] .dashboard-kpi-icon,
-html[data-theme="dark"] .dashboard-panel-icon {
-    color: var(--eventix-aa-success);
-}
+html[data-theme="dark"] .dashboard-panel-icon { color: var(--eventix-aa-success); }
 
 html[data-theme="dark"] .dashboard-quick-action:hover,
 html[data-theme="dark"] .dashboard-quick-action:focus-visible {
@@ -264,15 +225,10 @@ html[data-theme="dark"] .dashboard-quick-action:focus-visible {
     color: #ffffff;
 }
 
-/* Lists and table actions: keep row states readable without relying on color alone. */
+/* Lists */
 .table tbody tr.text-secondary,
-.list-group-item.text-secondary {
-    color: var(--eventix-aa-muted) !important;
-}
-
-html[data-theme="dark"] .table-hover > tbody > tr:hover > * {
-    color: #ffffff;
-}
+.list-group-item.text-secondary { color: var(--eventix-aa-muted) !important; }
+html[data-theme="dark"] .table-hover > tbody > tr:hover > * { color: #ffffff; }
 
 html[data-theme="dark"] .pagination {
     --bs-pagination-color: #9be9b7;
@@ -287,4 +243,122 @@ html[data-theme="dark"] .pagination {
     --bs-pagination-disabled-color: #93a4ad;
     --bs-pagination-disabled-bg: #101d25;
     --bs-pagination-disabled-border-color: #425761;
+}
+
+/* Forms and transactional/financial screens. */
+.form-section-title,
+.detail-value,
+.metric-value,
+legend,
+fieldset {
+    color: var(--eventix-aa-text);
+}
+
+.form-check-label,
+.form-check-inline,
+.form-switch .form-check-label {
+    color: var(--eventix-aa-text);
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid,
+.form-check-input.is-invalid {
+    border-color: var(--eventix-aa-danger);
+}
+
+.form-control.is-valid,
+.form-select.is-valid,
+.form-check-input.is-valid {
+    border-color: var(--eventix-aa-success);
+}
+
+.valid-feedback { color: var(--eventix-aa-success); }
+
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select,
+html[data-theme="dark"] .input-group-text,
+html[data-theme="dark"] textarea {
+    background-color: var(--eventix-input-bg);
+    border-color: var(--eventix-aa-border);
+    color: var(--eventix-input-text);
+}
+
+html[data-theme="dark"] .form-control:focus,
+html[data-theme="dark"] .form-select:focus,
+html[data-theme="dark"] textarea:focus {
+    background-color: #13262f;
+    border-color: #8df0b1;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .form-check-input {
+    background-color: #13262f;
+    border-color: #718894;
+}
+
+html[data-theme="dark"] .form-check-input:checked {
+    background-color: #1f7a45;
+    border-color: #9be9b7;
+}
+
+/* Financial summaries must remain readable even when semantic utility colors are applied. */
+.metric-value-money,
+.detail-value,
+.fw-semibold.text-success,
+.fw-semibold.text-danger {
+    text-shadow: none;
+}
+
+html[data-theme="dark"] .metric-value-money.text-success,
+html[data-theme="dark"] .detail-value.text-success { color: #b5f6c9 !important; }
+html[data-theme="dark"] .metric-value-money.text-danger,
+html[data-theme="dark"] .detail-value.text-danger { color: #ffd0d5 !important; }
+
+/* Checkout/payment panels and provider selectors. */
+.wallet-payment-panel,
+.payment-provider-panel,
+.checkout-summary,
+.checkout-review {
+    color: var(--eventix-aa-text);
+}
+
+html[data-theme="dark"] .wallet-payment-panel,
+html[data-theme="dark"] .payment-provider-panel,
+html[data-theme="dark"] .checkout-summary,
+html[data-theme="dark"] .checkout-review {
+    background-color: var(--eventix-surface);
+    border-color: var(--eventix-aa-border);
+    color: var(--eventix-aa-text);
+}
+
+html[data-theme="dark"] .wallet-payment-panel .apple-pay-button {
+    outline: 1px solid #a7b8c0;
+    outline-offset: 2px;
+}
+
+/* Badges used in sales, reservations and settlements should stay readable. */
+html[data-theme="dark"] [class*="badge-settlement-"],
+html[data-theme="dark"] [class*="badge-sale-"],
+html[data-theme="dark"] [class*="badge-reservation-"] {
+    border-color: currentColor;
+    font-weight: 700;
+}
+
+/* Button states used in financial actions. */
+html[data-theme="dark"] .btn-success {
+    --bs-btn-bg: #176b3c;
+    --bs-btn-border-color: #78d89a;
+    --bs-btn-color: #ffffff;
+    --bs-btn-hover-bg: #1d7a45;
+    --bs-btn-hover-border-color: #9be9b7;
+    --bs-btn-hover-color: #ffffff;
+}
+
+html[data-theme="dark"] .btn-danger {
+    --bs-btn-bg: #8f2632;
+    --bs-btn-border-color: #e87984;
+    --bs-btn-color: #ffffff;
+    --bs-btn-hover-bg: #a52f3d;
+    --bs-btn-hover-border-color: #f09aa3;
+    --bs-btn-hover-color: #ffffff;
 }
