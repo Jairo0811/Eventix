@@ -1,0 +1,219 @@
+/*
+ * Eventix Light/Dark contrast hardening.
+ * Target: NORTIC B2:2017 / WCAG 2.0 AA, especially 1.4.3.
+ * Loaded after theme.css and accessibility.css so semantic Bootstrap helpers
+ * cannot accidentally reduce readability in either theme.
+ */
+
+:root {
+    --eventix-aa-text: #172033;
+    --eventix-aa-muted: #4b5b6e;
+    --eventix-aa-border: #697789;
+    --eventix-aa-soft-bg: #f2f5f7;
+    --eventix-aa-soft-text: #263445;
+    --eventix-aa-link: #096b39;
+    --eventix-aa-danger: #a11224;
+    --eventix-aa-success: #126b36;
+    --eventix-aa-warning: #694700;
+    --eventix-aa-info: #075985;
+}
+
+html[data-theme="dark"] {
+    --eventix-aa-text: #edf5f7;
+    --eventix-aa-muted: #bdcad1;
+    --eventix-aa-border: #536975;
+    --eventix-aa-soft-bg: #172832;
+    --eventix-aa-soft-text: #edf5f7;
+    --eventix-aa-link: #8df0b1;
+    --eventix-aa-danger: #ffc1c7;
+    --eventix-aa-success: #a7f3c0;
+    --eventix-aa-warning: #ffe08a;
+    --eventix-aa-info: #b9e6ff;
+}
+
+/* Text helpers must remain readable regardless of Bootstrap defaults. */
+body,
+.form-label,
+.table,
+.dropdown-menu,
+.modal-content,
+.card,
+.content-card {
+    color: var(--eventix-aa-text);
+}
+
+.text-secondary,
+.text-muted,
+.form-text,
+.page-subtitle,
+.detail-label,
+.metric-label,
+.event-meta,
+.app-footer {
+    color: var(--eventix-aa-muted) !important;
+}
+
+/* Neutral Bootstrap surfaces are a frequent source of white-on-white or
+   dark-on-dark combinations when switching themes. */
+.bg-light,
+.text-bg-light,
+.alert-light,
+.badge.text-bg-light,
+.list-group-item-light {
+    background-color: var(--eventix-aa-soft-bg) !important;
+    border-color: var(--eventix-aa-border) !important;
+    color: var(--eventix-aa-soft-text) !important;
+}
+
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .bg-body-tertiary,
+html[data-theme="dark"] .bg-body-secondary {
+    background-color: var(--eventix-elevated) !important;
+    color: var(--eventix-aa-text) !important;
+}
+
+/* Tables: headers and striped/hover rows retain readable foregrounds. */
+.table > :not(caption) > * > * {
+    color: inherit;
+}
+
+html[data-theme="dark"] .table {
+    --bs-table-color: var(--eventix-aa-text);
+    --bs-table-bg: transparent;
+    --bs-table-striped-color: var(--eventix-aa-text);
+    --bs-table-striped-bg: rgb(255 255 255 / 4%);
+    --bs-table-hover-color: #ffffff;
+    --bs-table-hover-bg: rgb(74 222 128 / 8%);
+    --bs-table-border-color: var(--eventix-border);
+}
+
+html[data-theme="dark"] .table-light,
+html[data-theme="dark"] thead.table-light {
+    --bs-table-bg: #172832;
+    --bs-table-color: #f1f7f4;
+    --bs-table-border-color: #536975;
+}
+
+.table caption,
+caption {
+    color: var(--eventix-aa-muted);
+}
+
+/* Alerts communicate state with text and border, not color alone. */
+.alert {
+    border-width: 1px;
+}
+
+.alert-success {
+    --bs-alert-color: var(--eventix-aa-success);
+}
+.alert-danger {
+    --bs-alert-color: var(--eventix-aa-danger);
+}
+.alert-warning {
+    --bs-alert-color: var(--eventix-aa-warning);
+}
+.alert-info {
+    --bs-alert-color: var(--eventix-aa-info);
+}
+
+html[data-theme="dark"] .alert-warning {
+    --bs-alert-bg: rgb(245 158 11 / 13%);
+    --bs-alert-border-color: rgb(250 204 21 / 45%);
+}
+html[data-theme="dark"] .alert-info {
+    --bs-alert-bg: rgb(14 165 233 / 12%);
+    --bs-alert-border-color: rgb(125 211 252 / 40%);
+}
+html[data-theme="dark"] .alert-light {
+    --bs-alert-bg: #172832;
+    --bs-alert-border-color: #536975;
+    --bs-alert-color: #edf5f7;
+}
+
+/* Semantic text colors need stronger dark-theme variants. */
+html[data-theme="dark"] .text-success { color: var(--eventix-aa-success) !important; }
+html[data-theme="dark"] .text-danger { color: var(--eventix-aa-danger) !important; }
+html[data-theme="dark"] .text-warning { color: var(--eventix-aa-warning) !important; }
+html[data-theme="dark"] .text-info { color: var(--eventix-aa-info) !important; }
+
+/* Inputs, add-ons and validation feedback. */
+.form-control,
+.form-select,
+.input-group-text {
+    border-color: color-mix(in srgb, var(--eventix-aa-border) 72%, transparent);
+}
+
+.invalid-feedback,
+.validation-message,
+.field-error {
+    color: var(--eventix-aa-danger);
+}
+
+html[data-theme="dark"] .form-control:disabled,
+html[data-theme="dark"] .form-select:disabled,
+html[data-theme="dark"] .form-control[readonly] {
+    background-color: #0d1a21;
+    color: #c8d5db;
+    -webkit-text-fill-color: #c8d5db;
+}
+
+/* Browser autofill can otherwise inject bright backgrounds into dark mode. */
+html[data-theme="dark"] input:-webkit-autofill,
+html[data-theme="dark"] input:-webkit-autofill:hover,
+html[data-theme="dark"] input:-webkit-autofill:focus,
+html[data-theme="dark"] textarea:-webkit-autofill,
+html[data-theme="dark"] select:-webkit-autofill {
+    -webkit-text-fill-color: var(--eventix-input-text);
+    -webkit-box-shadow: 0 0 0 1000px var(--eventix-input-bg) inset;
+    caret-color: var(--eventix-input-text);
+}
+
+/* Buttons retain sufficient foreground/background separation. */
+html[data-theme="dark"] .btn-outline-primary {
+    --bs-btn-color: #96efb6;
+    --bs-btn-border-color: #62cf8b;
+    --bs-btn-hover-bg: #1f7a45;
+    --bs-btn-hover-border-color: #77dfa0;
+    --bs-btn-hover-color: #ffffff;
+}
+
+html[data-theme="dark"] .btn-outline-danger {
+    --bs-btn-color: #ffc1c7;
+    --bs-btn-border-color: #e87984;
+    --bs-btn-hover-bg: #9f2634;
+    --bs-btn-hover-border-color: #f09aa3;
+    --bs-btn-hover-color: #ffffff;
+}
+
+/* Links inside muted or neutral components must still look actionable. */
+a:not(.btn):not(.nav-link):not(.dropdown-item) {
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.15em;
+}
+
+html[data-theme="dark"] a:not(.btn):not(.nav-link):not(.dropdown-item) {
+    color: var(--eventix-aa-link);
+}
+
+/* Theme switch itself must remain legible in all three preferences. */
+.theme-selector button,
+.theme-floating-control button {
+    color: var(--eventix-aa-muted);
+}
+
+.theme-selector button.active,
+.theme-floating-control button.active {
+    border: 1px solid currentColor;
+}
+
+/* SweetAlert is used for financial confirmation dialogs. */
+html[data-theme="dark"] .swal2-popup,
+html[data-theme="dark"] .swal2-title,
+html[data-theme="dark"] .swal2-html-container {
+    color: var(--eventix-aa-text);
+}
+
+html[data-theme="dark"] .swal2-cancel {
+    color: #f4f7f8 !important;
+}
