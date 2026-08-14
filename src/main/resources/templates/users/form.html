@@ -5,7 +5,7 @@
 <aside th:replace="~{fragments/sidebar :: sidebar('users')}"></aside>
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-<main class="app-main">
+<main class="app-main" id="main-content">
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>
             <a class="text-decoration-none small" th:href="@{/users}">
@@ -13,19 +13,27 @@
                 Volver a usuarios
             </a>
             <h1 class="page-title mt-2"
+                id="user-form-title"
                 th:text="${formMode == 'create' ? 'Crear usuario' : 'Editar usuario'}">
                 Usuario
             </h1>
-            <p class="page-subtitle">Completa los datos de acceso y asigna el rol correspondiente.</p>
+            <p class="page-subtitle" id="user-form-instructions">
+                Completa los datos de acceso y asigna el rol correspondiente. Los campos marcados como obligatorios deben completarse antes de guardar.
+            </p>
         </div>
     </div>
 
-    <section class="content-card mx-auto" style="max-width: 900px;">
+    <section class="content-card mx-auto" style="max-width: 900px;" aria-labelledby="user-form-title">
         <form th:action="${formMode == 'create'} ? @{/users} : @{/users/{id}(id=${userId})}"
               th:object="${userForm}"
               method="post"
+              aria-labelledby="user-form-title"
+              aria-describedby="user-form-instructions"
               novalidate>
-            <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors()}">
+            <div class="alert alert-danger"
+                 role="alert"
+                 aria-live="assertive"
+                 th:if="${#fields.hasGlobalErrors()}">
                 <p class="mb-0"
                    th:each="error : ${#fields.globalErrors()}"
                    th:text="${error}">Revisa el formulario.</p>
@@ -33,44 +41,61 @@
 
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold" for="firstName">Nombre</label>
+                    <label class="form-label fw-semibold" for="firstName">Nombre <span aria-hidden="true">*</span></label>
                     <input class="form-control"
                            th:errorclass="is-invalid"
                            id="firstName"
                            th:field="*{firstName}"
                            type="text"
-                           maxlength="80">
-                    <div class="invalid-feedback" th:errors="*{firstName}"></div>
+                           maxlength="80"
+                           autocomplete="given-name"
+                           required
+                           aria-describedby="firstName-error"
+                           th:aria-invalid="${#fields.hasErrors('firstName')}">
+                    <div class="invalid-feedback" id="firstName-error" role="alert" th:errors="*{firstName}"></div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold" for="lastName">Apellido</label>
+                    <label class="form-label fw-semibold" for="lastName">Apellido <span aria-hidden="true">*</span></label>
                     <input class="form-control"
                            th:errorclass="is-invalid"
                            id="lastName"
                            th:field="*{lastName}"
                            type="text"
-                           maxlength="80">
-                    <div class="invalid-feedback" th:errors="*{lastName}"></div>
+                           maxlength="80"
+                           autocomplete="family-name"
+                           required
+                           aria-describedby="lastName-error"
+                           th:aria-invalid="${#fields.hasErrors('lastName')}">
+                    <div class="invalid-feedback" id="lastName-error" role="alert" th:errors="*{lastName}"></div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold" for="email">Correo electrónico</label>
+                    <label class="form-label fw-semibold" for="email">Correo electrónico <span aria-hidden="true">*</span></label>
                     <input class="form-control"
                            th:errorclass="is-invalid"
                            id="email"
                            th:field="*{email}"
                            type="email"
-                           maxlength="160">
-                    <div class="invalid-feedback" th:errors="*{email}"></div>
+                           maxlength="160"
+                           autocomplete="email"
+                           required
+                           aria-describedby="email-error"
+                           th:aria-invalid="${#fields.hasErrors('email')}">
+                    <div class="invalid-feedback" id="email-error" role="alert" th:errors="*{email}"></div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold" for="username">Nombre de usuario</label>
+                    <label class="form-label fw-semibold" for="username">Nombre de usuario <span aria-hidden="true">*</span></label>
                     <input class="form-control"
                            th:errorclass="is-invalid"
                            id="username"
                            th:field="*{username}"
                            type="text"
-                           maxlength="60">
-                    <div class="invalid-feedback" th:errors="*{username}"></div>
+                           maxlength="60"
+                           autocomplete="username"
+                           required
+                           aria-describedby="username-help username-error"
+                           th:aria-invalid="${#fields.hasErrors('username')}">
+                    <div class="form-text" id="username-help">Usa entre 4 y 60 letras, números, puntos, guiones o guiones bajos.</div>
+                    <div class="invalid-feedback" id="username-error" role="alert" th:errors="*{username}"></div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="phone">Teléfono</label>
@@ -79,15 +104,21 @@
                            id="phone"
                            th:field="*{phone}"
                            type="tel"
-                           maxlength="30">
-                    <div class="invalid-feedback" th:errors="*{phone}"></div>
+                           maxlength="30"
+                           autocomplete="tel"
+                           aria-describedby="phone-error"
+                           th:aria-invalid="${#fields.hasErrors('phone')}">
+                    <div class="invalid-feedback" id="phone-error" role="alert" th:errors="*{phone}"></div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold" for="roleName">Rol</label>
+                    <label class="form-label fw-semibold" for="roleName">Rol <span aria-hidden="true">*</span></label>
                     <select class="form-select"
                             th:errorclass="is-invalid"
                             id="roleName"
-                            th:field="*{roleName}">
+                            th:field="*{roleName}"
+                            required
+                            aria-describedby="roleName-help roleName-error"
+                            th:aria-invalid="${#fields.hasErrors('roleName')}">
                         <option value="">Selecciona un rol</option>
                         <option th:each="role : ${roles}"
                                 th:value="${role}"
@@ -95,36 +126,44 @@
                             Administrador
                         </option>
                     </select>
-                    <div class="invalid-feedback" th:errors="*{roleName}"></div>
+                    <div class="form-text" id="roleName-help">El rol determina las funciones y áreas de Eventix a las que tendrá acceso esta cuenta.</div>
+                    <div class="invalid-feedback" id="roleName-error" role="alert" th:errors="*{roleName}"></div>
                 </div>
 
                 <div class="col-md-6" th:if="${formMode == 'create'}">
-                    <label class="form-label fw-semibold" for="password">Contraseña temporal</label>
+                    <label class="form-label fw-semibold" for="password">Contraseña temporal <span aria-hidden="true">*</span></label>
                     <input class="form-control"
                            th:errorclass="is-invalid"
                            id="password"
                            th:field="*{password}"
                            type="password"
-                           autocomplete="new-password">
-                    <div class="invalid-feedback" th:errors="*{password}"></div>
-                    <div class="form-text">
-                        El usuario deberá cambiarla cuando inicie sesión por primera vez.
+                           autocomplete="new-password"
+                           required
+                           aria-describedby="password-help password-error"
+                           th:aria-invalid="${#fields.hasErrors('password')}">
+                    <div class="form-text" id="password-help">
+                        Debe tener entre 8 y 72 caracteres e incluir mayúscula, minúscula, número y símbolo. El usuario deberá cambiarla al iniciar sesión por primera vez.
                     </div>
+                    <div class="invalid-feedback" id="password-error" role="alert" th:errors="*{password}"></div>
                 </div>
 
                 <div class="col-md-6" th:if="${formMode == 'edit'}">
-                    <label class="form-label fw-semibold" for="status">Estado</label>
+                    <label class="form-label fw-semibold" for="status">Estado <span aria-hidden="true">*</span></label>
                     <select class="form-select"
                             th:errorclass="is-invalid"
                             id="status"
-                            th:field="*{status}">
+                            th:field="*{status}"
+                            required
+                            aria-describedby="status-help status-error"
+                            th:aria-invalid="${#fields.hasErrors('status')}">
                         <option th:each="statusOption : ${statuses}"
                                 th:value="${statusOption}"
                                 th:text="${statusOption.displayName}">
                             Activo
                         </option>
                     </select>
-                    <div class="invalid-feedback" th:errors="*{status}"></div>
+                    <div class="form-text" id="status-help">Cambiar el estado puede afectar la capacidad del usuario para iniciar sesión.</div>
+                    <div class="invalid-feedback" id="status-error" role="alert" th:errors="*{status}"></div>
                 </div>
             </div>
 

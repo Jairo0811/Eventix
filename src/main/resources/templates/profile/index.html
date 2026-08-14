@@ -5,62 +5,79 @@
 <aside th:replace="~{fragments/sidebar :: sidebar('profile')}"></aside>
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-<main class="app-main">
+<main class="app-main" id="main-content">
     <div th:replace="~{fragments/messages :: messages}"></div>
 
-    <section class="mb-4">
+    <section class="mb-4" aria-labelledby="profile-title">
         <p class="text-success fw-semibold mb-1">Cuenta Eventix</p>
-        <h1 class="page-title">Mi perfil</h1>
-        <p class="page-subtitle">
-            Administra tus datos personales, preferencias y seguridad sin alterar permisos de la cuenta.
+        <h1 class="page-title" id="profile-title">Mi perfil</h1>
+        <p class="page-subtitle" id="profile-instructions">
+            Administra tus datos personales, preferencias y seguridad sin alterar permisos de la cuenta. Los campos obligatorios deben completarse antes de guardar.
         </p>
     </section>
 
     <div class="row g-4">
         <div class="col-12 col-xl-8">
-            <section class="content-card mb-4">
+            <section class="content-card mb-4" aria-labelledby="profile-account-title">
                 <div class="d-flex align-items-center gap-3 mb-4">
-                    <span class="user-avatar">
-                        <i class="bi bi-person-fill" aria-hidden="true"></i>
+                    <span class="user-avatar" aria-hidden="true">
+                        <i class="bi bi-person-fill"></i>
                     </span>
                     <div>
-                        <h2 class="h4 mb-1" th:text="${account.fullName}">Usuario Eventix</h2>
+                        <h2 class="h4 mb-1" id="profile-account-title" th:text="${account.fullName}">Usuario Eventix</h2>
                         <span class="badge text-bg-success" th:text="${account.role.displayName}">Rol</span>
                     </div>
                 </div>
 
-                <form th:action="@{/profile}" th:object="${profileForm}" method="post" novalidate>
+                <form th:action="@{/profile}"
+                      th:object="${profileForm}"
+                      method="post"
+                      aria-labelledby="profile-account-title"
+                      aria-describedby="profile-instructions"
+                      novalidate>
                     <div class="row g-3">
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold" for="firstName">Nombre</label>
+                            <label class="form-label fw-semibold" for="firstName">Nombre <span aria-hidden="true">*</span></label>
                             <input class="form-control"
                                    th:errorclass="is-invalid"
                                    id="firstName"
                                    th:field="*{firstName}"
-                                   autocomplete="given-name">
-                            <div class="invalid-feedback" th:errors="*{firstName}"></div>
+                                   autocomplete="given-name"
+                                   maxlength="80"
+                                   required
+                                   aria-describedby="firstName-error"
+                                   th:aria-invalid="${#fields.hasErrors('firstName')}">
+                            <div class="invalid-feedback" id="firstName-error" role="alert" th:errors="*{firstName}"></div>
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label fw-semibold" for="lastName">Apellido</label>
+                            <label class="form-label fw-semibold" for="lastName">Apellido <span aria-hidden="true">*</span></label>
                             <input class="form-control"
                                    th:errorclass="is-invalid"
                                    id="lastName"
                                    th:field="*{lastName}"
-                                   autocomplete="family-name">
-                            <div class="invalid-feedback" th:errors="*{lastName}"></div>
+                                   autocomplete="family-name"
+                                   maxlength="80"
+                                   required
+                                   aria-describedby="lastName-error"
+                                   th:aria-invalid="${#fields.hasErrors('lastName')}">
+                            <div class="invalid-feedback" id="lastName-error" role="alert" th:errors="*{lastName}"></div>
                         </div>
                         <div class="col-12 col-md-7">
-                            <label class="form-label fw-semibold" for="email">Correo electrónico</label>
+                            <label class="form-label fw-semibold" for="email">Correo electrónico <span aria-hidden="true">*</span></label>
                             <input class="form-control"
                                    th:errorclass="is-invalid"
                                    id="email"
                                    th:field="*{email}"
                                    type="email"
-                                   autocomplete="email">
-                            <div class="invalid-feedback" th:errors="*{email}"></div>
-                            <div class="form-text">
+                                   autocomplete="email"
+                                   maxlength="160"
+                                   required
+                                   aria-describedby="email-help email-error"
+                                   th:aria-invalid="${#fields.hasErrors('email')}">
+                            <div class="form-text" id="email-help">
                                 Si cambias el correo, cerraremos la sesión para renovar tu identidad de acceso.
                             </div>
+                            <div class="invalid-feedback" id="email-error" role="alert" th:errors="*{email}"></div>
                         </div>
                         <div class="col-12 col-md-5">
                             <label class="form-label fw-semibold" for="phone">Teléfono</label>
@@ -69,43 +86,49 @@
                                    id="phone"
                                    th:field="*{phone}"
                                    type="tel"
-                                   autocomplete="tel">
-                            <div class="invalid-feedback" th:errors="*{phone}"></div>
+                                   autocomplete="tel"
+                                   maxlength="30"
+                                   aria-describedby="phone-error"
+                                   th:aria-invalid="${#fields.hasErrors('phone')}">
+                            <div class="invalid-feedback" id="phone-error" role="alert" th:errors="*{phone}"></div>
                         </div>
                     </div>
 
                     <hr class="my-4">
-                    <h3 class="h5 mb-3">Preferencias de notificación</h3>
+                    <fieldset class="border-0 p-0 m-0" aria-describedby="notification-security-note">
+                        <legend class="h5 mb-3">Preferencias de notificación</legend>
 
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input"
-                               id="reservationNotificationsEnabled"
-                               type="checkbox"
-                               th:field="*{reservationNotificationsEnabled}">
-                        <label class="form-check-label" for="reservationNotificationsEnabled">
-                            <strong class="d-block">Actualizaciones de reservaciones</strong>
-                            <span class="text-secondary small">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input"
+                                   id="reservationNotificationsEnabled"
+                                   type="checkbox"
+                                   th:field="*{reservationNotificationsEnabled}"
+                                   aria-describedby="reservationNotifications-help">
+                            <label class="form-check-label" for="reservationNotificationsEnabled">
+                                <strong class="d-block">Actualizaciones de reservaciones</strong>
+                            </label>
+                            <span class="text-secondary small d-block" id="reservationNotifications-help">
                                 Recibe confirmaciones y cancelaciones relacionadas con tus reservaciones.
                             </span>
-                        </label>
-                    </div>
+                        </div>
 
-                    <div class="form-check form-switch mb-4">
-                        <input class="form-check-input"
-                               id="eventReminderNotificationsEnabled"
-                               type="checkbox"
-                               th:field="*{eventReminderNotificationsEnabled}">
-                        <label class="form-check-label" for="eventReminderNotificationsEnabled">
-                            <strong class="d-block">Recordatorios de eventos</strong>
-                            <span class="text-secondary small">
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input"
+                                   id="eventReminderNotificationsEnabled"
+                                   type="checkbox"
+                                   th:field="*{eventReminderNotificationsEnabled}"
+                                   aria-describedby="eventReminderNotifications-help">
+                            <label class="form-check-label" for="eventReminderNotificationsEnabled">
+                                <strong class="d-block">Recordatorios de eventos</strong>
+                            </label>
+                            <span class="text-secondary small d-block" id="eventReminderNotifications-help">
                                 Recibe un aviso antes de los eventos asociados con tus boletas.
                             </span>
-                        </label>
-                    </div>
+                        </div>
+                    </fieldset>
 
-                    <div class="alert alert-light border small">
-                        Las notificaciones de seguridad, compras y reembolsos permanecen activas porque protegen
-                        la cuenta y documentan operaciones financieras.
+                    <div class="alert alert-light border small" id="notification-security-note" role="note">
+                        Las notificaciones de seguridad, compras y reembolsos permanecen activas porque protegen la cuenta y documentan operaciones financieras.
                     </div>
 
                     <button class="btn btn-primary" type="submit">
@@ -117,8 +140,8 @@
         </div>
 
         <div class="col-12 col-xl-4">
-            <section class="content-card mb-4">
-                <h2 class="h5 mb-3">Información de la cuenta</h2>
+            <section class="content-card mb-4" aria-labelledby="account-info-title">
+                <h2 class="h5 mb-3" id="account-info-title">Información de la cuenta</h2>
                 <dl class="mb-0">
                     <dt class="text-secondary small">Usuario</dt>
                     <dd class="fw-semibold" th:text="${account.username}">usuario</dd>
@@ -135,17 +158,18 @@
                     </dd>
                 </dl>
                 <p class="text-secondary small mb-0">
-                    El rol, el estado y los identificadores internos solo pueden gestionarse desde los controles
-                    administrativos autorizados.
+                    El rol, el estado y los identificadores internos solo pueden gestionarse desde los controles administrativos autorizados.
                 </p>
             </section>
 
-            <section class="content-card">
-                <h2 class="h5 mb-2">Seguridad</h2>
-                <p class="text-secondary small">
+            <section class="content-card" aria-labelledby="security-title">
+                <h2 class="h5 mb-2" id="security-title">Seguridad</h2>
+                <p class="text-secondary small" id="security-description">
                     Para cambiar la contraseña debes confirmar primero la contraseña actual.
                 </p>
-                <a class="btn btn-outline-primary w-100" th:href="@{/auth/change-password}">
+                <a class="btn btn-outline-primary w-100"
+                   th:href="@{/auth/change-password}"
+                   aria-describedby="security-description">
                     <i class="bi bi-shield-lock me-2" aria-hidden="true"></i>
                     Cambiar contraseña
                 </a>

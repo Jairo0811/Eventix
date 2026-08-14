@@ -110,6 +110,38 @@ class AccessibilityFoundationTest {
                 .contains("bg-body p-3");
     }
 
+    @Test
+    void userFormExposesRequiredFieldsValidationAndSecurityGuidance() throws IOException {
+        String form = resource("templates/users/form.html");
+
+        assertThat(form)
+                .contains("<main class=\"app-main\" id=\"main-content\"")
+                .contains("aria-labelledby=\"user-form-title\"")
+                .contains("aria-describedby=\"user-form-instructions\"")
+                .contains("th:aria-invalid=\"${#fields.hasErrors('firstName')}\"")
+                .contains("aria-describedby=\"username-help username-error\"")
+                .contains("aria-describedby=\"roleName-help roleName-error\"")
+                .contains("aria-describedby=\"password-help password-error\"")
+                .contains("id=\"password-error\" role=\"alert\"")
+                .contains("Cambiar el estado puede afectar la capacidad del usuario para iniciar sesión");
+    }
+
+    @Test
+    void profileAssociatesErrorsPreferencesAndAccountSecurity() throws IOException {
+        String profile = resource("templates/profile/index.html");
+
+        assertThat(profile)
+                .contains("<main class=\"app-main\" id=\"main-content\"")
+                .contains("id=\"profile-title\"")
+                .contains("aria-describedby=\"profile-instructions\"")
+                .contains("aria-describedby=\"email-help email-error\"")
+                .contains("th:aria-invalid=\"${#fields.hasErrors('email')}\"")
+                .contains("<fieldset class=\"border-0 p-0 m-0\"")
+                .contains("aria-describedby=\"reservationNotifications-help\"")
+                .contains("id=\"notification-security-note\" role=\"note\"")
+                .contains("aria-describedby=\"security-description\"");
+    }
+
     private String resource(String path) throws IOException {
         try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
             assertThat(stream).as("classpath resource %s", path).isNotNull();
