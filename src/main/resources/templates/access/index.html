@@ -7,18 +7,18 @@
 <aside th:replace="~{fragments/sidebar :: sidebar('access')}"></aside>
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-<main class="app-main">
+<main class="app-main" id="main-content" aria-labelledby="access-title">
     <div th:replace="~{fragments/messages :: messages}"></div>
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>
             <p class="text-success fw-semibold mb-1">Operación en puerta</p>
-            <h1 class="page-title">Control de acceso</h1>
-            <p class="page-subtitle">Validación criptográfica y trazabilidad en tiempo real.</p>
+            <h1 class="page-title" id="access-title">Control de acceso</h1>
+            <p class="page-subtitle" id="access-description">Validación criptográfica y trazabilidad en tiempo real.</p>
         </div>
-        <form method="get" th:action="@{/access-control}">
+        <form method="get" th:action="@{/access-control}" aria-label="Filtrar dashboard de acceso por evento">
             <label class="form-label" for="eventId">Dashboard por evento</label>
             <div class="input-group">
-                <select class="form-select" id="eventId" name="eventId">
+                <select class="form-select" id="eventId" name="eventId" aria-describedby="event-filter-help">
                     <option value="">Todos</option>
                     <option th:each="event : ${events}" th:value="${event.id}"
                             th:selected="${event.id == selectedEventId}"
@@ -26,6 +26,7 @@
                 </select>
                 <button class="btn btn-outline-primary" type="submit">Aplicar</button>
             </div>
+            <div class="form-text" id="event-filter-help">Actualiza métricas, validaciones y actividad para el evento seleccionado.</div>
         </form>
     </div>
 
@@ -41,27 +42,31 @@
 
     <div class="row g-4 mb-4" sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ACCESS_STAFF')">
         <div class="col-lg-6">
-            <section class="content-card scanner-card h-100">
-                <h2 class="h5 fw-bold">Escáner QR</h2>
-                <p class="text-secondary small">Usa la cámara o pega el contenido completo del QR.</p>
-                <video class="scanner-video d-none" data-qr-video playsinline muted></video>
+            <section class="content-card scanner-card h-100" aria-labelledby="scanner-title">
+                <h2 class="h5 fw-bold" id="scanner-title">Escáner QR</h2>
+                <p class="text-secondary small" id="scanner-help">Usa la cámara o pega el contenido completo del QR. La lectura debe permanecer íntegra para poder validar su firma.</p>
+                <video class="scanner-video d-none" data-qr-video playsinline muted aria-label="Vista de cámara para escanear códigos QR"></video>
                 <div class="d-flex gap-2 mb-3">
                     <button class="btn btn-outline-primary" type="button" data-start-scanner>
                         <i class="bi bi-camera me-2" aria-hidden="true"></i>Activar cámara
                     </button>
                     <button class="btn btn-outline-secondary d-none" type="button" data-stop-scanner>Detener</button>
                 </div>
-                <p class="small text-secondary" data-scanner-message aria-live="polite"></p>
+                <p class="small text-secondary" data-scanner-message role="status" aria-live="polite" aria-atomic="true"></p>
                 <form th:object="${scanForm}" th:action="@{/access-control/scan}" method="post" data-scan-form>
                     <div class="mb-3">
-                        <label class="form-label" for="token">Contenido del QR</label>
+                        <label class="form-label" for="token">Contenido del QR <span aria-hidden="true">*</span></label>
                         <textarea class="form-control font-monospace" id="token" rows="3"
-                                  th:field="*{token}" maxlength="512" required></textarea>
+                                  th:field="*{token}" maxlength="512" required aria-required="true"
+                                  aria-describedby="scanner-help token-error"
+                                  th:aria-invalid="${#fields.hasErrors('token')}"></textarea>
+                        <div class="invalid-feedback" id="token-error" role="alert" th:errors="*{token}"></div>
                     </div>
                     <input type="hidden" th:field="*{deviceIdentifier}" data-device-identifier>
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="reentry" th:field="*{reentry}">
+                        <input class="form-check-input" type="checkbox" id="reentry" th:field="*{reentry}" aria-describedby="reentry-help">
                         <label class="form-check-label" for="reentry">Autorizar como reingreso si ya fue utilizada</label>
+                        <div class="form-text" id="reentry-help">Actívalo solo cuando el personal de acceso haya verificado que el reingreso está autorizado.</div>
                     </div>
                     <button class="btn btn-primary w-100" type="submit">
                         <i class="bi bi-qr-code-scan me-2" aria-hidden="true"></i>Validar entrada
@@ -71,17 +76,18 @@
         </div>
         <div class="col-lg-6">
             <section class="content-card h-100 scan-result"
+                     role="status" aria-live="polite" aria-atomic="true" aria-labelledby="scan-result-title"
                      th:classappend="${scanResult != null} ? (${scanResult.accepted} ? ' scan-result-valid' : ' scan-result-rejected') : ''">
                 <div th:if="${scanResult == null}" class="empty-state py-5">
                     <i class="bi bi-shield-check fs-1" aria-hidden="true"></i>
-                    <h2 class="h5 mt-3">Esperando una lectura</h2>
+                    <h2 class="h5 mt-3" id="scan-result-title">Esperando una lectura</h2>
                     <p>El resultado aparecerá aquí sin exponer el contenido del QR.</p>
                 </div>
                 <div th:if="${scanResult != null}">
                     <i class="scan-result-icon bi"
                        th:classappend="${scanResult.accepted} ? ' bi-check-circle-fill' : ' bi-x-octagon-fill'"
                        aria-hidden="true"></i>
-                    <h2 class="h4 fw-bold mt-3" th:text="${scanResult.outcome.displayName}">Resultado</h2>
+                    <h2 class="h4 fw-bold mt-3" id="scan-result-title" th:text="${scanResult.outcome.displayName}">Resultado</h2>
                     <p th:text="${scanResult.message}">Mensaje</p>
                     <dl class="row mb-0" th:if="${scanResult.ticketCode != null}">
                         <dt class="col-4">Boleta</dt><dd class="col-8" th:text="${scanResult.ticketCode}">Código</dd>
@@ -94,11 +100,12 @@
         </div>
     </div>
 
-    <section class="content-card">
-        <h2 class="h5 fw-bold mb-4">Últimas validaciones</h2>
+    <section class="content-card" aria-labelledby="attempts-title">
+        <h2 class="h5 fw-bold mb-4" id="attempts-title">Últimas validaciones</h2>
         <div class="table-responsive" th:if="${attempts.hasContent()}">
             <table class="table align-middle">
-                <thead><tr><th>Fecha</th><th>Boleta / evento</th><th>Resultado</th><th>Usuario</th><th>Dispositivo / IP</th></tr></thead>
+                <caption class="visually-hidden">Historial reciente de intentos de acceso y su resultado.</caption>
+                <thead><tr><th scope="col">Fecha</th><th scope="col">Boleta / evento</th><th scope="col">Resultado</th><th scope="col">Usuario</th><th scope="col">Dispositivo / IP</th></tr></thead>
                 <tbody><tr th:each="attempt : ${attempts.content}">
                     <td th:text="${#temporals.format(attempt.occurredAt, 'dd/MM/yyyy HH:mm:ss')}">Fecha</td>
                     <td><code th:text="${attempt.ticketCode}">Código</code><span class="d-block small text-secondary" th:text="${attempt.eventTitle}">Evento</span></td>
@@ -114,10 +121,10 @@
         </div>
     </section>
 
-    <nav class="mt-4" th:if="${attempts.totalPages > 1}" aria-label="Paginación">
+    <nav class="mt-4" th:if="${attempts.totalPages > 1}" aria-label="Paginación de validaciones">
         <ul class="pagination justify-content-center">
             <li class="page-item" th:classappend="${attempts.first} ? ' disabled'"><a class="page-link" th:href="@{/access-control(page=${attempts.number - 1},eventId=${selectedEventId})}">Anterior</a></li>
-            <li class="page-item disabled"><span class="page-link" th:text="|Página ${attempts.number + 1} de ${attempts.totalPages}|">Página</span></li>
+            <li class="page-item disabled"><span class="page-link" aria-current="page" th:text="|Página ${attempts.number + 1} de ${attempts.totalPages}|">Página</span></li>
             <li class="page-item" th:classappend="${attempts.last} ? ' disabled'"><a class="page-link" th:href="@{/access-control(page=${attempts.number + 1},eventId=${selectedEventId})}">Siguiente</a></li>
         </ul>
     </nav>

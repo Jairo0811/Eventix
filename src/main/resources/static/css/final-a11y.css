@@ -1,0 +1,189 @@
+/*
+ * Eventix final NORTIC B2 / WCAG 2.0 AA hardening.
+ * Scope: Home/Auth, reports, access control, QR/ticket surfaces and error pages.
+ */
+
+/* Public home: preserve high contrast for the permanently dark hero/footer. */
+.home-page,
+.home-header,
+.home-hero,
+.home-footer,
+.home-cta-card {
+    --eventix-final-on-dark: #eef8f4;
+    --eventix-final-muted-on-dark: #c3d5d4;
+}
+
+.home-nav-link,
+.home-hero-copy,
+.home-trust-row,
+.home-console-topbar small,
+.home-console-title small,
+.home-metric-grid span,
+.home-chart-card span,
+.home-footer,
+.home-footer-description,
+.home-footer-tech,
+.home-footer-bottom,
+.home-cta-card p {
+    color: var(--eventix-final-muted-on-dark);
+}
+
+.home-nav-link:hover,
+.home-nav-link:focus-visible,
+.home-footer-links a:hover,
+.home-footer-links a:focus-visible {
+    color: #ffffff;
+}
+
+.home-console,
+.home-metric-grid article,
+.home-chart-card {
+    border-color: rgb(255 255 255 / 24%);
+}
+
+/* Light sections on the public home must not inherit dark-theme foregrounds. */
+.home-section,
+.home-workflow-section,
+.home-cta-section {
+    color: #172033;
+}
+
+.home-section-heading p,
+.home-feature-card p,
+.home-workflow p {
+    color: #4b5b6e;
+}
+
+/* Auth and error cards. */
+.auth-panel,
+body > main.container .content-card {
+    color: var(--eventix-aa-text);
+}
+
+html[data-theme="dark"] .auth-panel,
+html[data-theme="dark"] body > main.container .content-card {
+    background: var(--eventix-surface);
+    border-color: var(--eventix-aa-border);
+    color: var(--eventix-aa-text);
+}
+
+/* Reports: financial totals, export actions and filters. */
+.report-card,
+.report-summary,
+.report-chart,
+.report-filter,
+.report-export {
+    color: var(--eventix-aa-text);
+}
+
+html[data-theme="dark"] .report-card,
+html[data-theme="dark"] .report-summary,
+html[data-theme="dark"] .report-chart,
+html[data-theme="dark"] .report-filter,
+html[data-theme="dark"] .report-export {
+    background: var(--eventix-surface);
+    border-color: var(--eventix-aa-border);
+    color: var(--eventix-aa-text);
+}
+
+/* Access control / QR validation. State remains readable without color alone. */
+.scanner-card,
+.scan-result,
+.access-metric {
+    color: var(--eventix-aa-text);
+}
+
+.scan-result-valid,
+.scan-result-rejected {
+    border: 2px solid currentColor;
+}
+
+.scan-result-valid {
+    color: var(--eventix-aa-success);
+}
+
+.scan-result-rejected {
+    color: var(--eventix-aa-danger);
+}
+
+html[data-theme="dark"] .scanner-card,
+html[data-theme="dark"] .scan-result,
+html[data-theme="dark"] .access-metric {
+    background: var(--eventix-surface);
+    border-color: var(--eventix-aa-border);
+}
+
+html[data-theme="dark"] .scan-result-valid {
+    color: #b5f6c9;
+    background: rgb(34 197 94 / 8%);
+}
+
+html[data-theme="dark"] .scan-result-rejected {
+    color: #ffd0d5;
+    background: rgb(239 68 68 / 8%);
+}
+
+.scanner-video {
+    background: #000;
+    border: 2px solid var(--eventix-aa-border);
+}
+
+code,
+.font-monospace {
+    overflow-wrap: anywhere;
+}
+
+/* Ticket / QR presentation surfaces. */
+.ticket-card,
+.ticket-detail,
+.ticket-qr,
+.qr-card,
+.qr-preview {
+    color: var(--eventix-aa-text);
+}
+
+html[data-theme="dark"] .ticket-card,
+html[data-theme="dark"] .ticket-detail,
+html[data-theme="dark"] .ticket-qr,
+html[data-theme="dark"] .qr-card,
+html[data-theme="dark"] .qr-preview {
+    background: var(--eventix-surface);
+    border-color: var(--eventix-aa-border);
+    color: var(--eventix-aa-text);
+}
+
+/* QR graphics need a predictable light canvas for scanner reliability. */
+.ticket-qr img,
+.qr-card img,
+.qr-preview img,
+img[alt*="QR"] {
+    background: #ffffff;
+    border: 1px solid #526274;
+    padding: 0.35rem;
+}
+
+/* Error pages and empty states. */
+.empty-state p,
+.empty-state small {
+    color: var(--eventix-aa-muted);
+}
+
+body > main.container .content-card [class*="text-"] {
+    text-shadow: none;
+}
+
+/* High-contrast forced-colors support for critical controls and statuses. */
+@media (forced-colors: active) {
+    .badge-status,
+    .scan-result-valid,
+    .scan-result-rejected,
+    .btn,
+    .form-control,
+    .form-select,
+    .form-check-input,
+    .content-card,
+    .metric-card {
+        border: 1px solid CanvasText;
+        forced-color-adjust: auto;
+    }
+}
