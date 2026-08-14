@@ -76,6 +76,21 @@ class AccessibilityFoundationTest {
         assertThat(login).contains("aria-live=\"polite\"");
     }
 
+    @Test
+    void checkoutAssociatesErrorsAndProvidesTransactionalReviewGuidance() throws IOException {
+        String checkout = resource("templates/checkout/form.html");
+
+        assertThat(checkout)
+                .contains("<main class=\"app-main\" id=\"main-content\"")
+                .contains("<fieldset class=\"border-0 p-0 m-0\"")
+                .contains("aria-describedby=\"quantity-help quantity-error\"")
+                .contains("id=\"firstName-error\"")
+                .contains("id=\"provider-error\"")
+                .contains("aria-live=\"assertive\"")
+                .contains("Antes de confirmar")
+                .contains("oportunidad de corregirlo antes de que la operación sea aceptada");
+    }
+
     private String resource(String path) throws IOException {
         try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
             assertThat(stream).as("classpath resource %s", path).isNotNull();
