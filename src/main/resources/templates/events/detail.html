@@ -15,29 +15,38 @@
             <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
             Volver a eventos
         </a>
-        <div class="d-flex flex-wrap gap-2"
-             sec:authorize="hasAnyRole('ADMINISTRATOR', 'ORGANIZER')">
-            <a class="btn btn-outline-primary"
-               th:if="${event.status.name() == 'DRAFT' || event.status.name() == 'PUBLISHED'}"
-               th:href="@{/events/{id}/ticket-types(id=${event.id})}">
-                <i class="bi bi-ticket-perforated me-2" aria-hidden="true"></i>
-                Tipos de entrada
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-success"
+               sec:authorize="hasRole('USER')"
+               th:if="${event.status.name() == 'PUBLISHED'}"
+               th:href="@{/my/checkout/events/{id}(id=${event.id})}">
+                <i class="bi bi-bag-check me-2" aria-hidden="true"></i>
+                Comprar entradas
             </a>
-            <a class="btn btn-outline-primary"
-               th:href="@{/events/{id}/edit(id=${event.id})}">
-                <i class="bi bi-pencil me-2" aria-hidden="true"></i>
-                Editar
-            </a>
-            <form th:if="${event.status.name() == 'DRAFT'
-                          || event.status.name() == 'CANCELLED'}"
-                  th:action="@{/events/{id}/delete(id=${event.id})}"
-                  method="post"
-                  data-confirm="El evento se eliminará de forma permanente.">
-                <button class="btn btn-outline-danger" type="submit">
-                    <i class="bi bi-trash3 me-2" aria-hidden="true"></i>
-                    Eliminar
-                </button>
-            </form>
+            <div class="d-flex flex-wrap gap-2"
+                 sec:authorize="hasAnyRole('ADMINISTRATOR', 'ORGANIZER')">
+                <a class="btn btn-outline-primary"
+                   th:if="${event.status.name() == 'DRAFT' || event.status.name() == 'PUBLISHED'}"
+                   th:href="@{/events/{id}/ticket-types(id=${event.id})}">
+                    <i class="bi bi-ticket-perforated me-2" aria-hidden="true"></i>
+                    Tipos de entrada
+                </a>
+                <a class="btn btn-outline-primary"
+                   th:href="@{/events/{id}/edit(id=${event.id})}">
+                    <i class="bi bi-pencil me-2" aria-hidden="true"></i>
+                    Editar
+                </a>
+                <form th:if="${event.status.name() == 'DRAFT'
+                              || event.status.name() == 'CANCELLED'}"
+                      th:action="@{/events/{id}/delete(id=${event.id})}"
+                      method="post"
+                      data-confirm="El evento se eliminará de forma permanente.">
+                    <button class="btn btn-outline-danger" type="submit">
+                        <i class="bi bi-trash3 me-2" aria-hidden="true"></i>
+                        Eliminar
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -50,14 +59,10 @@
         </div>
         <div class="event-hero-content">
             <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                <span class="event-category" th:text="${event.categoryName}">
-                    Categoría
-                </span>
+                <span class="event-category" th:text="${event.categoryName}">Categoría</span>
                 <span class="badge-status"
                       th:classappend="| badge-event-${#strings.toLowerCase(event.status.name())}|"
-                      th:text="${event.status.displayName}">
-                    Publicado
-                </span>
+                      th:text="${event.status.displayName}">Publicado</span>
                 <span class="event-price"
                       th:text="${event.freeEvent
                               ? 'Entrada gratuita'
@@ -65,12 +70,8 @@
                     Entrada gratuita
                 </span>
             </div>
-            <h1 class="page-title mb-3" th:text="${event.title}">
-                Nombre del evento
-            </h1>
-            <p class="event-description" th:text="${event.description}">
-                Descripción del evento.
-            </p>
+            <h1 class="page-title mb-3" th:text="${event.title}">Nombre del evento</h1>
+            <p class="event-description" th:text="${event.description}">Descripción del evento.</p>
         </div>
     </article>
 
@@ -106,9 +107,7 @@
                     </div>
                     <div class="col-12">
                         <p class="detail-label">Dirección</p>
-                        <p class="detail-value mb-0" th:text="${event.address}">
-                            Dirección
-                        </p>
+                        <p class="detail-value mb-0" th:text="${event.address}">Dirección</p>
                     </div>
                 </div>
             </section>
@@ -117,13 +116,9 @@
             <section class="content-card h-100">
                 <h2 class="h5 fw-bold mb-4">Responsable</h2>
                 <div class="d-flex align-items-center gap-3 mb-4">
-                    <span class="user-avatar">
-                        <i class="bi bi-person-fill" aria-hidden="true"></i>
-                    </span>
+                    <span class="user-avatar"><i class="bi bi-person-fill" aria-hidden="true"></i></span>
                     <div>
-                        <strong class="d-block" th:text="${event.organizerName}">
-                            Organizador
-                        </strong>
+                        <strong class="d-block" th:text="${event.organizerName}">Organizador</strong>
                         <span class="text-secondary small">Organizador Eventix</span>
                     </div>
                 </div>
@@ -133,9 +128,7 @@
                     <dd class="small" th:text="${event.createdBy}">usuario</dd>
                     <dt class="detail-label mt-3">Última actualización</dt>
                     <dd class="small mb-0"
-                        th:text="${#temporals.format(event.updatedAt, 'dd/MM/yyyy HH:mm')}">
-                        fecha
-                    </dd>
+                        th:text="${#temporals.format(event.updatedAt, 'dd/MM/yyyy HH:mm')}">fecha</dd>
                 </dl>
             </section>
         </div>
@@ -145,15 +138,10 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
             <div>
                 <h2 class="h5 fw-bold mb-1">Ocupación y reservaciones</h2>
-                <p class="text-secondary mb-0">
-                    Disponibilidad actualizada con las retenciones vigentes.
-                </p>
+                <p class="text-secondary mb-0">Disponibilidad actualizada con las retenciones vigentes.</p>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <a class="btn btn-light"
-                   th:href="@{/reservations(eventId=${event.id})}">
-                    Ver asistentes
-                </a>
+                <a class="btn btn-light" th:href="@{/reservations(eventId=${event.id})}">Ver asistentes</a>
                 <a class="btn btn-primary"
                    th:if="${canManageReservations and event.status.name() == 'PUBLISHED'}"
                    th:href="@{/reservations/new(eventId=${event.id})}">
