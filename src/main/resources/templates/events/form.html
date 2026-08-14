@@ -5,7 +5,7 @@
 <aside th:replace="~{fragments/sidebar :: sidebar('events')}"></aside>
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-<main class="app-main">
+<main class="app-main" id="main-content">
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>
             <a class="text-decoration-none small" th:href="@{/events}">
@@ -13,28 +13,34 @@
                 Volver a eventos
             </a>
             <h1 class="page-title mt-2"
+                id="event-form-title"
                 th:text="${formMode == 'create'
                          ? 'Crear evento'
                          : 'Editar evento'}">
                 Evento
             </h1>
-            <p class="page-subtitle">
-                Define la programación, el responsable y las condiciones de acceso.
+            <p class="page-subtitle" id="event-form-instructions">
+                Define la programación, el responsable y las condiciones de acceso. Los campos indicados como obligatorios deben completarse antes de guardar.
             </p>
         </div>
     </div>
 
-    <section class="content-card mx-auto" style="max-width: 1180px;">
+    <section class="content-card mx-auto"
+             style="max-width: 1180px;"
+             aria-labelledby="event-form-title">
         <form th:action="${formMode == 'create'}
                          ? @{/events}
                          : @{/events/{id}(id=${eventId})}"
               th:object="${eventForm}"
               method="post"
               enctype="multipart/form-data"
+              aria-labelledby="event-form-title"
+              aria-describedby="event-form-instructions"
               novalidate>
 
             <div class="alert alert-danger"
                  role="alert"
+                 aria-live="assertive"
                  th:if="${#fields.hasGlobalErrors()}">
                 <p class="mb-0"
                    th:each="error : ${#fields.globalErrors()}"
@@ -48,22 +54,28 @@
                     <h2 class="form-section-title">Información principal</h2>
                 </div>
                 <div class="col-md-8">
-                    <label class="form-label fw-semibold" for="title">Título</label>
+                    <label class="form-label fw-semibold" for="title">Título <span class="visually-hidden">obligatorio</span></label>
                     <input class="form-control"
                            th:errorclass="is-invalid"
+                           th:aria-invalid="${#fields.hasErrors('title')}"
+                           aria-describedby="title-error"
                            id="title"
                            th:field="*{title}"
                            type="text"
                            maxlength="160"
-                           autocomplete="off">
-                    <div class="invalid-feedback" th:errors="*{title}"></div>
+                           autocomplete="off"
+                           required>
+                    <div class="invalid-feedback" id="title-error" role="alert" th:errors="*{title}"></div>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label fw-semibold" for="categoryId">Categoría</label>
+                    <label class="form-label fw-semibold" for="categoryId">Categoría <span class="visually-hidden">obligatoria</span></label>
                     <select class="form-select"
                             th:errorclass="is-invalid"
+                            th:aria-invalid="${#fields.hasErrors('categoryId')}"
+                            aria-describedby="categoryId-error"
                             id="categoryId"
-                            th:field="*{categoryId}">
+                            th:field="*{categoryId}"
+                            required>
                         <option value="">Selecciona una categoría</option>
                         <option th:each="category : ${categories}"
                                 th:value="${category.id}"
@@ -71,44 +83,54 @@
                             Conferencia
                         </option>
                     </select>
-                    <div class="invalid-feedback" th:errors="*{categoryId}"></div>
+                    <div class="invalid-feedback" id="categoryId-error" role="alert" th:errors="*{categoryId}"></div>
                 </div>
                 <div class="col-12">
-                    <label class="form-label fw-semibold" for="description">Descripción</label>
+                    <label class="form-label fw-semibold" for="description">Descripción <span class="visually-hidden">obligatoria</span></label>
                     <textarea class="form-control"
                               th:errorclass="is-invalid"
+                              th:aria-invalid="${#fields.hasErrors('description')}"
+                              aria-describedby="description-help description-error"
                               id="description"
                               th:field="*{description}"
                               rows="5"
-                              maxlength="5000"></textarea>
-                    <div class="invalid-feedback" th:errors="*{description}"></div>
+                              maxlength="5000"
+                              required></textarea>
+                    <div class="form-text" id="description-help">Máximo 5,000 caracteres.</div>
+                    <div class="invalid-feedback" id="description-error" role="alert" th:errors="*{description}"></div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold" for="status">Estado</label>
+                    <label class="form-label fw-semibold" for="status">Estado <span class="visually-hidden">obligatorio</span></label>
                     <select class="form-select"
                             th:errorclass="is-invalid"
+                            th:aria-invalid="${#fields.hasErrors('status')}"
+                            aria-describedby="status-help status-error"
                             id="status"
-                            th:field="*{status}">
+                            th:field="*{status}"
+                            required>
                         <option th:each="statusOption : ${statuses}"
                                 th:value="${statusOption}"
                                 th:text="${statusOption.displayName}">
                             Borrador
                         </option>
                     </select>
-                    <div class="invalid-feedback" th:errors="*{status}"></div>
-                    <div class="form-text">
+                    <div class="invalid-feedback" id="status-error" role="alert" th:errors="*{status}"></div>
+                    <div class="form-text" id="status-help">
                         Las transiciones inválidas se bloquean automáticamente.
                     </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold" for="organizerId">
-                        Organizador responsable
+                        Organizador responsable <span class="visually-hidden">obligatorio</span>
                     </label>
                     <select class="form-select"
                             th:if="${administrator}"
                             th:errorclass="is-invalid"
+                            th:aria-invalid="${#fields.hasErrors('organizerId')}"
+                            aria-describedby="organizerId-error"
                             id="organizerId"
-                            th:field="*{organizerId}">
+                            th:field="*{organizerId}"
+                            required>
                         <option value="">Selecciona un organizador</option>
                         <option th:each="organizer : ${organizers}"
                                 th:value="${organizer.id}"
@@ -121,78 +143,97 @@
                            th:field="*{organizerId}"
                            type="hidden">
                     <div class="organizer-readonly"
-                         th:if="${!administrator and !organizers.isEmpty()}">
+                         th:if="${!administrator and !organizers.isEmpty()}"
+                         aria-label="Organizador responsable asignado">
                         <i class="bi bi-person-check-fill" aria-hidden="true"></i>
                         <span th:text="${organizers[0].fullName}">Organizador</span>
                     </div>
                     <div class="invalid-feedback d-block"
+                         id="organizerId-error"
+                         role="alert"
                          th:errors="*{organizerId}"></div>
                 </div>
 
                 <div class="col-12"><hr></div>
                 <div class="col-12">
                     <h2 class="form-section-title">Fecha y ubicación</h2>
-                    <p class="text-secondary mb-0">
+                    <p class="text-secondary mb-0" id="location-help">
                         Guarda la dirección del evento y, opcionalmente, enlázala con Google Maps.
                     </p>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold" for="startAt">Inicio</label>
+                    <label class="form-label fw-semibold" for="startAt">Inicio <span class="visually-hidden">obligatorio</span></label>
                     <input class="form-control"
                            th:errorclass="is-invalid"
+                           th:aria-invalid="${#fields.hasErrors('startAt')}"
+                           aria-describedby="startAt-error"
                            id="startAt"
                            th:field="*{startAt}"
-                           type="datetime-local">
-                    <div class="invalid-feedback" th:errors="*{startAt}"></div>
+                           type="datetime-local"
+                           required>
+                    <div class="invalid-feedback" id="startAt-error" role="alert" th:errors="*{startAt}"></div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold" for="endAt">Finalización</label>
+                    <label class="form-label fw-semibold" for="endAt">Finalización <span class="visually-hidden">obligatoria</span></label>
                     <input class="form-control"
                            th:errorclass="is-invalid"
+                           th:aria-invalid="${#fields.hasErrors('endAt')}"
+                           aria-describedby="endAt-error"
                            id="endAt"
                            th:field="*{endAt}"
-                           type="datetime-local">
-                    <div class="invalid-feedback" th:errors="*{endAt}"></div>
+                           type="datetime-local"
+                           required>
+                    <div class="invalid-feedback" id="endAt-error" role="alert" th:errors="*{endAt}"></div>
                 </div>
 
                 <div class="col-lg-6">
                     <div class="row g-3">
                         <div class="col-md-7 col-lg-12 col-xl-7">
-                            <label class="form-label fw-semibold" for="venue">Lugar</label>
+                            <label class="form-label fw-semibold" for="venue">Lugar <span class="visually-hidden">obligatorio</span></label>
                             <input class="form-control"
                                    th:errorclass="is-invalid"
+                                   th:aria-invalid="${#fields.hasErrors('venue')}"
+                                   aria-describedby="venue-error"
                                    id="venue"
                                    th:field="*{venue}"
                                    type="text"
                                    maxlength="160"
-                                   placeholder="Centro de Convenciones">
-                            <div class="invalid-feedback" th:errors="*{venue}"></div>
+                                   placeholder="Centro de Convenciones"
+                                   required>
+                            <div class="invalid-feedback" id="venue-error" role="alert" th:errors="*{venue}"></div>
                         </div>
                         <div class="col-md-5 col-lg-12 col-xl-5">
-                            <label class="form-label fw-semibold" for="capacity">Capacidad</label>
+                            <label class="form-label fw-semibold" for="capacity">Capacidad <span class="visually-hidden">obligatoria</span></label>
                             <input class="form-control"
                                    th:errorclass="is-invalid"
+                                   th:aria-invalid="${#fields.hasErrors('capacity')}"
+                                   aria-describedby="capacity-help capacity-error"
                                    id="capacity"
                                    th:field="*{capacity}"
                                    type="number"
                                    min="1"
-                                   max="1000000">
-                            <div class="invalid-feedback" th:errors="*{capacity}"></div>
+                                   max="1000000"
+                                   required>
+                            <div class="form-text" id="capacity-help">Entre 1 y 1,000,000 personas.</div>
+                            <div class="invalid-feedback" id="capacity-error" role="alert" th:errors="*{capacity}"></div>
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-semibold" for="address">Dirección</label>
+                            <label class="form-label fw-semibold" for="address">Dirección <span class="visually-hidden">obligatoria</span></label>
                             <input class="form-control"
                                    th:errorclass="is-invalid"
+                                   th:aria-invalid="${#fields.hasErrors('address')}"
+                                   aria-describedby="address-error"
                                    id="address"
                                    th:field="*{address}"
                                    type="text"
                                    maxlength="300"
-                                   placeholder="Av. 27 de Febrero, Santo Domingo">
-                            <div class="invalid-feedback" th:errors="*{address}"></div>
+                                   placeholder="Av. 27 de Febrero, Santo Domingo"
+                                   required>
+                            <div class="invalid-feedback" id="address-error" role="alert" th:errors="*{address}"></div>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-semibold" for="googleMapsUrl">
-                                Enlace de Google Maps
+                                Enlace de Google Maps <span class="fw-normal">(opcional)</span>
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text">
@@ -200,15 +241,17 @@
                                 </span>
                                 <input class="form-control"
                                        th:errorclass="is-invalid"
+                                       th:aria-invalid="${#fields.hasErrors('googleMapsUrl')}"
+                                       aria-describedby="googleMapsUrl-help googleMapsUrl-error"
                                        id="googleMapsUrl"
                                        th:field="*{googleMapsUrl}"
                                        type="url"
                                        maxlength="1000"
                                        placeholder="https://maps.app.goo.gl/...">
-                                <div class="invalid-feedback" th:errors="*{googleMapsUrl}"></div>
+                                <div class="invalid-feedback" id="googleMapsUrl-error" role="alert" th:errors="*{googleMapsUrl}"></div>
                             </div>
-                            <div class="form-text">
-                                Puedes pegar el enlace compartido del lugar. El mapa se actualiza automáticamente.
+                            <div class="form-text" id="googleMapsUrl-help">
+                                Puedes pegar un enlace HTTPS de Google Maps. Si no lo haces, Eventix genera la vista previa usando el lugar y la dirección.
                             </div>
                         </div>
                     </div>
@@ -217,10 +260,12 @@
                 <div class="col-lg-6">
                     <div class="border rounded-4 overflow-hidden bg-body-tertiary h-100"
                          data-google-maps-preview
+                         role="region"
+                         aria-label="Vista previa de ubicación del evento"
                          th:attr="data-google-maps-api-key=${googleMapsEmbedApiKey}">
                         <div class="ratio ratio-4x3 position-relative">
                             <iframe class="border-0 d-none"
-                                    title="Vista previa de la ubicación del evento"
+                                    title="Mapa de vista previa de la ubicación del evento"
                                     loading="lazy"
                                     allowfullscreen
                                     referrerpolicy="strict-origin-when-cross-origin"
@@ -234,16 +279,21 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="border-top bg-white p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div class="border-top bg-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
                             <div>
                                 <strong class="d-block">Ubicación del evento</strong>
-                                <small class="text-secondary" data-google-maps-status>
+                                <small class="text-secondary"
+                                       role="status"
+                                       aria-live="polite"
+                                       aria-atomic="true"
+                                       data-google-maps-status>
                                     Esperando una ubicación.
                                 </small>
                             </div>
                             <a class="btn btn-outline-success btn-sm d-none"
                                target="_blank"
                                rel="noopener noreferrer"
+                               aria-label="Abrir ubicación del evento en Google Maps en una pestaña nueva"
                                data-google-maps-open>
                                 <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>
                                 Abrir en Maps
@@ -258,15 +308,16 @@
                 </div>
                 <div class="col-md-7">
                     <label class="form-label fw-semibold" for="coverImage">
-                        Portada del evento
+                        Portada del evento <span class="fw-normal">(opcional)</span>
                     </label>
                     <input type="hidden" th:field="*{coverImageUrl}">
                     <input class="form-control"
                            id="coverImage"
                            th:field="*{coverImage}"
                            type="file"
-                           accept="image/jpeg,image/png,image/webp">
-                    <div class="form-text">
+                           accept="image/jpeg,image/png,image/webp"
+                           aria-describedby="coverImage-help">
+                    <div class="form-text" id="coverImage-help">
                         Sube una imagen JPG, PNG o WEBP de hasta 5 MB. La imagen conservará sus proporciones y no se recortará.
                     </div>
                     <div class="event-cover-upload-preview"
@@ -276,27 +327,32 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label fw-semibold" for="freeEvent">Tipo</label>
+                    <label class="form-label fw-semibold" for="freeEvent">Tipo <span class="visually-hidden">obligatorio</span></label>
                     <select class="form-select"
                             id="freeEvent"
                             th:field="*{freeEvent}"
-                            data-event-price-type>
+                            data-event-price-type
+                            required>
                         <option th:value="true">Gratis</option>
                         <option th:value="false">De pago</option>
                     </select>
                 </div>
                 <div class="col-md-3" data-event-price-field>
                     <label class="form-label fw-semibold" for="basePrice">
-                        Precio base (RD$)
+                        Precio base (RD$) <span class="visually-hidden">obligatorio para eventos de pago</span>
                     </label>
                     <input class="form-control"
                            th:errorclass="is-invalid"
+                           th:aria-invalid="${#fields.hasErrors('basePrice')}"
+                           aria-describedby="basePrice-help basePrice-error"
                            id="basePrice"
                            th:field="*{basePrice}"
                            type="number"
                            min="0"
-                           step="0.01">
-                    <div class="invalid-feedback" th:errors="*{basePrice}"></div>
+                           step="0.01"
+                           required>
+                    <div class="form-text" id="basePrice-help">Usa 0 para eventos gratuitos. Máximo dos decimales.</div>
+                    <div class="invalid-feedback" id="basePrice-error" role="alert" th:errors="*{basePrice}"></div>
                 </div>
             </div>
 
