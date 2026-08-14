@@ -86,7 +86,7 @@
                 </div>
             </article>
 
-            <div class="home-discovery-block" th:if="${!upcomingEvents.isEmpty()}">
+            <div class="home-discovery-block" th:if="${upcomingEvents != null and !upcomingEvents.isEmpty()}">
                 <div class="home-discovery-title-row"><div><span>Próximamente</span><h3>Más eventos en camino</h3></div><small>Ordenados por fecha</small></div>
                 <div class="row g-4"><div class="col-md-6 col-xl-4" th:each="event : ${upcomingEvents}"><article class="home-event-card">
                     <div class="home-event-card-media">
@@ -98,9 +98,9 @@
                 </article></div></div>
             </div>
 
-            <div class="home-week-strip" th:if="${!thisWeekEvents.isEmpty()}">
-                <div class="home-week-intro"><span>Esta semana en Eventix</span><h3>Planes que empiezan pronto.</h3><p>Los próximos siete días, en una vista rápida para decidir sin recorrer un catálogo completo.</p></div>
-                <div class="home-week-list"><a class="home-week-item" th:each="event : ${thisWeekEvents}" th:href="${authenticated} ? @{/events/{id}(id=${event.id})} : @{/login}"><div><strong th:text="${event.dateLabel}">sáb 15 ago</strong><span th:text="${event.timeLabel}">8:00 PM</span></div><div><h4 th:text="${event.title}">Evento</h4><span th:text="${event.venue}">Recinto</span></div><i class="bi bi-chevron-right" aria-hidden="true"></i></a></div>
+            <div class="home-week-strip" th:if="${nextSevenEvents != null and !nextSevenEvents.isEmpty()}">
+                <div class="home-week-intro"><span>Próximos 7 eventos</span><h3>Siete experiencias que vienen en camino.</h3><p>Los siete eventos publicados más cercanos, ordenados por fecha aunque no ocurran en días consecutivos.</p></div>
+                <div class="home-week-list"><a class="home-week-item" th:each="event : ${nextSevenEvents}" th:href="${authenticated} ? @{/events/{id}(id=${event.id})} : @{/login}"><div><strong th:text="${event.dateLabel}">sáb 15 ago</strong><span th:text="${event.timeLabel}">8:00 PM</span></div><div><h4 th:text="${event.title}">Evento</h4><span th:text="${event.venue}">Recinto</span></div><i class="bi bi-chevron-right" aria-hidden="true"></i></a></div>
             </div>
         </div>
         <div class="home-discovery-empty" th:if="${featuredEvent == null}"><div><i class="bi bi-stars" aria-hidden="true"></i></div><h3>La próxima experiencia está por anunciarse.</h3><p>Cuando un evento sea publicado con una fecha futura, aparecerá aquí automáticamente.</p></div>
