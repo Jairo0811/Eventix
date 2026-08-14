@@ -141,6 +141,9 @@
                      th:if="${settlement.status.name() != 'PAID' && settlement.status.name() != 'CANCELLED'}">
                 <h2 class="h5 fw-bold mb-3">Actualizar estado</h2>
                 <form th:object="${settlementActionForm}" method="post">
+                    <input type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
                     <div class="mb-3">
                         <label class="form-label" for="externalReference">
                             Referencia externa <span class="text-secondary">(opcional)</span>
