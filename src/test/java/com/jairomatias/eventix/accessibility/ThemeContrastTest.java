@@ -65,6 +65,23 @@ class ThemeContrastTest {
                 .contains("html[data-theme=\"dark\"] .pagination");
     }
 
+    @Test
+    void formsCheckoutAndFinancialScreensKeepReadableThemeStates() throws IOException {
+        String css = resource("static/css/theme-contrast.css");
+
+        assertThat(css)
+                .contains(".form-control.is-invalid")
+                .contains(".form-control.is-valid")
+                .contains("html[data-theme=\"dark\"] .form-control:focus")
+                .contains("html[data-theme=\"dark\"] .form-check-input:checked")
+                .contains(".metric-value-money")
+                .contains(".wallet-payment-panel")
+                .contains(".checkout-summary")
+                .contains("[class*=\"badge-settlement-\"]")
+                .contains("html[data-theme=\"dark\"] .btn-success")
+                .contains("html[data-theme=\"dark\"] .btn-danger");
+    }
+
     private String resource(String path) throws IOException {
         try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
             assertThat(stream).as("classpath resource %s", path).isNotNull();
