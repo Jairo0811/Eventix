@@ -5,7 +5,7 @@
 <aside th:replace="~{fragments/sidebar :: sidebar('events')}"></aside>
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-<main class="app-main">
+<main class="app-main" id="main-content">
     <div th:replace="~{fragments/messages :: messages}"></div>
 
     <div class="mb-4">
@@ -14,117 +14,219 @@
         </a>
         <div class="mt-3">
             <span class="text-success small fw-bold text-uppercase">Checkout Eventix</span>
-            <h1 class="page-title mb-1">Comprar entradas</h1>
-            <p class="text-secondary mb-0">Selecciona tu entrada y confirma los datos de la compra.</p>
+            <h1 class="page-title mb-1" id="checkout-title">Comprar entradas</h1>
+            <p class="text-secondary mb-0" id="checkout-instructions">
+                Selecciona tu entrada, revisa tus datos y confirma la compra.
+            </p>
         </div>
     </div>
 
     <form th:action="@{/my/checkout/events/{id}(id=${checkout.eventId})}"
-          th:object="${checkoutForm}" method="post">
+          th:object="${checkoutForm}"
+          method="post"
+          aria-labelledby="checkout-title"
+          aria-describedby="checkout-instructions">
         <div class="row g-4">
             <div class="col-lg-7">
-                <section class="content-card mb-4">
+                <section class="content-card mb-4" aria-labelledby="ticket-selection-title">
                     <div class="d-flex gap-3 align-items-center mb-4">
                         <img th:src="${checkout.coverImageUrl != null ? checkout.coverImageUrl : '/images/eventix-logo.png'}"
                              th:alt="|Portada de ${checkout.title}|"
                              style="width:150px;max-height:100px;object-fit:contain;border-radius:12px;background:#eef4f1;">
                         <div>
                             <h2 class="h5 fw-bold mb-1" th:text="${checkout.title}">Evento</h2>
-                            <p class="mb-1 text-secondary"><i class="bi bi-calendar3 me-1"></i>
+                            <p class="mb-1 text-secondary">
+                                <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>
                                 <span th:text="${#temporals.format(checkout.startAt, 'dd/MM/yyyy · hh:mm a')}">Fecha</span>
                             </p>
-                            <p class="mb-0 text-secondary"><i class="bi bi-geo-alt me-1"></i>
+                            <p class="mb-0 text-secondary">
+                                <i class="bi bi-geo-alt me-1" aria-hidden="true"></i>
                                 <span th:text="${checkout.venue}">Lugar</span>
                             </p>
                         </div>
                     </div>
 
-                    <h2 class="h6 fw-bold mb-3">Selecciona tu entrada</h2>
-                    <div class="row g-3">
-                        <div class="col-12" th:each="ticket : ${checkout.ticketTypes}">
-                            <label class="border rounded-3 p-3 d-flex justify-content-between align-items-center w-100">
-                                <span class="d-flex align-items-center gap-3">
-                                    <input class="form-check-input mt-0" type="radio" th:field="*{ticketTypeId}" th:value="${ticket.id}">
-                                    <span>
-                                        <strong class="d-block" th:text="${ticket.name}">General</strong>
-                                        <small class="text-secondary" th:text="|${ticket.category} · ${ticket.availableQuantity} disponibles|">Disponibles</small>
+                    <fieldset class="border-0 p-0 m-0" aria-describedby="ticketTypeId-error">
+                        <legend class="h6 fw-bold mb-3" id="ticket-selection-title">Selecciona tu entrada</legend>
+                        <div class="row g-3">
+                            <div class="col-12" th:each="ticket : ${checkout.ticketTypes}">
+                                <label class="border rounded-3 p-3 d-flex justify-content-between align-items-center w-100">
+                                    <span class="d-flex align-items-center gap-3">
+                                        <input class="form-check-input mt-0"
+                                               type="radio"
+                                               th:field="*{ticketTypeId}"
+                                               th:value="${ticket.id}"
+                                               th:attr="aria-invalid=${#fields.hasErrors('ticketTypeId') ? 'true' : 'false'}">
+                                        <span>
+                                            <strong class="d-block" th:text="${ticket.name}">General</strong>
+                                            <small class="text-secondary" th:text="|${ticket.category} · ${ticket.availableQuantity} disponibles|">Disponibles</small>
+                                        </span>
                                     </span>
-                                </span>
-                                <strong class="text-success" th:text="|RD$ ${#numbers.formatDecimal(ticket.price, 1, 2)}|">RD$ 0.00</strong>
-                            </label>
+                                    <strong class="text-success" th:text="|RD$ ${#numbers.formatDecimal(ticket.price, 1, 2)}|">RD$ 0.00</strong>
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="text-danger small mt-2" th:errors="*{ticketTypeId}"></div>
+                    </fieldset>
+                    <div class="text-danger small mt-2"
+                         id="ticketTypeId-error"
+                         role="alert"
+                         th:if="${#fields.hasErrors('ticketTypeId')}"
+                         th:errors="*{ticketTypeId}"></div>
 
                     <div class="row g-3 mt-2">
                         <div class="col-md-4">
                             <label class="form-label" for="quantity">Cantidad</label>
-                            <input class="form-control" id="quantity" type="number" min="1" max="10" th:field="*{quantity}">
-                            <div class="text-danger small" th:errors="*{quantity}"></div>
+                            <input class="form-control"
+                                   id="quantity"
+                                   type="number"
+                                   min="1"
+                                   max="10"
+                                   required
+                                   th:field="*{quantity}"
+                                   aria-describedby="quantity-help quantity-error"
+                                   th:attr="aria-invalid=${#fields.hasErrors('quantity') ? 'true' : 'false'}">
+                            <div class="form-text" id="quantity-help">Puedes comprar entre 1 y 10 entradas por operación.</div>
+                            <div class="text-danger small"
+                                 id="quantity-error"
+                                 role="alert"
+                                 th:if="${#fields.hasErrors('quantity')}"
+                                 th:errors="*{quantity}"></div>
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label" for="couponCode">Cupón <span class="text-secondary fw-normal">(opcional)</span></label>
-                            <input class="form-control" id="couponCode" type="text" maxlength="40" th:field="*{couponCode}" placeholder="Código promocional">
+                            <label class="form-label" for="couponCode">
+                                Cupón <span class="text-secondary fw-normal">(opcional)</span>
+                            </label>
+                            <input class="form-control"
+                                   id="couponCode"
+                                   type="text"
+                                   maxlength="40"
+                                   th:field="*{couponCode}"
+                                   placeholder="Código promocional"
+                                   aria-describedby="coupon-help">
+                            <div class="form-text" id="coupon-help">Si tienes un cupón, Eventix validará su vigencia y condiciones antes de cobrar.</div>
                         </div>
                     </div>
                 </section>
 
-                <section class="content-card">
-                    <h2 class="h5 fw-bold mb-3">Datos del comprador</h2>
+                <section class="content-card" aria-labelledby="buyer-data-title">
+                    <h2 class="h5 fw-bold mb-3" id="buyer-data-title">Datos del comprador</h2>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label" for="firstName">Nombre</label>
-                            <input class="form-control" id="firstName" th:field="*{firstName}" maxlength="80">
-                            <div class="text-danger small" th:errors="*{firstName}"></div>
+                            <input class="form-control"
+                                   id="firstName"
+                                   th:field="*{firstName}"
+                                   maxlength="80"
+                                   autocomplete="given-name"
+                                   required
+                                   aria-describedby="firstName-error"
+                                   th:attr="aria-invalid=${#fields.hasErrors('firstName') ? 'true' : 'false'}">
+                            <div class="text-danger small"
+                                 id="firstName-error"
+                                 role="alert"
+                                 th:if="${#fields.hasErrors('firstName')}"
+                                 th:errors="*{firstName}"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="lastName">Apellido</label>
-                            <input class="form-control" id="lastName" th:field="*{lastName}" maxlength="80">
-                            <div class="text-danger small" th:errors="*{lastName}"></div>
+                            <input class="form-control"
+                                   id="lastName"
+                                   th:field="*{lastName}"
+                                   maxlength="80"
+                                   autocomplete="family-name"
+                                   required
+                                   aria-describedby="lastName-error"
+                                   th:attr="aria-invalid=${#fields.hasErrors('lastName') ? 'true' : 'false'}">
+                            <div class="text-danger small"
+                                 id="lastName-error"
+                                 role="alert"
+                                 th:if="${#fields.hasErrors('lastName')}"
+                                 th:errors="*{lastName}"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="email">Correo</label>
-                            <input class="form-control" id="email" type="email" th:field="*{email}" readonly>
-                            <small class="text-secondary">La boleta quedará asociada a tu cuenta Eventix.</small>
+                            <input class="form-control"
+                                   id="email"
+                                   type="email"
+                                   th:field="*{email}"
+                                   readonly
+                                   autocomplete="email"
+                                   aria-describedby="email-help">
+                            <div class="form-text" id="email-help">La boleta quedará asociada a tu cuenta Eventix.</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="phone">Teléfono</label>
-                            <input class="form-control" id="phone" th:field="*{phone}" maxlength="30" placeholder="809-000-0000">
-                            <div class="text-danger small" th:errors="*{phone}"></div>
+                            <input class="form-control"
+                                   id="phone"
+                                   th:field="*{phone}"
+                                   maxlength="30"
+                                   autocomplete="tel"
+                                   placeholder="809-000-0000"
+                                   aria-describedby="phone-error"
+                                   th:attr="aria-invalid=${#fields.hasErrors('phone') ? 'true' : 'false'}">
+                            <div class="text-danger small"
+                                 id="phone-error"
+                                 role="alert"
+                                 th:if="${#fields.hasErrors('phone')}"
+                                 th:errors="*{phone}"></div>
                         </div>
                     </div>
                 </section>
             </div>
 
             <div class="col-lg-5">
-                <section class="content-card position-sticky" style="top:100px;">
+                <section class="content-card position-sticky" style="top:100px;" aria-labelledby="payment-title">
                     <span class="text-success small fw-bold text-uppercase">Pago seguro</span>
-                    <h2 class="h5 fw-bold mt-1 mb-3">Método de pago</h2>
-                    <select class="form-select" th:field="*{provider}">
+                    <h2 class="h5 fw-bold mt-1 mb-3" id="payment-title">Método de pago</h2>
+                    <label class="visually-hidden" for="provider">Proveedor de pago</label>
+                    <select class="form-select"
+                            id="provider"
+                            th:field="*{provider}"
+                            required
+                            aria-describedby="provider-error"
+                            th:attr="aria-invalid=${#fields.hasErrors('provider') ? 'true' : 'false'}">
                         <option th:each="provider : ${paymentProviders}"
                                 th:value="${provider}"
                                 th:text="${provider.displayName}">Método</option>
                     </select>
-                    <div class="text-danger small" th:errors="*{provider}"></div>
+                    <div class="text-danger small"
+                         id="provider-error"
+                         role="alert"
+                         th:if="${#fields.hasErrors('provider')}"
+                         th:errors="*{provider}"></div>
 
-                    <div class="alert alert-light border mt-4 mb-4 small">
-                        <i class="bi bi-shield-check text-success me-2"></i>
+                    <div class="alert alert-light border mt-4 mb-4 small" role="note">
+                        <i class="bi bi-shield-check text-success me-2" aria-hidden="true"></i>
                         Eventix valida nuevamente precio, disponibilidad y cupos en el servidor antes de confirmar la operación.
                     </div>
 
-                    <div class="alert alert-info small">
+                    <div class="alert alert-info small" role="note">
                         <strong>Entorno de demostración.</strong> El proveedor seleccionado se procesa mediante la pasarela configurada en Eventix.
                     </div>
 
-                    <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
-                        <div th:each="error : ${#fields.globalErrors()}" th:text="${error}">No fue posible completar la compra.</div>
+                    <div class="alert alert-danger"
+                         role="alert"
+                         aria-live="assertive"
+                         tabindex="-1"
+                         th:if="${#fields.hasGlobalErrors()}">
+                        <strong class="d-block mb-1">No se pudo completar la compra.</strong>
+                        <div th:each="error : ${#fields.globalErrors()}" th:text="${error}">Revisa los datos e inténtalo nuevamente.</div>
+                    </div>
+
+                    <div class="border rounded-3 p-3 mb-3" role="note" aria-label="Confirmación de la operación">
+                        <strong class="d-block mb-1">Antes de confirmar</strong>
+                        <p class="small text-secondary mb-0">
+                            Revisa el tipo de entrada, la cantidad, tus datos y el método de pago. Si Eventix detecta un error, conservarás la oportunidad de corregirlo antes de que la operación sea aceptada.
+                        </p>
                     </div>
 
                     <button class="btn btn-success btn-lg w-100" type="submit">
                         <i class="bi bi-bag-check me-2" aria-hidden="true"></i>
                         Comprar entradas
                     </button>
-                    <p class="small text-secondary text-center mt-3 mb-0">Al confirmar, la compra queda registrada y tus boletas se generan automáticamente.</p>
+                    <p class="small text-secondary text-center mt-3 mb-0">
+                        Al confirmar, la compra queda registrada y tus boletas se generan automáticamente.
+                    </p>
                 </section>
             </div>
         </div>
