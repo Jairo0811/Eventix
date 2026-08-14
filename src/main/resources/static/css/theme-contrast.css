@@ -31,7 +31,6 @@ html[data-theme="dark"] {
     --eventix-aa-info: #b9e6ff;
 }
 
-/* Text helpers must remain readable regardless of Bootstrap defaults. */
 body,
 .form-label,
 .table,
@@ -53,8 +52,6 @@ body,
     color: var(--eventix-aa-muted) !important;
 }
 
-/* Neutral Bootstrap surfaces are a frequent source of white-on-white or
-   dark-on-dark combinations when switching themes. */
 .bg-light,
 .text-bg-light,
 .alert-light,
@@ -72,7 +69,6 @@ html[data-theme="dark"] .bg-body-secondary {
     color: var(--eventix-aa-text) !important;
 }
 
-/* Tables: headers and striped/hover rows retain readable foregrounds. */
 .table > :not(caption) > * > * {
     color: inherit;
 }
@@ -99,23 +95,14 @@ caption {
     color: var(--eventix-aa-muted);
 }
 
-/* Alerts communicate state with text and border, not color alone. */
 .alert {
     border-width: 1px;
 }
 
-.alert-success {
-    --bs-alert-color: var(--eventix-aa-success);
-}
-.alert-danger {
-    --bs-alert-color: var(--eventix-aa-danger);
-}
-.alert-warning {
-    --bs-alert-color: var(--eventix-aa-warning);
-}
-.alert-info {
-    --bs-alert-color: var(--eventix-aa-info);
-}
+.alert-success { --bs-alert-color: var(--eventix-aa-success); }
+.alert-danger { --bs-alert-color: var(--eventix-aa-danger); }
+.alert-warning { --bs-alert-color: var(--eventix-aa-warning); }
+.alert-info { --bs-alert-color: var(--eventix-aa-info); }
 
 html[data-theme="dark"] .alert-warning {
     --bs-alert-bg: rgb(245 158 11 / 13%);
@@ -131,13 +118,11 @@ html[data-theme="dark"] .alert-light {
     --bs-alert-color: #edf5f7;
 }
 
-/* Semantic text colors need stronger dark-theme variants. */
 html[data-theme="dark"] .text-success { color: var(--eventix-aa-success) !important; }
 html[data-theme="dark"] .text-danger { color: var(--eventix-aa-danger) !important; }
 html[data-theme="dark"] .text-warning { color: var(--eventix-aa-warning) !important; }
 html[data-theme="dark"] .text-info { color: var(--eventix-aa-info) !important; }
 
-/* Inputs, add-ons and validation feedback. */
 .form-control,
 .form-select,
 .input-group-text {
@@ -158,7 +143,6 @@ html[data-theme="dark"] .form-control[readonly] {
     -webkit-text-fill-color: #c8d5db;
 }
 
-/* Browser autofill can otherwise inject bright backgrounds into dark mode. */
 html[data-theme="dark"] input:-webkit-autofill,
 html[data-theme="dark"] input:-webkit-autofill:hover,
 html[data-theme="dark"] input:-webkit-autofill:focus,
@@ -169,7 +153,6 @@ html[data-theme="dark"] select:-webkit-autofill {
     caret-color: var(--eventix-input-text);
 }
 
-/* Buttons retain sufficient foreground/background separation. */
 html[data-theme="dark"] .btn-outline-primary {
     --bs-btn-color: #96efb6;
     --bs-btn-border-color: #62cf8b;
@@ -186,7 +169,6 @@ html[data-theme="dark"] .btn-outline-danger {
     --bs-btn-hover-color: #ffffff;
 }
 
-/* Links inside muted or neutral components must still look actionable. */
 a:not(.btn):not(.nav-link):not(.dropdown-item) {
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.15em;
@@ -196,7 +178,6 @@ html[data-theme="dark"] a:not(.btn):not(.nav-link):not(.dropdown-item) {
     color: var(--eventix-aa-link);
 }
 
-/* Theme switch itself must remain legible in all three preferences. */
 .theme-selector button,
 .theme-floating-control button {
     color: var(--eventix-aa-muted);
@@ -207,7 +188,6 @@ html[data-theme="dark"] a:not(.btn):not(.nav-link):not(.dropdown-item) {
     border: 1px solid currentColor;
 }
 
-/* SweetAlert is used for financial confirmation dialogs. */
 html[data-theme="dark"] .swal2-popup,
 html[data-theme="dark"] .swal2-title,
 html[data-theme="dark"] .swal2-html-container {
@@ -216,4 +196,95 @@ html[data-theme="dark"] .swal2-html-container {
 
 html[data-theme="dark"] .swal2-cancel {
     color: #f4f7f8 !important;
+}
+
+/* Dashboard: custom colors bypass Bootstrap, so they need explicit AA variants. */
+.dashboard-section-heading p,
+.dashboard-kpi-label,
+.dashboard-kpi-caption,
+.dashboard-stat-row span,
+.dashboard-quick-action small,
+.dashboard-empty {
+    color: var(--eventix-aa-muted) !important;
+}
+
+.dashboard-trend-period {
+    color: #3f5064;
+}
+
+.dashboard-trend-value {
+    color: #125e32;
+}
+
+.dashboard-quick-action {
+    color: var(--eventix-aa-text);
+}
+
+.dashboard-quick-action i,
+.dashboard-kpi-icon,
+.dashboard-panel-icon {
+    color: #126b36;
+}
+
+html[data-theme="dark"] .dashboard-kpi,
+html[data-theme="dark"] .dashboard-panel,
+html[data-theme="dark"] .dashboard-operation-card,
+html[data-theme="dark"] .dashboard-quick-action {
+    background: var(--eventix-surface);
+    border-color: var(--eventix-aa-border);
+    color: var(--eventix-aa-text);
+}
+
+html[data-theme="dark"] .dashboard-operation-head {
+    background: linear-gradient(135deg, #142630, #123329);
+    border-bottom-color: var(--eventix-aa-border);
+    color: var(--eventix-aa-text);
+}
+
+html[data-theme="dark"] .dashboard-trend-period,
+html[data-theme="dark"] .dashboard-kpi-label,
+html[data-theme="dark"] .dashboard-kpi-caption,
+html[data-theme="dark"] .dashboard-stat-row span,
+html[data-theme="dark"] .dashboard-quick-action small,
+html[data-theme="dark"] .dashboard-empty {
+    color: var(--eventix-aa-muted) !important;
+}
+
+html[data-theme="dark"] .dashboard-trend-value,
+html[data-theme="dark"] .dashboard-quick-action i,
+html[data-theme="dark"] .dashboard-kpi-icon,
+html[data-theme="dark"] .dashboard-panel-icon {
+    color: var(--eventix-aa-success);
+}
+
+html[data-theme="dark"] .dashboard-quick-action:hover,
+html[data-theme="dark"] .dashboard-quick-action:focus-visible {
+    background: #142b25;
+    border-color: #78d89a;
+    color: #ffffff;
+}
+
+/* Lists and table actions: keep row states readable without relying on color alone. */
+.table tbody tr.text-secondary,
+.list-group-item.text-secondary {
+    color: var(--eventix-aa-muted) !important;
+}
+
+html[data-theme="dark"] .table-hover > tbody > tr:hover > * {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .pagination {
+    --bs-pagination-color: #9be9b7;
+    --bs-pagination-bg: var(--eventix-surface);
+    --bs-pagination-border-color: var(--eventix-aa-border);
+    --bs-pagination-hover-color: #ffffff;
+    --bs-pagination-hover-bg: #1c3a30;
+    --bs-pagination-hover-border-color: #78d89a;
+    --bs-pagination-active-color: #ffffff;
+    --bs-pagination-active-bg: #176b3c;
+    --bs-pagination-active-border-color: #78d89a;
+    --bs-pagination-disabled-color: #93a4ad;
+    --bs-pagination-disabled-bg: #101d25;
+    --bs-pagination-disabled-border-color: #425761;
 }
