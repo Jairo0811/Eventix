@@ -1,0 +1,174 @@
+/*
+ * Eventix accessibility foundation.
+ * Target: NORTIC B2:2017 / WCAG 2.0 Level AA.
+ * Keep this layer focused on cross-cutting accessibility behavior.
+ */
+
+:root {
+    --eventix-focus-ring: #0b5ed7;
+    --eventix-focus-offset: #ffffff;
+    --eventix-muted-accessible: #526274;
+}
+
+html[data-theme="dark"] {
+    --eventix-focus-ring: #facc15;
+    --eventix-focus-offset: #081118;
+    --eventix-muted-accessible: #b5c4cc;
+}
+
+/* WCAG 2.4.7 / NORTIC B2 3.02.4.g: visible keyboard focus. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--eventix-focus-ring) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 2px var(--eventix-focus-offset) !important;
+}
+
+/* Do not suppress focus when Bootstrap/custom components apply their own shadows. */
+.form-control:focus-visible,
+.form-select:focus-visible,
+.form-check-input:focus-visible,
+.btn:focus-visible,
+.nav-link:focus-visible,
+.dropdown-item:focus-visible,
+.theme-selector button:focus-visible,
+.theme-floating-control button:focus-visible {
+    position: relative;
+    z-index: 2;
+}
+
+/* NORTIC B2 3.01.4.c: keep secondary/supporting text readable in both themes. */
+.text-secondary,
+.text-muted,
+.form-text,
+.page-subtitle,
+.detail-label,
+.metric-label,
+.event-meta,
+.app-footer {
+    color: var(--eventix-muted-accessible) !important;
+}
+
+html[data-theme="dark"] .text-secondary,
+html[data-theme="dark"] .text-muted,
+html[data-theme="dark"] .form-text,
+html[data-theme="dark"] .page-subtitle,
+html[data-theme="dark"] .detail-label,
+html[data-theme="dark"] .metric-label,
+html[data-theme="dark"] .event-meta,
+html[data-theme="dark"] .app-footer,
+html[data-theme="dark"] .dashboard-kpi-caption,
+html[data-theme="dark"] .dashboard-trend-period {
+    color: var(--eventix-muted-accessible) !important;
+}
+
+/* Placeholder text is supplemental, but it still needs to remain perceivable. */
+.form-control::placeholder,
+textarea::placeholder {
+    color: #667085;
+    opacity: 1;
+}
+
+html[data-theme="dark"] .form-control::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+    color: #a9bac3;
+    opacity: 1;
+}
+
+/* Disabled controls must remain legible while still looking disabled. */
+.form-control:disabled,
+.form-select:disabled,
+.form-control[readonly] {
+    opacity: 1;
+}
+
+html[data-theme="dark"] .form-control:disabled,
+html[data-theme="dark"] .form-select:disabled,
+html[data-theme="dark"] .form-control[readonly] {
+    color: #c2cdd3;
+}
+
+/* Active navigation is communicated with more than color alone. */
+.sidebar-nav .nav-link[aria-current="page"] {
+    font-weight: 750;
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.2em;
+}
+
+/* Status components already contain text; this border adds a non-color cue. */
+.badge-status,
+[class*="badge-event-"],
+[class*="badge-reservation-"],
+[class*="badge-sale-"] {
+    border: 1px solid currentColor;
+}
+
+/* Keep interactive targets usable for motor/touch users. */
+.btn,
+.form-control,
+.form-select,
+.theme-selector button,
+.theme-floating-control button {
+    min-height: 44px;
+}
+
+.btn-sm {
+    min-height: 36px;
+}
+
+/* NORTIC B2 3.01.4.d: protect layout when text is zoomed to 200%. */
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+}
+
+.app-main,
+.content-card,
+.metric-card,
+.dashboard-panel,
+.dashboard-kpi {
+    min-width: 0;
+}
+
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Error/help relationships should be perceivable without color alone. */
+.invalid-feedback,
+.validation-message,
+.field-error {
+    font-weight: 650;
+}
+
+.is-invalid,
+[aria-invalid="true"] {
+    border-width: 2px;
+}
+
+/* Respect user motion preferences; no essential Eventix interaction depends on animation. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* At 200% zoom on common desktop widths the shell must remain operable. */
+@media (max-width: 900px) {
+    .app-main {
+        overflow-wrap: anywhere;
+    }
+
+    .content-card,
+    .dashboard-panel,
+    .dashboard-kpi,
+    .metric-card {
+        max-width: 100%;
+    }
+}
