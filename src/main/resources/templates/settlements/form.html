@@ -5,69 +5,86 @@
 <aside th:replace="~{fragments/sidebar :: sidebar('settlements')}"></aside>
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-<main class="app-main">
+<main class="app-main" id="main-content">
     <div class="mb-4">
         <a class="text-decoration-none small" th:href="@{/settlements}">
             <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
             Volver a liquidaciones
         </a>
-        <h1 class="page-title mt-2">Crear liquidación</h1>
-        <p class="page-subtitle">
-            Eventix incluirá solo movimientos elegibles aún no liquidados.
+        <h1 class="page-title mt-2" id="settlement-form-title">Crear liquidación</h1>
+        <p class="page-subtitle" id="settlement-form-instructions">
+            Selecciona el organizador y el período que deseas liquidar. Eventix incluirá solo movimientos elegibles aún no liquidados.
         </p>
     </div>
 
     <form class="content-card mx-auto" style="max-width: 820px;"
           th:object="${settlementForm}" th:action="@{/settlements}"
-          method="post" novalidate>
-        <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+          method="post" novalidate
+          aria-labelledby="settlement-form-title"
+          aria-describedby="settlement-form-instructions settlement-financial-help">
+        <div class="alert alert-danger" role="alert" aria-live="assertive"
+             th:if="${#fields.hasGlobalErrors()}">
             <p class="mb-0" th:each="error : ${#fields.globalErrors()}"
                th:text="${error}">Error</p>
         </div>
 
         <div class="mb-4">
-            <label class="form-label fw-semibold" for="organizerId">Organizador</label>
+            <label class="form-label fw-semibold" for="organizerId">Organizador <span aria-hidden="true">*</span></label>
             <select class="form-select" id="organizerId"
-                    th:field="*{organizerId}" th:errorclass="is-invalid">
+                    th:field="*{organizerId}" th:errorclass="is-invalid"
+                    required aria-required="true"
+                    th:aria-invalid="${#fields.hasErrors('organizerId')}"
+                    aria-describedby="organizerId-help organizerId-error">
                 <option value="">Selecciona</option>
                 <option th:each="organizer : ${organizers}"
                         th:value="${organizer.id}"
                         th:text="${organizer.fullName}">Organizador</option>
             </select>
-            <div class="invalid-feedback" th:errors="*{organizerId}"></div>
+            <div class="form-text" id="organizerId-help">La liquidación se calculará únicamente para este organizador.</div>
+            <div class="invalid-feedback" id="organizerId-error" role="alert" th:errors="*{organizerId}"></div>
         </div>
 
-        <div class="row g-3 mb-4">
-            <div class="col-md-6">
-                <label class="form-label fw-semibold" for="periodFrom">Desde</label>
-                <input class="form-control" id="periodFrom" type="date"
-                       th:field="*{periodFrom}" th:errorclass="is-invalid">
-                <div class="invalid-feedback" th:errors="*{periodFrom}"></div>
+        <fieldset class="border-0 p-0 m-0 mb-4">
+            <legend class="h6 fw-semibold mb-2">Período de liquidación</legend>
+            <p class="form-text mt-0" id="settlement-period-help">Define el intervalo de movimientos financieros que deseas revisar antes de crear la liquidación.</p>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="periodFrom">Desde <span aria-hidden="true">*</span></label>
+                    <input class="form-control" id="periodFrom" type="date"
+                           th:field="*{periodFrom}" th:errorclass="is-invalid"
+                           required aria-required="true"
+                           th:aria-invalid="${#fields.hasErrors('periodFrom')}"
+                           aria-describedby="settlement-period-help periodFrom-error">
+                    <div class="invalid-feedback" id="periodFrom-error" role="alert" th:errors="*{periodFrom}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="periodTo">Hasta <span aria-hidden="true">*</span></label>
+                    <input class="form-control" id="periodTo" type="date"
+                           th:field="*{periodTo}" th:errorclass="is-invalid"
+                           required aria-required="true"
+                           th:aria-invalid="${#fields.hasErrors('periodTo')}"
+                           aria-describedby="settlement-period-help periodTo-error">
+                    <div class="invalid-feedback" id="periodTo-error" role="alert" th:errors="*{periodTo}"></div>
+                </div>
             </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold" for="periodTo">Hasta</label>
-                <input class="form-control" id="periodTo" type="date"
-                       th:field="*{periodTo}" th:errorclass="is-invalid">
-                <div class="invalid-feedback" th:errors="*{periodTo}"></div>
-            </div>
-        </div>
+        </fieldset>
 
         <div class="mb-4">
-            <label class="form-label fw-semibold" for="administrativeNotes">
-                Observaciones administrativas
-            </label>
+            <label class="form-label fw-semibold" for="administrativeNotes">Observaciones administrativas</label>
             <textarea class="form-control" id="administrativeNotes" rows="4"
                       maxlength="1000" th:field="*{administrativeNotes}"
-                      th:errorclass="is-invalid"></textarea>
-            <div class="invalid-feedback" th:errors="*{administrativeNotes}"></div>
+                      th:errorclass="is-invalid"
+                      th:aria-invalid="${#fields.hasErrors('administrativeNotes')}"
+                      aria-describedby="administrativeNotes-help administrativeNotes-error"></textarea>
+            <div class="form-text" id="administrativeNotes-help">Opcional. Máximo 1000 caracteres. Registra contexto útil para la trazabilidad administrativa.</div>
+            <div class="invalid-feedback" id="administrativeNotes-error" role="alert" th:errors="*{administrativeNotes}"></div>
         </div>
 
-        <div class="alert alert-light border small">
-            El cálculo incluirá ventas por fecha de pago y reembolsos por fecha de devolución.
-            Cada efecto financiero activo solo puede pertenecer a una liquidación.
+        <div class="alert alert-light border small" id="settlement-financial-help" role="note">
+            <strong>Antes de crearla:</strong> el cálculo incluirá ventas por fecha de pago y reembolsos por fecha de devolución. Cada efecto financiero activo solo puede pertenecer a una liquidación. Revisa organizador y período antes de continuar; podrás verificar el cálculo resultante antes de registrar estados de pago.
         </div>
 
-        <div class="d-flex justify-content-end gap-2">
+        <div class="d-flex flex-wrap justify-content-end gap-2">
             <a class="btn btn-light" th:href="@{/settlements}">Cancelar</a>
             <button class="btn btn-primary" type="submit">
                 <i class="bi bi-calculator me-2" aria-hidden="true"></i>
