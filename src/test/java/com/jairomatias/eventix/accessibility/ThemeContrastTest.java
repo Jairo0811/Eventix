@@ -50,6 +50,21 @@ class ThemeContrastTest {
                 .contains("--eventix-aa-info");
     }
 
+    @Test
+    void dashboardAndListsHaveExplicitContrastOverrides() throws IOException {
+        String css = resource("static/css/theme-contrast.css");
+
+        assertThat(css)
+                .contains(".dashboard-kpi-caption")
+                .contains(".dashboard-trend-period")
+                .contains(".dashboard-trend-value")
+                .contains(".dashboard-quick-action")
+                .contains("html[data-theme=\"dark\"] .dashboard-operation-head")
+                .contains("html[data-theme=\"dark\"] .dashboard-quick-action:hover")
+                .contains(".table tbody tr.text-secondary")
+                .contains("html[data-theme=\"dark\"] .pagination");
+    }
+
     private String resource(String path) throws IOException {
         try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
             assertThat(stream).as("classpath resource %s", path).isNotNull();
