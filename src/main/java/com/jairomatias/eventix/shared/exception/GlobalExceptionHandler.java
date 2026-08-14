@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -22,6 +23,8 @@ public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     private static final String NOT_FOUND_MESSAGE = "No se encontró el recurso solicitado.";
+    private static final String METHOD_NOT_ALLOWED_MESSAGE =
+            "El método HTTP utilizado no está permitido para este recurso.";
 
     private final AuditService auditService;
 
@@ -42,6 +45,19 @@ public class GlobalExceptionHandler {
         LOGGER.debug("Recurso no encontrado: {}", exception.getResourcePath());
         model.addAttribute("message", NOT_FOUND_MESSAGE);
         return "error/404";
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public String handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException exception,
+            Model model) {
+        LOGGER.warn(
+                "Método HTTP no permitido: método={}, métodos soportados={}",
+                exception.getMethod(),
+                exception.getSupportedHttpMethods());
+        model.addAttribute("message", METHOD_NOT_ALLOWED_MESSAGE);
+        return "error/405";
     }
 
     @ExceptionHandler(BusinessRuleException.class)
