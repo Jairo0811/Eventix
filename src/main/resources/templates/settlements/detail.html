@@ -7,7 +7,7 @@
 <aside th:replace="~{fragments/sidebar :: sidebar('settlements')}"></aside>
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-<main class="app-main">
+<main class="app-main" id="main-content">
     <div th:replace="~{fragments/messages :: messages}"></div>
 
     <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4">
@@ -16,7 +16,7 @@
                 <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
                 Volver a liquidaciones
             </a>
-            <h1 class="page-title mt-2"
+            <h1 class="page-title mt-2" id="settlement-detail-title"
                 th:text="|Liquidación #${settlement.id}|">Liquidación</h1>
             <p class="page-subtitle"
                th:text="|${settlement.organizerName} · ${#temporals.format(settlement.periodFrom, 'dd/MM/yyyy')}–${#temporals.format(settlement.periodTo, 'dd/MM/yyyy')}|">
@@ -24,82 +24,41 @@
             </p>
         </div>
         <span class="badge-status fs-6"
+              aria-label="Estado de la liquidación"
               th:classappend="| badge-settlement-${#strings.toLowerCase(settlement.status.name())}|"
               th:text="${settlement.status.displayName}">Estado</span>
     </div>
 
     <section class="row g-3 mb-4" aria-label="Resumen de liquidación">
-        <div class="col-md-6 col-xl">
-            <article class="metric-card">
-                <div class="metric-label">Ventas brutas</div>
-                <div class="metric-value metric-value-money"
-                     th:text="|RD$ ${#numbers.formatDecimal(settlement.grossSales, 1, 'COMMA', 2, 'POINT')}|">0</div>
-            </article>
-        </div>
-        <div class="col-md-6 col-xl">
-            <article class="metric-card">
-                <div class="metric-label">Descuentos</div>
-                <div class="metric-value metric-value-money"
-                     th:text="|RD$ ${#numbers.formatDecimal(settlement.discounts, 1, 'COMMA', 2, 'POINT')}|">0</div>
-            </article>
-        </div>
-        <div class="col-md-6 col-xl">
-            <article class="metric-card">
-                <div class="metric-label">Reembolsos</div>
-                <div class="metric-value metric-value-money text-danger"
-                     th:text="|RD$ ${#numbers.formatDecimal(settlement.refunds, 1, 'COMMA', 2, 'POINT')}|">0</div>
-            </article>
-        </div>
-        <div class="col-md-6 col-xl">
-            <article class="metric-card">
-                <div class="metric-label">Comisión Eventix</div>
-                <div class="metric-value metric-value-money"
-                     th:text="|RD$ ${#numbers.formatDecimal(settlement.platformCommission, 1, 'COMMA', 2, 'POINT')}|">0</div>
-            </article>
-        </div>
-        <div class="col-md-6 col-xl">
-            <article class="metric-card">
-                <div class="metric-label">Neto organizador</div>
-                <div class="metric-value metric-value-money text-success"
-                     th:classappend="${settlement.organizerNet.signum() < 0} ? ' text-danger'"
-                     th:text="|RD$ ${#numbers.formatDecimal(settlement.organizerNet, 1, 'COMMA', 2, 'POINT')}|">0</div>
-            </article>
-        </div>
+        <div class="col-md-6 col-xl"><article class="metric-card"><div class="metric-label">Ventas brutas</div><div class="metric-value metric-value-money" th:text="|RD$ ${#numbers.formatDecimal(settlement.grossSales, 1, 'COMMA', 2, 'POINT')}|">0</div></article></div>
+        <div class="col-md-6 col-xl"><article class="metric-card"><div class="metric-label">Descuentos</div><div class="metric-value metric-value-money" th:text="|RD$ ${#numbers.formatDecimal(settlement.discounts, 1, 'COMMA', 2, 'POINT')}|">0</div></article></div>
+        <div class="col-md-6 col-xl"><article class="metric-card"><div class="metric-label">Reembolsos</div><div class="metric-value metric-value-money text-danger" th:text="|RD$ ${#numbers.formatDecimal(settlement.refunds, 1, 'COMMA', 2, 'POINT')}|">0</div></article></div>
+        <div class="col-md-6 col-xl"><article class="metric-card"><div class="metric-label">Comisión Eventix</div><div class="metric-value metric-value-money" th:text="|RD$ ${#numbers.formatDecimal(settlement.platformCommission, 1, 'COMMA', 2, 'POINT')}|">0</div></article></div>
+        <div class="col-md-6 col-xl"><article class="metric-card"><div class="metric-label">Neto organizador</div><div class="metric-value metric-value-money text-success" th:classappend="${settlement.organizerNet.signum() < 0} ? ' text-danger'" th:text="|RD$ ${#numbers.formatDecimal(settlement.organizerNet, 1, 'COMMA', 2, 'POINT')}|">0</div></article></div>
     </section>
 
-    <section class="content-card mb-4">
+    <section class="content-card mb-4" aria-labelledby="settlement-lines-title">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
-                <h2 class="h5 fw-bold mb-1">Movimientos incluidos</h2>
-                <p class="text-secondary small mb-0">
-                    Snapshots financieros usados para reconstruir el cálculo.
-                </p>
+                <h2 class="h5 fw-bold mb-1" id="settlement-lines-title">Movimientos incluidos</h2>
+                <p class="text-secondary small mb-0">Snapshots financieros usados para reconstruir el cálculo.</p>
             </div>
-            <span class="badge text-bg-light border"
-                  th:text="|${settlement.lines.size()} movimiento(s)|">0</span>
+            <span class="badge text-bg-light border" th:text="|${settlement.lines.size()} movimiento(s)|">0</span>
         </div>
         <div class="table-responsive">
             <table class="table align-middle">
-                <thead>
-                <tr>
-                    <th>Venta</th><th>Evento</th><th>Tipo</th>
-                    <th>Bruto</th><th>Descuento</th><th>Reembolso</th>
-                    <th>Comisión</th><th>Neto</th>
-                </tr>
-                </thead>
+                <caption class="visually-hidden">Detalle de movimientos financieros incluidos en esta liquidación</caption>
+                <thead><tr><th scope="col">Venta</th><th scope="col">Evento</th><th scope="col">Tipo</th><th scope="col">Bruto</th><th scope="col">Descuento</th><th scope="col">Reembolso</th><th scope="col">Comisión</th><th scope="col">Neto</th></tr></thead>
                 <tbody>
-                <tr th:each="line : ${settlement.lines}"
-                    th:classappend="${!line.active} ? ' text-secondary'">
-                    <td><a th:href="@{/sales/{id}(id=${line.saleId})}"
-                           th:text="${line.saleReference}">SAL-</a></td>
+                <tr th:each="line : ${settlement.lines}" th:classappend="${!line.active} ? ' text-secondary'">
+                    <td><a th:href="@{/sales/{id}(id=${line.saleId})}" th:text="${line.saleReference}">SAL-</a></td>
                     <td th:text="${line.eventTitle}">Evento</td>
                     <td th:text="${line.lineType.displayName}">Tipo</td>
                     <td th:text="|RD$ ${#numbers.formatDecimal(line.grossAmount, 1, 'COMMA', 2, 'POINT')}|">0</td>
                     <td th:text="|RD$ ${#numbers.formatDecimal(line.discountAmount, 1, 'COMMA', 2, 'POINT')}|">0</td>
                     <td th:text="|RD$ ${#numbers.formatDecimal(line.refundAmount, 1, 'COMMA', 2, 'POINT')}|">0</td>
                     <td th:text="|RD$ ${#numbers.formatDecimal(line.platformCommission, 1, 'COMMA', 2, 'POINT')}|">0</td>
-                    <td class="fw-semibold"
-                        th:text="|RD$ ${#numbers.formatDecimal(line.organizerNet, 1, 'COMMA', 2, 'POINT')}|">0</td>
+                    <td class="fw-semibold" th:text="|RD$ ${#numbers.formatDecimal(line.organizerNet, 1, 'COMMA', 2, 'POINT')}|">0</td>
                 </tr>
                 </tbody>
             </table>
@@ -108,77 +67,71 @@
 
     <div class="row g-4">
         <div class="col-lg-5">
-            <section class="content-card h-100">
-                <h2 class="h5 fw-bold mb-3">Trazabilidad</h2>
+            <section class="content-card h-100" aria-labelledby="settlement-trace-title">
+                <h2 class="h5 fw-bold mb-3" id="settlement-trace-title">Trazabilidad</h2>
                 <p class="detail-label">Creada</p>
-                <p class="detail-value"
-                   th:text="${#temporals.format(settlement.createdAt, 'dd/MM/yyyy HH:mm')}">Fecha</p>
+                <p class="detail-value" th:text="${#temporals.format(settlement.createdAt, 'dd/MM/yyyy HH:mm')}">Fecha</p>
                 <p class="detail-label mt-3">Procesada</p>
-                <p class="detail-value"
-                   th:text="${settlement.processedAt != null ? #temporals.format(settlement.processedAt, 'dd/MM/yyyy HH:mm') : 'Pendiente'}">
-                    Pendiente
-                </p>
+                <p class="detail-value" th:text="${settlement.processedAt != null ? #temporals.format(settlement.processedAt, 'dd/MM/yyyy HH:mm') : 'Pendiente'}">Pendiente</p>
                 <p class="detail-label mt-3">Pagada</p>
-                <p class="detail-value"
-                   th:text="${settlement.paidAt != null ? #temporals.format(settlement.paidAt, 'dd/MM/yyyy HH:mm') : 'Pendiente'}">
-                    Pendiente
-                </p>
+                <p class="detail-value" th:text="${settlement.paidAt != null ? #temporals.format(settlement.paidAt, 'dd/MM/yyyy HH:mm') : 'Pendiente'}">Pendiente</p>
                 <p class="detail-label mt-3">Referencia externa</p>
-                <p class="detail-value"
-                   th:text="${settlement.externalReference != null ? settlement.externalReference : 'Sin referencia'}">
-                    Sin referencia
-                </p>
+                <p class="detail-value" th:text="${settlement.externalReference != null ? settlement.externalReference : 'Sin referencia'}">Sin referencia</p>
                 <p class="detail-label mt-3">Observaciones</p>
-                <p class="detail-value mb-0 text-break"
-                   th:text="${settlement.administrativeNotes != null ? settlement.administrativeNotes : 'Sin observaciones'}">
-                    Sin observaciones
-                </p>
+                <p class="detail-value mb-0 text-break" th:text="${settlement.administrativeNotes != null ? settlement.administrativeNotes : 'Sin observaciones'}">Sin observaciones</p>
             </section>
         </div>
 
         <div class="col-lg-7" sec:authorize="hasRole('ADMINISTRATOR')">
             <section class="content-card h-100"
+                     aria-labelledby="settlement-actions-title"
                      th:if="${settlement.status.name() != 'PAID' && settlement.status.name() != 'CANCELLED'}">
-                <h2 class="h5 fw-bold mb-3">Actualizar estado</h2>
-                <form th:object="${settlementActionForm}" method="post">
-                    <input type="hidden"
-                           th:name="${_csrf.parameterName}"
-                           th:value="${_csrf.token}">
+                <h2 class="h5 fw-bold mb-2" id="settlement-actions-title">Actualizar estado</h2>
+                <p class="text-secondary small" id="settlement-actions-help">
+                    Estas acciones modifican el estado financiero de la liquidación. Revisa la referencia, las observaciones y el neto antes de confirmar.
+                </p>
+                <div class="alert alert-warning small" role="note" id="settlement-paid-warning"
+                     th:if="${settlement.status.name() == 'PROCESSING'}">
+                    <strong>Operación financiera:</strong> marcar como pagada registra que el neto del organizador fue liquidado. Confirma únicamente después de verificar el pago externo.
+                </div>
+                <form th:object="${settlementActionForm}" method="post"
+                      aria-describedby="settlement-actions-help">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <div class="mb-3">
-                        <label class="form-label" for="externalReference">
-                            Referencia externa <span class="text-secondary">(opcional)</span>
-                        </label>
-                        <input class="form-control" id="externalReference"
-                               maxlength="120" th:field="*{externalReference}">
+                        <label class="form-label" for="externalReference">Referencia externa <span class="text-secondary">(opcional)</span></label>
+                        <input class="form-control" id="externalReference" maxlength="120"
+                               th:field="*{externalReference}" aria-describedby="externalReference-help">
+                        <div class="form-text" id="externalReference-help">Usa la referencia del pago, transferencia o proceso externo cuando exista.</div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="administrativeNotes">
-                            Observaciones / motivo
-                        </label>
-                        <textarea class="form-control" id="administrativeNotes"
-                                  maxlength="1000" rows="3"
-                                  th:field="*{administrativeNotes}"></textarea>
+                        <label class="form-label" for="administrativeNotes">Observaciones / motivo</label>
+                        <textarea class="form-control" id="administrativeNotes" maxlength="1000" rows="3"
+                                  th:field="*{administrativeNotes}" aria-describedby="administrativeNotes-help"></textarea>
+                        <div class="form-text" id="administrativeNotes-help">Documenta el contexto de la transición para mantener la trazabilidad.</div>
                     </div>
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="d-flex flex-wrap gap-2" role="group" aria-label="Acciones de estado de la liquidación">
                         <button class="btn btn-primary" type="submit"
                                 th:if="${settlement.status.name() == 'PENDING' || settlement.status.name() == 'FAILED'}"
-                                th:formaction="@{/settlements/{id}/processing(id=${settlement.id})}">
+                                th:formaction="@{/settlements/{id}/processing(id=${settlement.id})}"
+                                data-confirm="La liquidación pasará a procesamiento. Verifica el período, los movimientos y el neto antes de continuar.">
                             Procesar
                         </button>
                         <button class="btn btn-success" type="submit"
                                 th:if="${settlement.status.name() == 'PROCESSING'}"
                                 th:formaction="@{/settlements/{id}/paid(id=${settlement.id})}"
-                                data-confirm="La liquidación quedará registrada como pagada.">
+                                aria-describedby="settlement-paid-warning"
+                                data-confirm="La liquidación quedará registrada como pagada. Confirma que el pago externo al organizador ya fue verificado.">
                             Marcar pagada
                         </button>
                         <button class="btn btn-outline-danger" type="submit"
                                 th:if="${settlement.status.name() == 'PROCESSING'}"
-                                th:formaction="@{/settlements/{id}/failed(id=${settlement.id})}">
+                                th:formaction="@{/settlements/{id}/failed(id=${settlement.id})}"
+                                data-confirm="La liquidación se registrará como fallida. Añade una referencia u observación que explique el motivo cuando sea posible.">
                             Registrar fallo
                         </button>
                         <button class="btn btn-outline-secondary" type="submit"
                                 th:formaction="@{/settlements/{id}/cancel(id=${settlement.id})}"
-                                data-confirm="Se liberarán los movimientos para otra liquidación.">
+                                data-confirm="La liquidación será cancelada y sus movimientos activos quedarán disponibles para otra liquidación. ¿Deseas continuar?">
                             Cancelar liquidación
                         </button>
                     </div>

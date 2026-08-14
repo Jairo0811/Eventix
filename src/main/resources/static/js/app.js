@@ -9,14 +9,28 @@ document.addEventListener("DOMContentLoaded", () => {
         () => window.print()
     );
 
-    document.querySelectorAll("[data-confirm]").forEach((form) => {
+    document.querySelectorAll("form").forEach((form) => {
         form.addEventListener("submit", (event) => {
-            if (form.dataset.confirmed === "true") {
+            const submitter = event.submitter;
+            const message = submitter?.dataset.confirm
+                || form.dataset.confirm;
+
+            if (!message || form.dataset.confirmed === "true") {
+                form.dataset.confirmed = "false";
                 return;
             }
 
             event.preventDefault();
-            const message = form.dataset.confirm || "¿Deseas continuar?";
+
+            const submitConfirmedForm = () => {
+                form.dataset.confirmed = "true";
+                if (submitter instanceof HTMLElement) {
+                    form.requestSubmit(submitter);
+                    return;
+                }
+                form.requestSubmit();
+            };
+
             if (window.Swal) {
                 window.Swal.fire({
                     title: "Confirma la operación",
@@ -25,19 +39,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     showCancelButton: true,
                     confirmButtonColor: "#15803d",
                     cancelButtonText: "Cancelar",
-                    confirmButtonText: "Sí, continuar"
+                    confirmButtonText: "Sí, continuar",
+                    focusCancel: true,
+                    returnFocus: true
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        form.dataset.confirmed = "true";
-                        form.requestSubmit();
+                        submitConfirmedForm();
                     }
                 });
                 return;
             }
 
             if (window.confirm(message)) {
-                form.dataset.confirmed = "true";
-                form.requestSubmit();
+                submitConfirmedForm();
             }
         });
     });

@@ -141,6 +141,30 @@ class AccessibilityFoundationTest {
                 .contains("podrás verificar el cálculo resultante antes de registrar estados de pago");
     }
 
+    @Test
+    void settlementActionsRequireExplicitFinancialConfirmation() throws IOException {
+        String detail = resource("templates/settlements/detail.html");
+        String app = resource("static/js/app.js");
+
+        assertThat(detail)
+                .contains("id=\"settlement-actions-help\"")
+                .contains("id=\"settlement-paid-warning\"")
+                .contains("Operación financiera:")
+                .contains("data-confirm=\"La liquidación pasará a procesamiento")
+                .contains("data-confirm=\"La liquidación quedará registrada como pagada")
+                .contains("data-confirm=\"La liquidación se registrará como fallida")
+                .contains("data-confirm=\"La liquidación será cancelada")
+                .contains("aria-describedby=\"settlement-paid-warning\"")
+                .contains("<caption class=\"visually-hidden\"");
+
+        assertThat(app)
+                .contains("const submitter = event.submitter")
+                .contains("submitter?.dataset.confirm")
+                .contains("form.requestSubmit(submitter)")
+                .contains("focusCancel: true")
+                .contains("returnFocus: true");
+    }
+
     private String resource(String path) throws IOException {
         try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
             assertThat(stream).as("classpath resource %s", path).isNotNull();
