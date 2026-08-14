@@ -91,6 +91,25 @@ class AccessibilityFoundationTest {
                 .contains("oportunidad de corregirlo antes de que la operación sea aceptada");
     }
 
+    @Test
+    void eventFormAssociatesErrorsHelpAndMapStatus() throws IOException {
+        String form = resource("templates/events/form.html");
+
+        assertThat(form)
+                .contains("<main class=\"app-main\" id=\"main-content\"")
+                .contains("aria-labelledby=\"event-form-title\"")
+                .contains("aria-describedby=\"event-form-instructions\"")
+                .contains("th:aria-invalid=\"${#fields.hasErrors('title')}\"")
+                .contains("aria-describedby=\"status-help status-error\"")
+                .contains("aria-describedby=\"googleMapsUrl-help googleMapsUrl-error\"")
+                .contains("id=\"coverImage-help\"")
+                .contains("role=\"region\"")
+                .contains("aria-label=\"Vista previa de ubicación del evento\"")
+                .contains("role=\"status\"")
+                .contains("aria-live=\"polite\"")
+                .contains("bg-body p-3");
+    }
+
     private String resource(String path) throws IOException {
         try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
             assertThat(stream).as("classpath resource %s", path).isNotNull();
