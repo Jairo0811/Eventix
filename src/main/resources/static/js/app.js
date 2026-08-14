@@ -81,8 +81,25 @@ document.addEventListener("DOMContentLoaded", () => {
             return host === "google.com"
                 || host === "www.google.com"
                 || host === "maps.google.com"
+                || host.endsWith(".google.com")
                 || host === "maps.app.goo.gl"
                 || host === "goo.gl";
+        };
+
+        const allowedMapsUrl = (rawUrl) => {
+            if (!rawUrl) {
+                return "";
+            }
+
+            try {
+                const url = new URL(rawUrl);
+                return url.protocol === "https:"
+                    && isAllowedMapsHost(url.hostname)
+                    ? rawUrl
+                    : "";
+            } catch (error) {
+                return "";
+            }
         };
 
         const parseMapsQuery = (rawUrl) => {
@@ -98,7 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 const query = url.searchParams.get("query")
-                    || url.searchParams.get("q");
+                    || url.searchParams.get("q")
+                    || url.searchParams.get("destination");
                 if (query) {
                     return query;
                 }
@@ -127,66 +145,86 @@ document.addEventListener("DOMContentLoaded", () => {
             addressInput?.value.trim()
         ].filter(Boolean).join(", ");
 
-        const updateMapPreview = () => {
-            if (!frame || !placeholder || !status || !openLink) {
-                return;
-            }
-
-            const rawMapsUrl = mapsUrlInput?.value.trim() || "";
-            let allowedMapsUrl = "";
-
-            if (rawMapsUrl) {
-                try {
-                    const url = new URL(rawMapsUrl);
-                    if (url.protocol === "https:"
-                            && isAllowedMapsHost(url.hostname)) {
-                        allowedMapsUrl = rawMapsUrl;
-                    }
-                } catch (error) {
-                    allowedMapsUrl = "";
-                }
-            }
-
-            openLink.classList.toggle("d-none", !allowedMapsUrl);
-            if (allowedMapsUrl) {
-                openLink.href = allowedMapsUrl;
-            } else {
-                openLink.removeAttribute("href");
-            }
-
-            const query = parseMapsQuery(allowedMapsUrl)
-                || fallbackQuery();
-
-            if (!query) {
-                frame.classList.add("d-none");
-                frame.removeAttribute("src");
-                placeholder.classList.remove("d-none");
-                status.textContent = "Esperando una ubicación.";
-                return;
-            }
-
-            if (!apiKey) {
-                frame.classList.add("d-none");
-                frame.removeAttribute("src");
-                placeholder.classList.remove("d-none");
-                status.textContent = "Configura GOOGLE_MAPS_EMBED_API_KEY para activar el mapa interactivo.";
-                return;
-            }
-
+        const buildOfficialEmbedUrl = (query) => {
             const params = new URLSearchParams({
                 key: apiKey,
                 q: query,
                 language: "es",
                 region: "DO"
             });
+            return `https://www.google.com/maps/embed/v1/place?${params}`;
+        };
 
-            frame.src = `https://www.google.com/maps/embed/v1/place?${params}`;
+        const buildBasicEmbedUrl = (query) => {
+            const params = new URLSearchParams({
+                q: query,
+                output: "embed",
+                hl: "es"
+            });
+            return `https://www.google.com/maps?${params}`;
+        };
+
+        const buildSearchUrl = (query) => {
+            const params = new URLSearchParams({
+                api: "1",
+                query
+            });
+            return `https://www.google.com/maps/search/?${params}`;
+        };
+
+        const updateMapPreview = () => {
+            if (!frame || !placeholder || !status || !openLink) {
+                return;
+            }
+
+            const rawMapsUrl = mapsUrlInput?.value.trim() || "";
+            const safeMapsUrl = allowedMapsUrl(rawMapsUrl);
+            const parsedQuery = parseMapsQuery(safeMapsUrl);
+            const query = parsedQuery || fallbackQuery();
+
+            if (!query) {
+                frame.classList.add("d-none");
+                frame.removeAttribute("src");
+                placeholder.classList.remove("d-none");
+                openLink.classList.add("d-none");
+                openLink.removeAttribute("href");
+                status.textContent = "Esperando un lugar o una dirección.";
+                return;
+            }
+
+            frame.src = apiKey
+                ? buildOfficialEmbedUrl(query)
+                : buildBasicEmbedUrl(query);
             frame.classList.remove("d-none");
             placeholder.classList.add("d-none");
-            status.textContent = parseMapsQuery(allowedMapsUrl)
-                ? "Vista previa generada desde el enlace de Google Maps."
-                : "Vista previa generada desde el lugar y la dirección.";
+
+            openLink.href = safeMapsUrl || buildSearchUrl(query);
+            openLink.classList.remove("d-none");
+
+            if (parsedQuery) {
+                status.textContent = apiKey
+                    ? "Vista previa generada desde el enlace de Google Maps."
+                    : "Vista previa básica generada desde el enlace de Google Maps.";
+                return;
+            }
+
+            if (safeMapsUrl && !parsedQuery) {
+                status.textContent = apiKey
+                    ? "El enlace compartido se conserva; la vista previa usa el lugar y la dirección."
+                    : "El enlace compartido se conserva; la vista previa básica usa el lugar y la dirección.";
+                return;
+            }
+
+            status.textContent = apiKey
+                ? "Vista previa generada desde el lugar y la dirección."
+                : "Vista previa básica generada desde el lugar y la dirección.";
         };
+
+        frame?.addEventListener("load", () => {
+            if (status && !status.textContent.includes("cargado")) {
+                status.dataset.loaded = "true";
+            }
+        });
 
         [venueInput, addressInput, mapsUrlInput].forEach((input) => {
             input?.addEventListener("input", updateMapPreview);
