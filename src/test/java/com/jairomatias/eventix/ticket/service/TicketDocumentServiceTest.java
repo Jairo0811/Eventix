@@ -47,7 +47,9 @@ class TicketDocumentServiceTest {
             String text = new PDFTextStripper().getText(document);
             assertThat(document.getNumberOfPages()).isEqualTo(1);
             assertThat(text).doesNotContain("...");
-            assertThat(text).contains("Festival Internacional", "Francis Jairo", "Experiencia VIP", "Arena Metropolitana");
+            assertThat(text)
+                    .contains("FESTIVAL", "INTERNACIONAL", "Francis Jairo",
+                            "Experiencia VIP", "Arena Metropolitana");
         }
     }
 
