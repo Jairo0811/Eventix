@@ -127,13 +127,18 @@ public class ReportPdfService {
             float cardWidth = (CONTENT_WIDTH - gap * 2) / 3;
             metricCard(MARGIN, y - 76, cardWidth, 76, "INGRESOS", money(summary.revenue()), "Total del período", GREEN);
             metricCard(MARGIN + cardWidth + gap, y - 76, cardWidth, 76, "VENTAS", Long.toString(summary.sales()), "Total de ventas", GREEN);
-            metricCard(MARGIN + (cardWidth + gap) * 2, y - 76, cardWidth, 76, "ENTRADAS", Long.toString(summary.ticketsSold()), "Entradas emitidas", NAVY);
+            metricCard(MARGIN + (cardWidth + gap) * 2, y - 76, cardWidth, 76,
+                    "ENTRADAS", Long.toString(summary.ticketsSold()), "Entradas emitidas", NAVY);
             y -= 91;
             float smallWidth = (CONTENT_WIDTH - gap * 3) / 4;
-            metricCard(MARGIN, y - 66, smallWidth, 66, "RESERVACIONES", Long.toString(summary.reservations()), "Reservas realizadas", GREEN);
-            metricCard(MARGIN + smallWidth + gap, y - 66, smallWidth, 66, "ASISTENTES", Long.toString(summary.attendees()), "Asistencias registradas", GREEN);
-            metricCard(MARGIN + (smallWidth + gap) * 2, y - 66, smallWidth, 66, "CONVERSIÓN", percent(summary.conversionRate()), "Ventas / Reservaciones", NAVY);
-            metricCard(MARGIN + (smallWidth + gap) * 3, y - 66, smallWidth, 66, "ASISTENCIA", percent(summary.attendanceRate()), "Asistentes / Entradas", NAVY);
+            metricCard(MARGIN, y - 66, smallWidth, 66, "RESERVACIONES",
+                    Long.toString(summary.reservations()), "Reservas realizadas", GREEN);
+            metricCard(MARGIN + smallWidth + gap, y - 66, smallWidth, 66, "ASISTENTES",
+                    Long.toString(summary.attendees()), "Asistencias registradas", GREEN);
+            metricCard(MARGIN + (smallWidth + gap) * 2, y - 66, smallWidth, 66, "CONVERSIÓN",
+                    percent(summary.conversionRate()), "Ventas / Reservaciones", NAVY);
+            metricCard(MARGIN + (smallWidth + gap) * 3, y - 66, smallWidth, 66, "ASISTENCIA",
+                    percent(summary.attendanceRate()), "Asistentes / Entradas", NAVY);
             y -= 87;
         }
 
@@ -172,7 +177,8 @@ public class ReportPdfService {
 
         private void eventCard(EventReportRow row) throws IOException {
             List<String> titleLines = wrap(row.eventName(), bold, 12.5f, CONTENT_WIDTH - 72);
-            List<String> metaLines = wrap(safe(row.categoryName()) + "  |  " + safe(row.organizerName()), regular, 7.3f, CONTENT_WIDTH - 72);
+            List<String> metaLines = wrap(safe(row.categoryName()) + "  |  " + safe(row.organizerName()),
+                    regular, 7.3f, CONTENT_WIDTH - 72);
             int headerLines = Math.min(2, titleLines.size()) + Math.min(2, metaLines.size());
             float headerHeight = Math.max(48, 24 + headerLines * 12f);
             float cardHeight = headerHeight + 64;
@@ -193,10 +199,14 @@ public class ReportPdfService {
             float metricTop = bottom + 45;
             float column = CONTENT_WIDTH / 5;
             eventMetric(MARGIN + 18, metricTop, "INGRESOS", money(row.revenue()), GREEN, column - 25);
-            eventMetric(MARGIN + column + 10, metricTop, "VENTAS", Long.toString(row.sales()), TEXT, column - 20);
-            eventMetric(MARGIN + column * 2 + 7, metricTop, "ENTRADAS", Long.toString(row.ticketsSold()), TEXT, column - 20);
-            eventMetric(MARGIN + column * 3 + 4, metricTop, "RESERVAS", Long.toString(row.reservations()), TEXT, column - 20);
-            eventMetric(MARGIN + column * 4, metricTop, "ASISTENTES", Long.toString(row.attendees()), TEXT, column - 20);
+            eventMetric(MARGIN + column + 10, metricTop, "VENTAS",
+                    Long.toString(row.sales()), TEXT, column - 20);
+            eventMetric(MARGIN + column * 2 + 7, metricTop, "ENTRADAS",
+                    Long.toString(row.ticketsSold()), TEXT, column - 20);
+            eventMetric(MARGIN + column * 3 + 4, metricTop, "RESERVAS",
+                    Long.toString(row.reservations()), TEXT, column - 20);
+            eventMetric(MARGIN + column * 4, metricTop, "ASISTENTES",
+                    Long.toString(row.attendees()), TEXT, column - 20);
             y = bottom - 14;
         }
 
@@ -207,7 +217,10 @@ public class ReportPdfService {
         }
 
         private void quickAnalysis(ReportSummary summary) throws IOException {
-            List<String> insights = List.of(conversionInsight(summary), attendanceInsight(summary), recommendation(summary));
+            List<String> insights = List.of(
+                    conversionInsight(summary),
+                    attendanceInsight(summary),
+                    recommendation(summary));
             float textWidth = CONTENT_WIDTH - 122;
             List<List<String>> wrapped = new ArrayList<>();
             int lineCount = 0;
@@ -242,9 +255,11 @@ public class ReportPdfService {
                 return "Aún no hay reservaciones suficientes para medir la conversión.";
             }
             if (summary.conversionRate().compareTo(new BigDecimal("75")) >= 0) {
-                return "Excelente conversión: " + percent(summary.conversionRate()) + " de las reservaciones generaron ventas.";
+                return "Excelente conversión: " + percent(summary.conversionRate())
+                        + " de las reservaciones generaron ventas.";
             }
-            return "Conversión actual: " + percent(summary.conversionRate()) + ". Hay margen para optimizar el cierre de reservas.";
+            return "Conversión actual: " + percent(summary.conversionRate())
+                    + ". Hay margen para optimizar el cierre de reservas.";
         }
 
         private String attendanceInsight(ReportSummary summary) {
