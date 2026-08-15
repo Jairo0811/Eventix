@@ -23,6 +23,6 @@ public interface EventMapper {
 
     @Mapping(target = "categoryId", source = "category.id")
     @Mapping(target = "organizerId", source = "organizer.id")
-    @Mapping(target = "coverImage", source = "coverImageUrl")
+    @Mapping(target = "coverImage", ignore = true)
     EventForm toForm(Event event);
 }
