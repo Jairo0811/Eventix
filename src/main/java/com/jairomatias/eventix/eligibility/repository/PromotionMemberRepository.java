@@ -8,7 +8,11 @@ import com.jairomatias.eventix.eligibility.entity.PromotionMember;
 
 public interface PromotionMemberRepository extends JpaRepository<PromotionMember, Long> {
 
-    Optional<PromotionMember> findByPromotionIdAndNationalIdLookupAndActiveTrue(
+    Optional<PromotionMember> findByPromotion_IdAndNationalIdLookupAndActiveTrue(
+            Long promotionId,
+            String nationalIdLookup);
+
+    boolean existsByPromotion_IdAndNationalIdLookup(
             Long promotionId,
             String nationalIdLookup);
 }
