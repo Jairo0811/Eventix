@@ -1,6 +1,5 @@
 package com.jairomatias.eventix.eligibility.service;
 
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
