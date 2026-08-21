@@ -69,6 +69,10 @@ public class Event extends AuditableEntity {
             scale = 2)
     private BigDecimal basePrice = BigDecimal.ZERO;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "access_mode", nullable = false, length = 24)
+    private EventAccessMode accessMode = EventAccessMode.PUBLIC;
+
     protected Event() {
     }
 
@@ -137,6 +141,10 @@ public class Event extends AuditableEntity {
         this.googleMapsUrl = googleMapsUrl;
     }
 
+    public void updateAccessMode(EventAccessMode accessMode) {
+        this.accessMode = accessMode == null ? EventAccessMode.PUBLIC : accessMode;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -191,5 +199,9 @@ public class Event extends AuditableEntity {
 
     public BigDecimal getBasePrice() {
         return basePrice;
+    }
+
+    public EventAccessMode getAccessMode() {
+        return accessMode;
     }
 }
