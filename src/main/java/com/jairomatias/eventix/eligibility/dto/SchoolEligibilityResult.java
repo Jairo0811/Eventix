@@ -22,6 +22,24 @@ public record SchoolEligibilityResult(
                 nationalIdLast4);
     }
 
+    public static SchoolEligibilityResult manualReview(
+            String memberName,
+            String promotionName,
+            int graduationYear,
+            String nationalIdLast4) {
+        return new SchoolEligibilityResult(
+                false,
+                "MANUAL_REVIEW",
+                memberName,
+                promotionName,
+                graduationYear,
+                nationalIdLast4);
+    }
+
+    public static SchoolEligibilityResult rejected(String status) {
+        return new SchoolEligibilityResult(false, status, null, null, null, null);
+    }
+
     public static SchoolEligibilityResult notFound() {
         return new SchoolEligibilityResult(false, "NOT_FOUND", null, null, null, null);
     }
