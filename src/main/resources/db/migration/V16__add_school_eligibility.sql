@@ -180,6 +180,7 @@ CREATE TABLE event_eligibility_policies
 
 ALTER TABLE events ADD access_mode NVARCHAR(24) NOT NULL
     CONSTRAINT DF_events_access_mode DEFAULT 'PUBLIC';
+GO
 
 ALTER TABLE events ADD CONSTRAINT CK_events_access_mode CHECK (
     access_mode IN ('PUBLIC', 'PRIVATE', 'CONTROLLED_ACCESS')
