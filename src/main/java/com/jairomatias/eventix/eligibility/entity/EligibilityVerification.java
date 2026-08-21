@@ -60,6 +60,14 @@ public class EligibilityVerification extends AuditableEntity {
         this.reason = reason;
     }
 
+    public void verifyAutomatically(String verificationReason) {
+        status = VerificationStatus.VERIFIED;
+        verifiedBy = null;
+        verifiedAt = LocalDateTime.now();
+        verificationMethod = VerificationMethod.NATIONAL_ID;
+        reason = verificationReason;
+    }
+
     public void approve(User reviewer, VerificationMethod method, String approvalReason) {
         status = VerificationStatus.VERIFIED;
         verifiedBy = reviewer;
