@@ -1,6 +1,5 @@
 package com.jairomatias.eventix.eligibility.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,9 +43,9 @@ public class EventEligibilityService {
     }
 
     @Transactional(readOnly = true)
-    public boolean isTicketVisible(Event event, User user, Long ticketTypeId, LocalDateTime at) {
+    public boolean isTicketVisible(Event event, User user, Long ticketTypeId) {
         try {
-            assertPurchaseAllowed(event, user, ticketTypeId, 1, at);
+            assertPurchaseAllowed(event, user, ticketTypeId, 1);
             return true;
         } catch (BusinessRuleException exception) {
             return false;
@@ -58,23 +57,21 @@ public class EventEligibilityService {
             Event event,
             User user,
             Long ticketTypeId,
-            int quantity,
-            LocalDateTime at) {
+            int quantity) {
         assertEventAccess(event, user);
 
         List<EligibilityMembership> memberships = verifiedMemberships(event, user);
-        if (memberships.isEmpty()) {
-            return;
-        }
-
         Set<Long> groupIds = memberships.stream()
                 .map(membership -> membership.getGroup().getId())
                 .collect(Collectors.toSet());
-        List<EligibilityBenefit> benefits = benefitRepository.findAllByGroup_IdInAndActiveTrue(groupIds);
 
+        enforceExclusiveTicket(groupIds, ticketTypeId);
+        if (groupIds.isEmpty()) {
+            return;
+        }
+
+        List<EligibilityBenefit> benefits = benefitRepository.findAllByGroup_IdInAndActiveTrue(groupIds);
         enforcePurchaseLimit(benefits, quantity);
-        enforceExclusiveTicket(benefits, ticketTypeId);
-        enforceEarlyAccess(benefits, at);
     }
 
     private List<EligibilityMembership> verifiedMemberships(Event event, User user) {
@@ -95,32 +92,19 @@ public class EventEligibilityService {
         }
     }
 
-    private void enforceExclusiveTicket(List<EligibilityBenefit> benefits, Long ticketTypeId) {
-        boolean hasExclusiveBenefits = benefits.stream()
-                .anyMatch(benefit -> benefit.getBenefitType() == EligibilityBenefitType.EXCLUSIVE_TICKET);
-        if (!hasExclusiveBenefits) {
+    private void enforceExclusiveTicket(Set<Long> groupIds, Long ticketTypeId) {
+        List<EligibilityBenefit> restrictions = benefitRepository
+                .findAllByTicketType_IdAndBenefitTypeAndActiveTrue(
+                        ticketTypeId, EligibilityBenefitType.EXCLUSIVE_TICKET);
+        if (restrictions.isEmpty()) {
             return;
         }
-        boolean ticketAllowed = benefits.stream()
-                .filter(benefit -> benefit.getBenefitType() == EligibilityBenefitType.EXCLUSIVE_TICKET)
-                .map(EligibilityBenefit::getTicketType)
-                .filter(ticketType -> ticketType != null)
-                .anyMatch(ticketType -> ticketType.getId().equals(ticketTypeId));
-        if (!ticketAllowed) {
+        boolean allowed = restrictions.stream()
+                .map(benefit -> benefit.getGroup().getId())
+                .anyMatch(groupIds::contains);
+        if (!allowed) {
             throw new BusinessRuleException(
-                    "El tipo de entrada seleccionado no está habilitado para tu grupo de elegibilidad.");
-        }
-    }
-
-    private void enforceEarlyAccess(List<EligibilityBenefit> benefits, LocalDateTime at) {
-        LocalDateTime earliestAccess = benefits.stream()
-                .filter(benefit -> benefit.getBenefitType() == EligibilityBenefitType.EARLY_ACCESS)
-                .map(EligibilityBenefit::getEarlyAccessAt)
-                .filter(value -> value != null)
-                .min(LocalDateTime::compareTo)
-                .orElse(null);
-        if (earliestAccess != null && at.isBefore(earliestAccess)) {
-            throw new BusinessRuleException("El acceso anticipado para tu grupo todavía no ha comenzado.");
+                    "El tipo de entrada seleccionado requiere una elegibilidad específica.");
         }
     }
 }
