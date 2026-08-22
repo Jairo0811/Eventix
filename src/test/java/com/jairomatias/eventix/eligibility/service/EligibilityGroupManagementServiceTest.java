@@ -47,7 +47,7 @@ class EligibilityGroupManagementServiceTest {
     @Test
     void organizerCanCreateGroupForOwnEvent() {
         Event event = eventOwnedBy(20L);
-        User organizer = user(20L, RoleName.ORGANIZER);
+        User organizer = user(RoleName.ORGANIZER);
         EligibilityGroupForm form = new EligibilityGroupForm("Egresados 2020", EligibilityGroupType.ALUMNI, null);
 
         when(eventRepository.findDetailedById(100L)).thenReturn(Optional.of(event));
@@ -63,7 +63,7 @@ class EligibilityGroupManagementServiceTest {
     @Test
     void organizerCannotManageAnotherOrganizersEvent() {
         Event event = eventOwnedBy(99L);
-        User organizer = user(20L, RoleName.ORGANIZER);
+        User organizer = user(RoleName.ORGANIZER);
         EligibilityGroupForm form = new EligibilityGroupForm("VIP", EligibilityGroupType.VIP, null);
 
         when(eventRepository.findDetailedById(100L)).thenReturn(Optional.of(event));
@@ -78,8 +78,8 @@ class EligibilityGroupManagementServiceTest {
 
     @Test
     void duplicateGroupNameIsRejectedWithinSameEvent() {
-        Event event = eventOwnedBy(20L);
-        User administrator = user(1L, RoleName.ADMINISTRATOR);
+        Event event = mock(Event.class);
+        User administrator = user(RoleName.ADMINISTRATOR);
         EligibilityGroupForm form = new EligibilityGroupForm("Staff", EligibilityGroupType.STAFF, null);
 
         when(eventRepository.findDetailedById(100L)).thenReturn(Optional.of(event));
@@ -101,7 +101,7 @@ class EligibilityGroupManagementServiceTest {
         return event;
     }
 
-    private User user(Long id, RoleName roleName) {
+    private User user(RoleName roleName) {
         User user = mock(User.class);
         Role role = mock(Role.class);
         when(user.getRole()).thenReturn(role);
