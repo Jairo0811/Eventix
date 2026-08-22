@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jairomatias.eventix.checkout.dto.CustomerCheckoutForm;
 import com.jairomatias.eventix.checkout.dto.CustomerCheckoutPage;
 import com.jairomatias.eventix.checkout.dto.CustomerTicketOption;
+import com.jairomatias.eventix.eligibility.service.EventEligibilityService;
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.repository.EventRepository;
@@ -61,6 +62,7 @@ public class CustomerCheckoutService {
     private final ReservationProperties reservationProperties;
     private final PaymentGatewayRegistry gatewayRegistry;
     private final PromotionService promotionService;
+    private final EventEligibilityService eligibilityService;
     private final ApplicationEventPublisher eventPublisher;
     private final String currency;
 
@@ -77,6 +79,7 @@ public class CustomerCheckoutService {
             ReservationProperties reservationProperties,
             PaymentGatewayRegistry gatewayRegistry,
             PromotionService promotionService,
+            EventEligibilityService eligibilityService,
             ApplicationEventPublisher eventPublisher,
             @Value("${app.currency:DOP}") String currency) {
         this.eventRepository = eventRepository;
@@ -91,6 +94,7 @@ public class CustomerCheckoutService {
         this.reservationProperties = reservationProperties;
         this.gatewayRegistry = gatewayRegistry;
         this.promotionService = promotionService;
+        this.eligibilityService = eligibilityService;
         this.eventPublisher = eventPublisher;
         this.currency = currency == null ? "DOP" : currency.trim().toUpperCase(Locale.ROOT);
     }
@@ -98,14 +102,18 @@ public class CustomerCheckoutService {
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('USER')")
     public CustomerCheckoutPage getCheckout(Long eventId, String authenticatedLogin) {
-        findCustomer(authenticatedLogin);
+        User customer = findCustomer(authenticatedLogin);
         Event event = eventRepository.findDetailedById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró el evento solicitado."));
-        ensurePurchasable(event, now());
+        LocalDateTime checkedAt = now();
+        ensurePurchasable(event, checkedAt);
+        eligibilityService.assertEventAccess(event, customer);
 
         List<CustomerTicketOption> ticketTypes = ticketTypeRepository
                 .findAllByEvent_IdAndActiveTrueOrderByNameAsc(eventId)
                 .stream()
+                .filter(ticketType -> eligibilityService.isTicketVisible(
+                        event, customer, ticketType.getId(), checkedAt))
                 .map(ticketType -> new CustomerTicketOption(
                         ticketType.getId(),
                         ticketType.getName(),
@@ -156,16 +164,19 @@ public class CustomerCheckoutService {
         ensurePurchasable(event, now);
         reservationRepository.expirePendingForEvent(eventId, now);
 
-        long occupiedSeats = reservationRepository.sumOccupiedSeats(eventId, now);
-        if (form.getQuantity() > event.getCapacity() - occupiedSeats) {
-            throw new BusinessRuleException("No hay cupos suficientes para completar la compra.");
-        }
-
         TicketType ticketType = ticketTypeRepository.findDetailedByIdForUpdate(form.getTicketTypeId())
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró el tipo de entrada."));
         if (!ticketType.getEvent().getId().equals(eventId) || !ticketType.isActive()) {
             throw new BusinessRuleException("El tipo de entrada seleccionado no está disponible para este evento.");
         }
+        eligibilityService.assertPurchaseAllowed(
+                event, customer, ticketType.getId(), form.getQuantity(), now);
+
+        long occupiedSeats = reservationRepository.sumOccupiedSeats(eventId, now);
+        if (form.getQuantity() > event.getCapacity() - occupiedSeats) {
+            throw new BusinessRuleException("No hay cupos suficientes para completar la compra.");
+        }
+
         long allocated = saleItemRepository.sumAllocatedQuantity(ticketType.getId());
         if (form.getQuantity() > ticketType.getCapacity() - allocated) {
             throw new BusinessRuleException("No hay suficientes entradas disponibles en la categoría seleccionada.");
