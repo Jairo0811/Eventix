@@ -3,6 +3,8 @@ package com.jairomatias.eventix.eligibility.dto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.jairomatias.eventix.eligibility.entity.EligibilityBenefitType;
 
 import jakarta.validation.constraints.DecimalMin;
@@ -19,5 +21,6 @@ public record EligibilityBenefitForm(
         @Min(value = 1, message = "El inventario reservado debe ser mayor que cero.")
         Integer reservedInventory,
         Long ticketTypeId,
+        @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
         LocalDateTime earlyAccessAt) {
 }
