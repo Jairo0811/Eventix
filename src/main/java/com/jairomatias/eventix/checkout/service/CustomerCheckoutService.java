@@ -113,7 +113,7 @@ public class CustomerCheckoutService {
                 .findAllByEvent_IdAndActiveTrueOrderByNameAsc(eventId)
                 .stream()
                 .filter(ticketType -> eligibilityService.isTicketVisible(
-                        event, customer, ticketType.getId(), checkedAt))
+                        event, customer, ticketType.getId()))
                 .map(ticketType -> new CustomerTicketOption(
                         ticketType.getId(),
                         ticketType.getName(),
@@ -170,7 +170,7 @@ public class CustomerCheckoutService {
             throw new BusinessRuleException("El tipo de entrada seleccionado no está disponible para este evento.");
         }
         eligibilityService.assertPurchaseAllowed(
-                event, customer, ticketType.getId(), form.getQuantity(), now);
+                event, customer, ticketType.getId(), form.getQuantity());
 
         long occupiedSeats = reservationRepository.sumOccupiedSeats(eventId, now);
         if (form.getQuantity() > event.getCapacity() - occupiedSeats) {
