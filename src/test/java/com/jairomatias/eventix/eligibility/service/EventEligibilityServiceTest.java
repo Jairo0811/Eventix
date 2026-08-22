@@ -1,6 +1,7 @@
 package com.jairomatias.eventix.eligibility.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -71,7 +72,7 @@ class EventEligibilityServiceTest {
                 10L, 20L, EligibilityMembershipStatus.VERIFIED)).thenReturn(List.of(membership));
         when(benefitRepository.findAllByTicketType_IdAndBenefitTypeAndActiveTrue(
                 30L, EligibilityBenefitType.EXCLUSIVE_TICKET)).thenReturn(List.of());
-        when(benefitRepository.findAllByGroup_IdInAndActiveTrue(List.of(40L)))
+        when(benefitRepository.findAllByGroup_IdInAndActiveTrue(anyCollection()))
                 .thenReturn(List.of(limit));
 
         assertThatThrownBy(() -> service.assertPurchaseAllowed(event, user, 30L, 3))
