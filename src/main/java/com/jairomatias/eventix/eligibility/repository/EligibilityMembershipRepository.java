@@ -3,6 +3,7 @@ package com.jairomatias.eventix.eligibility.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.jairomatias.eventix.eligibility.entity.EligibilityGroupType;
@@ -23,4 +24,7 @@ public interface EligibilityMembershipRepository extends JpaRepository<Eligibili
             EligibilityGroupType excludedGroupType);
 
     Optional<EligibilityMembership> findByGroup_IdAndUser_Id(Long groupId, Long userId);
+
+    @EntityGraph(attributePaths = {"group", "group.event", "group.event.organizer", "user", "sponsorUser"})
+    List<EligibilityMembership> findAllByGroup_IdOrderByUser_LastNameAscUser_FirstNameAsc(Long groupId);
 }
