@@ -95,6 +95,10 @@
                     </td>
                     <td class="text-end">
                         <div class="d-inline-flex flex-wrap justify-content-end gap-2">
+                            <a class="btn btn-sm btn-primary"
+                               th:href="@{/events/{eventId}/eligibility/groups/{groupId}(eventId=${eventId},groupId=${group.id})}">
+                                Administrar
+                            </a>
                             <button class="btn btn-sm btn-outline-primary" type="submit"
                                     th:form="|group-form-${group.id}|">
                                 Guardar nombre
