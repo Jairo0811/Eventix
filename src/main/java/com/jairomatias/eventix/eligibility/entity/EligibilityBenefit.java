@@ -49,6 +49,41 @@ public class EligibilityBenefit extends AuditableEntity {
     protected EligibilityBenefit() {
     }
 
+    public EligibilityBenefit(
+            EligibilityGroup group,
+            EligibilityBenefitType benefitType,
+            BigDecimal discountValue,
+            Integer maxTicketsPerPurchase,
+            Integer reservedInventory,
+            TicketType ticketType,
+            LocalDateTime earlyAccessAt) {
+        this.group = group;
+        update(benefitType, discountValue, maxTicketsPerPurchase, reservedInventory, ticketType, earlyAccessAt);
+    }
+
+    public void update(
+            EligibilityBenefitType benefitType,
+            BigDecimal discountValue,
+            Integer maxTicketsPerPurchase,
+            Integer reservedInventory,
+            TicketType ticketType,
+            LocalDateTime earlyAccessAt) {
+        this.benefitType = benefitType;
+        this.discountValue = discountValue;
+        this.maxTicketsPerPurchase = maxTicketsPerPurchase;
+        this.reservedInventory = reservedInventory;
+        this.ticketType = ticketType;
+        this.earlyAccessAt = earlyAccessAt;
+    }
+
+    public void activate() {
+        this.active = true;
+    }
+
+    public void deactivate() {
+        this.active = false;
+    }
+
     public EligibilityGroup getGroup() {
         return group;
     }

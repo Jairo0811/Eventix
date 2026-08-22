@@ -42,9 +42,30 @@ public class EligibilityGroup extends AuditableEntity {
             EligibilityGroupType groupType,
             Integer maxRelatedPeople) {
         this.event = event;
-        this.name = name;
+        update(name, groupType, maxRelatedPeople);
+    }
+
+    public void update(String name, EligibilityGroupType groupType, Integer maxRelatedPeople) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("El nombre del grupo es obligatorio.");
+        }
+        if (groupType == null) {
+            throw new IllegalArgumentException("El tipo de grupo es obligatorio.");
+        }
+        if (maxRelatedPeople != null && maxRelatedPeople < 0) {
+            throw new IllegalArgumentException("El límite de relacionados no puede ser negativo.");
+        }
+        this.name = name.trim();
         this.groupType = groupType;
-        this.maxRelatedPeople = maxRelatedPeople;
+        this.maxRelatedPeople = groupType == EligibilityGroupType.FAMILY ? maxRelatedPeople : null;
+    }
+
+    public void activate() {
+        this.active = true;
+    }
+
+    public void deactivate() {
+        this.active = false;
     }
 
     public Event getEvent() {
