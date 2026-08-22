@@ -56,10 +56,15 @@ class FamilyEligibilityServiceTest {
 
     @Test
     void rejectsRequestWhenSponsorHasNoVerifiedPrimaryEligibility() {
-        EligibilityGroup group = familyGroup(10L, 100L, 2);
+        Event event = mock(Event.class);
+        EligibilityGroup group = mock(EligibilityGroup.class);
         User sponsor = user(20L);
         User related = user(30L);
 
+        when(group.isActive()).thenReturn(true);
+        when(group.getGroupType()).thenReturn(EligibilityGroupType.FAMILY);
+        when(group.getEvent()).thenReturn(event);
+        when(event.getId()).thenReturn(100L);
         when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
         when(userRepository.findById(20L)).thenReturn(Optional.of(sponsor));
         when(userRepository.findById(30L)).thenReturn(Optional.of(related));
@@ -78,15 +83,20 @@ class FamilyEligibilityServiceTest {
 
     @Test
     void rejectsApprovalWhenSponsorReachedFamilyLimit() {
-        EligibilityGroup group = familyGroup(10L, 100L, 2);
+        Event event = mock(Event.class);
+        EligibilityGroup group = mock(EligibilityGroup.class);
         User sponsor = user(20L);
-        User related = user(30L);
-        User reviewer = reviewer(40L, RoleName.ADMINISTRATOR);
+        User reviewer = administrator();
         EligibilityRelationship relationship = mock(EligibilityRelationship.class);
 
+        when(group.isActive()).thenReturn(true);
+        when(group.getGroupType()).thenReturn(EligibilityGroupType.FAMILY);
+        when(group.getId()).thenReturn(10L);
+        when(group.getEvent()).thenReturn(event);
+        when(event.getId()).thenReturn(100L);
+        when(group.getMaxRelatedPeople()).thenReturn(2);
         when(relationship.getGroup()).thenReturn(group);
         when(relationship.getSponsorUser()).thenReturn(sponsor);
-        when(relationship.getRelatedUser()).thenReturn(related);
         when(relationshipRepository.findDetailedByIdForUpdate(50L))
                 .thenReturn(Optional.of(relationship));
         when(groupRepository.findDetailedByIdForUpdate(10L)).thenReturn(Optional.of(group));
@@ -105,28 +115,16 @@ class FamilyEligibilityServiceTest {
         verify(relationship, never()).approve(any(), any(), any());
     }
 
-    private EligibilityGroup familyGroup(Long groupId, Long eventId, Integer limit) {
-        EligibilityGroup group = mock(EligibilityGroup.class);
-        Event event = mock(Event.class);
-        when(group.getId()).thenReturn(groupId);
-        when(group.getGroupType()).thenReturn(EligibilityGroupType.FAMILY);
-        when(group.isActive()).thenReturn(true);
-        when(group.getMaxRelatedPeople()).thenReturn(limit);
-        when(group.getEvent()).thenReturn(event);
-        when(event.getId()).thenReturn(eventId);
-        return group;
-    }
-
     private User user(Long id) {
         User user = mock(User.class);
         when(user.getId()).thenReturn(id);
         return user;
     }
 
-    private User reviewer(Long id, RoleName roleName) {
-        User user = user(id);
+    private User administrator() {
+        User user = mock(User.class);
         Role role = mock(Role.class);
-        when(role.getName()).thenReturn(roleName);
+        when(role.getName()).thenReturn(RoleName.ADMINISTRATOR);
         when(user.getRole()).thenReturn(role);
         return user;
     }
