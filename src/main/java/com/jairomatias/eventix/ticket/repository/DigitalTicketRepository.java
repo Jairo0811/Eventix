@@ -1,8 +1,8 @@
 package com.jairomatias.eventix.ticket.repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -48,6 +48,21 @@ public interface DigitalTicketRepository
     @Query("SELECT t FROM DigitalTicket t WHERE t.uniqueCode = :uniqueCode")
     Optional<DigitalTicket> findByUniqueCodeForUpdate(
             @Param("uniqueCode") String uniqueCode);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @EntityGraph(attributePaths = {
+            "sale", "saleItem", "event", "event.organizer"
+    })
+    @Query("""
+            SELECT t
+            FROM DigitalTicket t
+            WHERE t.sale.id = :saleId
+              AND t.id IN :ticketIds
+            ORDER BY t.sequenceNumber ASC
+            """)
+    List<DigitalTicket> findAllBySaleIdAndIdsForUpdate(
+            @Param("saleId") Long saleId,
+            @Param("ticketIds") Collection<Long> ticketIds);
 
     @EntityGraph(attributePaths = {
             "sale", "saleItem", "event", "event.organizer"
