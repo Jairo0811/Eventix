@@ -203,6 +203,24 @@ public class CustomerCheckoutService {
 
         Sale sale = new Sale(nextSaleReference(), reservation, currency, customer);
         sale.addItem(ticketType, form.getQuantity());
+        eligibilityService.resolveMonetaryDiscount(
+                        event,
+                        customer,
+                        ticketType.getId(),
+                        sale.getSubtotal())
+                .ifPresent(decision -> {
+                    if (!isBlank(form.getCouponCode())) {
+                        throw new BusinessRuleException(
+                                "Los beneficios monetarios de elegibilidad no se combinan con cupones todavía. "
+                                        + "Retira el cupón para usar el beneficio automático.");
+                    }
+                    sale.applyEligibilityDiscount(
+                            decision.benefitId(),
+                            decision.benefitType(),
+                            decision.configuredValue(),
+                            decision.discountAmount());
+                });
+
         Sale savedSale = saleRepository.save(sale);
         promotionService.reserveForSale(form.getCouponCode(), savedSale, now);
 
