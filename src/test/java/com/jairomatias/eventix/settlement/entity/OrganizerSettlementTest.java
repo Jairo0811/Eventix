@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.jairomatias.eventix.payment.entity.PaymentTransaction;
 import com.jairomatias.eventix.sale.entity.Sale;
 import com.jairomatias.eventix.user.entity.User;
 
@@ -21,15 +22,17 @@ class OrganizerSettlementTest {
 
     @Mock private User organizer;
     @Mock private Sale sale;
+    @Mock private PaymentTransaction refundTransaction;
 
     @Test
     void saleAndRefundProduceAuditableZeroNetAdjustment() {
         prepareSaleAmounts();
-        when(sale.getTotal()).thenReturn(new BigDecimal("900.00"));
+        when(refundTransaction.getSale()).thenReturn(sale);
+        when(refundTransaction.getAmount()).thenReturn(new BigDecimal("900.00"));
         OrganizerSettlement settlement = settlement();
 
         settlement.addSale(sale);
-        settlement.addRefund(sale);
+        settlement.addRefund(refundTransaction);
 
         assertThat(settlement.getGrossSales()).isEqualByComparingTo("1000.00");
         assertThat(settlement.getDiscounts()).isEqualByComparingTo("100.00");
@@ -77,7 +80,7 @@ class OrganizerSettlementTest {
     private void prepareSaleAmounts() {
         when(sale.getSubtotal()).thenReturn(new BigDecimal("1000.00"));
         when(sale.getDiscountTotal()).thenReturn(new BigDecimal("100.00"));
-        when(sale.getPlatformFeeAmount()).thenReturn(new BigDecimal("45.00"));
-        when(sale.getOrganizerNetAmount()).thenReturn(new BigDecimal("855.00"));
+        when(sale.getTotal()).thenReturn(new BigDecimal("900.00"));
+        when(sale.getPlatformFeeRate()).thenReturn(new BigDecimal("0.0500"));
     }
 }
