@@ -423,6 +423,26 @@ Para detener:
 docker compose down
 ```
 
+### 📱 Acceso desde un móvil en la red local
+
+Con el perfil de desarrollo, Spring Boot escucha en `0.0.0.0:8080`. Para probar Eventix desde un teléfono conectado a la misma red que la PC:
+
+1. Levanta la aplicación con el perfil `dev`.
+2. Obtén la IPv4 de la PC con `ipconfig`.
+3. Abre en el navegador móvil:
+
+```text
+http://<IP-DE-LA-PC>:8080
+```
+
+Ejemplo:
+
+```text
+http://192.168.1.50:8080
+```
+
+Si Windows solicita permiso de firewall para Java, permite únicamente redes privadas.
+
 ---
 
 ## 🔒 Variables sensibles
