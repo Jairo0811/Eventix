@@ -49,6 +49,18 @@ public class EligibilityMembership extends AuditableEntity {
         this.sponsorUser = sponsorUser;
     }
 
+    public void verify(User sponsorUser, LocalDateTime at) {
+        this.sponsorUser = sponsorUser;
+        this.status = EligibilityMembershipStatus.VERIFIED;
+        this.active = true;
+        this.verifiedAt = at;
+    }
+
+    public void revoke() {
+        this.status = EligibilityMembershipStatus.REVOKED;
+        this.active = false;
+    }
+
     public EligibilityGroup getGroup() {
         return group;
     }
