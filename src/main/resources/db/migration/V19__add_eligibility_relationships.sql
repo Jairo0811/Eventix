@@ -1,6 +1,6 @@
 /* ================================================================
    EVENTIX
-   V19 - Solicitudes de relaciones familiares verificables
+   V20 - Solicitudes de relaciones familiares verificables
 
    Compatible con Microsoft SQL Server 2022.
    ================================================================ */
