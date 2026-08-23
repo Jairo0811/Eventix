@@ -2,6 +2,7 @@ package com.jairomatias.eventix.sale.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -93,18 +94,18 @@ class PartialRefundServiceTest {
         verify(paymentProcessor).process(
                 any(Sale.class),
                 any(User.class),
-                org.mockito.ArgumentMatchers.eq(new BigDecimal("500.00")),
-                org.mockito.ArgumentMatchers.eq("Solicitud del comprador"),
+                eq(new BigDecimal("500.00")),
+                eq("Solicitud del comprador"),
                 any(LocalDateTime.class));
         verify(sale).recordRefund(
-                new BigDecimal("500.00"),
-                "Solicitud del comprador",
+                eq(new BigDecimal("500.00")),
+                eq("Solicitud del comprador"),
                 any(LocalDateTime.class));
         verify(ticket).cancel(
-                org.mockito.ArgumentMatchers.eq("Solicitud del comprador"),
+                eq("Solicitud del comprador"),
                 any(LocalDateTime.class));
         verify(reservation).cancel(
-                org.mockito.ArgumentMatchers.eq("Solicitud del comprador"),
+                eq("Solicitud del comprador"),
                 any(LocalDateTime.class));
     }
 }
