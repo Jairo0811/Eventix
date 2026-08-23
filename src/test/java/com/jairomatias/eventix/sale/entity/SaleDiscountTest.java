@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
@@ -58,6 +59,50 @@ class SaleDiscountTest {
         assertThatThrownBy(() -> sale.applyCoupon(mock(Coupon.class), new BigDecimal("50.00")))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("no pueden acumularse");
+    }
+
+    @Test
+    void recordsPartialRefundAndKeepsRemainingBalance() {
+        Sale sale = paidSale(new BigDecimal("500.00"), 2);
+        LocalDateTime processedAt = LocalDateTime.of(2026, 8, 23, 11, 30);
+
+        sale.recordRefund(new BigDecimal("250.00"), "Una boleta", processedAt);
+
+        assertThat(sale.getStatus()).isEqualTo(SaleStatus.PARTIALLY_REFUNDED);
+        assertThat(sale.getRefundedAmount()).isEqualByComparingTo("250.00");
+        assertThat(sale.getRemainingAmount()).isEqualByComparingTo("750.00");
+        assertThat(sale.getRefundedAt()).isEqualTo(processedAt);
+    }
+
+    @Test
+    void accumulatedRefundBecomesFullRefundAtSaleTotal() {
+        Sale sale = paidSale(new BigDecimal("500.00"), 2);
+        LocalDateTime processedAt = LocalDateTime.of(2026, 8, 23, 11, 30);
+
+        sale.recordRefund(new BigDecimal("250.00"), "Primera boleta", processedAt);
+        sale.recordRefund(new BigDecimal("750.00"), "Saldo restante", processedAt.plusMinutes(1));
+
+        assertThat(sale.getStatus()).isEqualTo(SaleStatus.REFUNDED);
+        assertThat(sale.getRefundedAmount()).isEqualByComparingTo("1000.00");
+        assertThat(sale.getRemainingAmount()).isZero();
+    }
+
+    @Test
+    void rejectsRefundAboveRemainingBalance() {
+        Sale sale = paidSale(new BigDecimal("500.00"), 2);
+
+        assertThatThrownBy(() -> sale.recordRefund(
+                new BigDecimal("1000.01"),
+                "Importe inválido",
+                LocalDateTime.now()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no puede superar");
+    }
+
+    private Sale paidSale(BigDecimal unitPrice, int quantity) {
+        Sale sale = saleWithTicket(unitPrice, quantity);
+        sale.markPaid(LocalDateTime.of(2026, 8, 20, 10, 0));
+        return sale;
     }
 
     private Sale saleWithTicket(BigDecimal unitPrice, int quantity) {
