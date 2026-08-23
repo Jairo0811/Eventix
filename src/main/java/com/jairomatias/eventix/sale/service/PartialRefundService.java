@@ -13,13 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jairomatias.eventix.payment.entity.PaymentStatus;
-import com.jairomatias.eventix.payment.entity.PaymentTransaction;
-import com.jairomatias.eventix.payment.entity.PaymentTransactionType;
-import com.jairomatias.eventix.payment.gateway.PaymentCommand;
-import com.jairomatias.eventix.payment.gateway.PaymentGatewayRegistry;
 import com.jairomatias.eventix.payment.gateway.PaymentResult;
-import com.jairomatias.eventix.payment.gateway.SimulationOutcome;
-import com.jairomatias.eventix.payment.repository.PaymentTransactionRepository;
 import com.jairomatias.eventix.sale.dto.PartialRefundForm;
 import com.jairomatias.eventix.sale.entity.Sale;
 import com.jairomatias.eventix.sale.entity.SaleStatus;
@@ -38,30 +32,23 @@ import com.jairomatias.eventix.user.repository.UserRepository;
 public class PartialRefundService {
 
     private static final int MONEY_SCALE = 2;
-    private static final int MAX_REFERENCE_ATTEMPTS = 5;
 
     private final SaleRepository saleRepository;
     private final DigitalTicketRepository ticketRepository;
-    private final PaymentTransactionRepository paymentRepository;
     private final UserRepository userRepository;
-    private final PaymentGatewayRegistry gatewayRegistry;
-    private final TransactionReferenceGenerator referenceGenerator;
+    private final RefundPaymentProcessor paymentProcessor;
     private final ApplicationEventPublisher eventPublisher;
 
     public PartialRefundService(
             SaleRepository saleRepository,
             DigitalTicketRepository ticketRepository,
-            PaymentTransactionRepository paymentRepository,
             UserRepository userRepository,
-            PaymentGatewayRegistry gatewayRegistry,
-            TransactionReferenceGenerator referenceGenerator,
+            RefundPaymentProcessor paymentProcessor,
             ApplicationEventPublisher eventPublisher) {
         this.saleRepository = saleRepository;
         this.ticketRepository = ticketRepository;
-        this.paymentRepository = paymentRepository;
         this.userRepository = userRepository;
-        this.gatewayRegistry = gatewayRegistry;
-        this.referenceGenerator = referenceGenerator;
+        this.paymentProcessor = paymentProcessor;
         this.eventPublisher = eventPublisher;
     }
 
@@ -89,11 +76,13 @@ public class PartialRefundService {
                 .count();
         boolean completesRefund = selected.size() == refundableCount;
         BigDecimal refundAmount = calculateRefundAmount(sale, selected, completesRefund);
-
-        PaymentTransaction originalCharge = findOriginalCharge(saleId);
-        PaymentResult result = processRefund(sale, originalCharge, refundAmount);
         LocalDateTime processedAt = LocalDateTime.now();
-        saveRefundTransaction(sale, actor, originalCharge, refundAmount, request.reason(), result, processedAt);
+        PaymentResult result = paymentProcessor.process(
+                sale,
+                actor,
+                refundAmount,
+                request.reason(),
+                processedAt);
 
         if (result.status() != PaymentStatus.APPROVED) {
             throw new BusinessRuleException("La pasarela no aprobó el reembolso.");
@@ -175,58 +164,6 @@ public class PartialRefundService {
                 .setScale(MONEY_SCALE, RoundingMode.HALF_UP);
     }
 
-    private PaymentTransaction findOriginalCharge(Long saleId) {
-        return paymentRepository
-                .findFirstBySale_IdAndTransactionTypeAndStatusOrderByProcessedAtDesc(
-                        saleId,
-                        PaymentTransactionType.CHARGE,
-                        PaymentStatus.APPROVED)
-                .orElseThrow(() -> new BusinessRuleException(
-                        "La venta no tiene un cobro aprobado para reembolsar."));
-    }
-
-    private PaymentResult processRefund(
-            Sale sale,
-            PaymentTransaction originalCharge,
-            BigDecimal amount) {
-        if (amount.compareTo(BigDecimal.ZERO) == 0) {
-            return new PaymentResult(
-                    PaymentStatus.APPROVED,
-                    "NO-COST-REFUND",
-                    "Reembolso sin movimiento monetario.");
-        }
-        PaymentCommand command = new PaymentCommand(
-                sale.getReferenceCode(),
-                originalCharge.getProvider(),
-                PaymentTransactionType.REFUND,
-                amount,
-                sale.getCurrency(),
-                SimulationOutcome.APPROVE);
-        return gatewayRegistry.resolve(originalCharge.getProvider()).process(command);
-    }
-
-    private void saveRefundTransaction(
-            Sale sale,
-            User actor,
-            PaymentTransaction originalCharge,
-            BigDecimal amount,
-            String reason,
-            PaymentResult result,
-            LocalDateTime processedAt) {
-        paymentRepository.save(new PaymentTransaction(
-                sale,
-                nextPaymentReference(),
-                originalCharge.getProvider(),
-                PaymentTransactionType.REFUND,
-                result.status(),
-                amount,
-                sale.getCurrency(),
-                result.externalReference(),
-                truncate(reason + " — " + result.message(), 300),
-                processedAt,
-                actor));
-    }
-
     private void cancelSelectedTickets(
             List<DigitalTicket> tickets,
             String reason,
@@ -235,20 +172,6 @@ public class PartialRefundService {
             ticket.cancel(reason, processedAt);
             eventPublisher.publishEvent(new TicketPassChangedEvent(ticket.getId()));
         }
-    }
-
-    private String nextPaymentReference() {
-        for (int attempt = 0; attempt < MAX_REFERENCE_ATTEMPTS; attempt++) {
-            String value = referenceGenerator.generatePaymentReference();
-            if (!paymentRepository.existsByTransactionReference(value)) {
-                return value;
-            }
-        }
-        throw new BusinessRuleException("No fue posible generar la referencia del reembolso.");
-    }
-
-    private String truncate(String value, int maxLength) {
-        return value.length() <= maxLength ? value : value.substring(0, maxLength);
     }
 
     private record ValidatedRequest(Set<Long> ticketIds, String reason) {
