@@ -3,6 +3,7 @@ package com.jairomatias.eventix.settlement.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,6 +22,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.jairomatias.eventix.payment.entity.PaymentTransaction;
+import com.jairomatias.eventix.payment.repository.PaymentTransactionRepository;
 import com.jairomatias.eventix.role.entity.Role;
 import com.jairomatias.eventix.role.entity.RoleName;
 import com.jairomatias.eventix.sale.entity.Sale;
@@ -38,12 +41,14 @@ class DefaultOrganizerSettlementServiceTest {
 
     @Mock private OrganizerSettlementRepository settlementRepository;
     @Mock private SaleRepository saleRepository;
+    @Mock private PaymentTransactionRepository paymentRepository;
     @Mock private UserRepository userRepository;
     @Mock private User organizer;
     @Mock private Role organizerRole;
     @Mock private User otherOrganizer;
     @Mock private Role otherOrganizerRole;
     @Mock private Sale sale;
+    @Mock private PaymentTransaction refundTransaction;
 
     private DefaultOrganizerSettlementService service;
 
@@ -55,6 +60,7 @@ class DefaultOrganizerSettlementServiceTest {
         service = new DefaultOrganizerSettlementService(
                 settlementRepository,
                 saleRepository,
+                paymentRepository,
                 userRepository,
                 clock);
     }
@@ -67,7 +73,7 @@ class DefaultOrganizerSettlementServiceTest {
         when(saleRepository.findUnsettledSalesForUpdate(
                 any(), any(), any(), any()))
                 .thenReturn(List.of(sale));
-        when(saleRepository.findUnsettledRefundsForUpdate(
+        when(paymentRepository.findUnsettledRefundsForUpdate(
                 any(), any(), any()))
                 .thenReturn(List.of());
         when(settlementRepository.save(any(OrganizerSettlement.class)))
@@ -81,12 +87,40 @@ class DefaultOrganizerSettlementServiceTest {
 
         assertThat(id).isEqualTo(44L);
         verify(saleRepository).findUnsettledSalesForUpdate(
-                org.mockito.ArgumentMatchers.eq(8L),
+                eq(8L),
                 any(),
-                org.mockito.ArgumentMatchers.eq(
-                        LocalDate.of(2026, 7, 1).atStartOfDay()),
-                org.mockito.ArgumentMatchers.eq(
-                        LocalDate.of(2026, 8, 1).atStartOfDay()));
+                eq(LocalDate.of(2026, 7, 1).atStartOfDay()),
+                eq(LocalDate.of(2026, 8, 1).atStartOfDay()));
+    }
+
+    @Test
+    void settlesEachRefundTransactionWithoutDoubleReducingOriginalSale() {
+        prepareOrganizer();
+        prepareSaleAmounts();
+        when(userRepository.findById(8L)).thenReturn(Optional.of(organizer));
+        when(saleRepository.findUnsettledSalesForUpdate(
+                any(), any(), any(), any()))
+                .thenReturn(List.of(sale));
+        when(paymentRepository.findUnsettledRefundsForUpdate(
+                any(), any(), any()))
+                .thenReturn(List.of(refundTransaction));
+        when(refundTransaction.getSale()).thenReturn(sale);
+        when(refundTransaction.getAmount()).thenReturn(new BigDecimal("200.00"));
+        when(settlementRepository.save(any(OrganizerSettlement.class)))
+                .thenAnswer(invocation -> {
+                    OrganizerSettlement settlement = invocation.getArgument(0);
+                    ReflectionTestUtils.setField(settlement, "id", 45L);
+                    return settlement;
+                });
+
+        service.create(validForm());
+
+        verify(settlementRepository).save(org.mockito.ArgumentMatchers.argThat(settlement ->
+                settlement.getGrossSales().compareTo(new BigDecimal("1000.00")) == 0
+                        && settlement.getDiscounts().compareTo(new BigDecimal("100.00")) == 0
+                        && settlement.getRefunds().compareTo(new BigDecimal("200.00")) == 0
+                        && settlement.getPlatformCommission().compareTo(new BigDecimal("35.00")) == 0
+                        && settlement.getOrganizerNet().compareTo(new BigDecimal("665.00")) == 0));
     }
 
     @Test
@@ -96,7 +130,7 @@ class DefaultOrganizerSettlementServiceTest {
         when(saleRepository.findUnsettledSalesForUpdate(
                 any(), any(), any(), any()))
                 .thenReturn(List.of());
-        when(saleRepository.findUnsettledRefundsForUpdate(
+        when(paymentRepository.findUnsettledRefundsForUpdate(
                 any(), any(), any()))
                 .thenReturn(List.of());
 
@@ -156,7 +190,7 @@ class DefaultOrganizerSettlementServiceTest {
     private void prepareSaleAmounts() {
         when(sale.getSubtotal()).thenReturn(new BigDecimal("1000.00"));
         when(sale.getDiscountTotal()).thenReturn(new BigDecimal("100.00"));
-        when(sale.getPlatformFeeAmount()).thenReturn(new BigDecimal("45.00"));
-        when(sale.getOrganizerNetAmount()).thenReturn(new BigDecimal("855.00"));
+        when(sale.getTotal()).thenReturn(new BigDecimal("900.00"));
+        when(sale.getPlatformFeeRate()).thenReturn(new BigDecimal("0.0500"));
     }
 }

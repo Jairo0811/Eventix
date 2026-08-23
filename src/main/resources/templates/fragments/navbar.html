@@ -16,6 +16,9 @@
     </div>
 
     <div class="d-flex align-items-center gap-2">
+        <a class="btn btn-light" th:href="@{/notifications}" aria-label="Abrir centro de notificaciones" title="Notificaciones">
+            <i class="bi bi-bell-fill" aria-hidden="true"></i>
+        </a>
         <div class="theme-selector" data-theme-control role="group" aria-label="Seleccionar tema">
             <button type="button" data-theme-option="light" aria-label="Usar tema claro" title="Claro"><i class="bi bi-sun-fill" aria-hidden="true"></i></button>
             <button type="button" data-theme-option="dark" aria-label="Usar tema oscuro" title="Oscuro"><i class="bi bi-moon-stars-fill" aria-hidden="true"></i></button>
@@ -30,6 +33,7 @@
                 </span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                <li><a class="dropdown-item" th:href="@{/notifications}"><i class="bi bi-bell me-2" aria-hidden="true"></i>Notificaciones</a></li>
                 <li><a class="dropdown-item" th:href="@{/profile}"><i class="bi bi-person-circle me-2" aria-hidden="true"></i>Mi perfil</a></li>
                 <li><a class="dropdown-item" th:href="@{/auth/change-password}"><i class="bi bi-shield-lock me-2" aria-hidden="true"></i>Cambiar contraseña</a></li>
                 <li><hr class="dropdown-divider"></li>
