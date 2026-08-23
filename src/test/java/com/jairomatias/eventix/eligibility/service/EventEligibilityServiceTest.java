@@ -171,7 +171,7 @@ class EventEligibilityServiceTest {
     private Event event(Long id, EventAccessMode accessMode) {
         Event event = mock(Event.class);
         when(event.getId()).thenReturn(id);
-        when(event.getAccessMode()).thenReturn(accessMode);
+        lenient().when(event.getAccessMode()).thenReturn(accessMode);
         return event;
     }
 
