@@ -66,6 +66,10 @@ public class OrganizerSettlementLine extends AuditableEntity {
     public static OrganizerSettlementLine sale(
             OrganizerSettlement settlement,
             Sale sale) {
+        BigDecimal originalCommission = money(sale.getTotal()
+                .multiply(sale.getPlatformFeeRate()));
+        BigDecimal originalOrganizerNet = money(
+                sale.getTotal().subtract(originalCommission));
         return new OrganizerSettlementLine(
                 settlement,
                 sale,
@@ -74,8 +78,8 @@ public class OrganizerSettlementLine extends AuditableEntity {
                 sale.getSubtotal(),
                 sale.getDiscountTotal(),
                 BigDecimal.ZERO,
-                sale.getPlatformFeeAmount(),
-                sale.getOrganizerNetAmount());
+                originalCommission,
+                originalOrganizerNet);
     }
 
     public static OrganizerSettlementLine refund(
@@ -83,10 +87,10 @@ public class OrganizerSettlementLine extends AuditableEntity {
             PaymentTransaction transaction) {
         Sale sale = transaction.getSale();
         BigDecimal refundAmount = money(transaction.getAmount());
-        BigDecimal commissionReversal = refundAmount
-                .multiply(sale.getPlatformFeeRate())
-                .setScale(MONEY_SCALE, RoundingMode.HALF_UP);
-        BigDecimal organizerReversal = refundAmount.subtract(commissionReversal);
+        BigDecimal commissionReversal = money(
+                refundAmount.multiply(sale.getPlatformFeeRate()));
+        BigDecimal organizerReversal = money(
+                refundAmount.subtract(commissionReversal));
         return new OrganizerSettlementLine(
                 settlement,
                 sale,
