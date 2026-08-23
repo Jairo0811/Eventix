@@ -16,6 +16,7 @@ ALTER TABLE dbo.sales ADD
     eligibility_discount_value DECIMAL(12,2) NULL,
     eligibility_discount_amount DECIMAL(12,2) NOT NULL
         CONSTRAINT DF_sales_eligibility_discount_amount DEFAULT 0;
+GO
 
 UPDATE dbo.sales
 SET coupon_discount_amount = discount_total
