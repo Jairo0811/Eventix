@@ -40,12 +40,11 @@ public class OrganizerDashboardRepository {
                     (SELECT COALESCE(SUM(e.capacity), 0) FROM events e
                      WHERE e.organizer_id = :organizerId
                        AND e.status = 'PUBLISHED') AS published_capacity,
-                    (SELECT COALESCE(SUM(si.quantity), 0)
-                     FROM sale_items si
-                     INNER JOIN sales s ON s.id = si.sale_id
-                     INNER JOIN events e ON e.id = s.event_id
+                    (SELECT COUNT(*)
+                     FROM digital_tickets dt
+                     INNER JOIN events e ON e.id = dt.event_id
                      WHERE e.organizer_id = :organizerId
-                       AND s.status = 'PAID') AS tickets_sold,
+                       AND dt.status IN ('ACTIVE', 'USED')) AS tickets_sold,
                     (SELECT COUNT(*) FROM reservations r
                      INNER JOIN events e ON e.id = r.event_id
                      WHERE e.organizer_id = :organizerId
@@ -55,23 +54,23 @@ public class OrganizerDashboardRepository {
                     (SELECT COALESCE(SUM(s.subtotal), 0) FROM sales s
                      INNER JOIN events e ON e.id = s.event_id
                      WHERE e.organizer_id = :organizerId
-                       AND s.status IN ('PAID', 'REFUNDED')) AS gross_sales,
+                       AND s.status IN ('PAID', 'PARTIALLY_REFUNDED', 'REFUNDED')) AS gross_sales,
                     (SELECT COALESCE(SUM(s.discount_total), 0) FROM sales s
                      INNER JOIN events e ON e.id = s.event_id
                      WHERE e.organizer_id = :organizerId
-                       AND s.status IN ('PAID', 'REFUNDED')) AS discounts,
-                    (SELECT COALESCE(SUM(s.total), 0) FROM sales s
+                       AND s.status IN ('PAID', 'PARTIALLY_REFUNDED', 'REFUNDED')) AS discounts,
+                    (SELECT COALESCE(SUM(s.refunded_amount), 0) FROM sales s
                      INNER JOIN events e ON e.id = s.event_id
                      WHERE e.organizer_id = :organizerId
-                       AND s.status = 'REFUNDED') AS refunds,
+                       AND s.status IN ('PARTIALLY_REFUNDED', 'REFUNDED')) AS refunds,
                     (SELECT COALESCE(SUM(s.platform_fee_amount), 0) FROM sales s
                      INNER JOIN events e ON e.id = s.event_id
                      WHERE e.organizer_id = :organizerId
-                       AND s.status = 'PAID') AS platform_commission,
+                       AND s.status IN ('PAID', 'PARTIALLY_REFUNDED')) AS platform_commission,
                     (SELECT COALESCE(SUM(s.organizer_net_amount), 0) FROM sales s
                      INNER JOIN events e ON e.id = s.event_id
                      WHERE e.organizer_id = :organizerId
-                       AND s.status = 'PAID') AS estimated_net,
+                       AND s.status IN ('PAID', 'PARTIALLY_REFUNDED')) AS estimated_net,
                     (SELECT COUNT(*) FROM organizer_settlements st
                      WHERE st.organizer_id = :organizerId
                        AND st.status IN ('PENDING', 'PROCESSING'))
@@ -121,17 +120,16 @@ public class OrganizerDashboardRepository {
                        COALESCE(sales.estimated_net, 0) AS estimated_net
                 FROM events e
                 OUTER APPLY (
-                    SELECT SUM(items.ticket_count) AS tickets_sold,
-                           SUM(s.total) AS paid_revenue,
-                           SUM(s.organizer_net_amount) AS estimated_net
+                    SELECT
+                        (SELECT COUNT(*) FROM digital_tickets dt
+                         WHERE dt.event_id = e.id
+                           AND dt.status IN ('ACTIVE', 'USED')) AS tickets_sold,
+                        SUM(CASE WHEN s.status IN ('PAID', 'PARTIALLY_REFUNDED')
+                                 THEN s.total - s.refunded_amount ELSE 0 END) AS paid_revenue,
+                        SUM(CASE WHEN s.status IN ('PAID', 'PARTIALLY_REFUNDED')
+                                 THEN s.organizer_net_amount ELSE 0 END) AS estimated_net
                     FROM sales s
-                    LEFT JOIN (
-                        SELECT sale_id, SUM(quantity) AS ticket_count
-                        FROM sale_items
-                        GROUP BY sale_id
-                    ) items ON items.sale_id = s.id
                     WHERE s.event_id = e.id
-                      AND s.status = 'PAID'
                 ) sales
                 OUTER APPLY (
                     SELECT COUNT(*) AS active_count
