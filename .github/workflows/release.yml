@@ -51,12 +51,7 @@ jobs:
             exit 1
           fi
 
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            TARGET="${{ github.event.before }}"
-          else
-            TARGET="${{ github.sha }}"
-          fi
-
+          TARGET="${{ github.sha }}"
           if ! git cat-file -e "${TARGET}^{commit}" 2>/dev/null; then
             echo "Release target is not a valid commit: $TARGET" >&2
             exit 1
