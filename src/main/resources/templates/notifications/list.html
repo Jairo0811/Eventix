@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Notificaciones')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('notifications')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main" id="main-content">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <section class="mb-4" aria-labelledby="notifications-title">
+        <p class="text-success fw-semibold mb-1">Centro interno</p>
+        <h1 class="page-title" id="notifications-title">Notificaciones</h1>
+        <p class="page-subtitle">
+            Consulta operaciones relevantes de tu cuenta y marca cada aviso como leído al abrirlo.
+        </p>
+    </section>
+
+    <section class="content-card" aria-labelledby="notification-list-title">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0" id="notification-list-title">Bandeja</h2>
+            <span class="badge text-bg-primary"
+                  th:text="|${unreadCount} sin leer|">0 sin leer</span>
+        </div>
+
+        <div th:if="${notifications.empty}" class="alert alert-light border mb-0" role="status">
+            No tienes notificaciones internas todavía.
+        </div>
+
+        <div class="list-group list-group-flush" th:unless="${notifications.empty}">
+            <article class="list-group-item px-0 py-3"
+                     th:each="notification : ${notifications.content}"
+                     th:classappend="${notification.readAt == null} ? ' fw-semibold'">
+                <div class="d-flex justify-content-between gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge text-bg-light"
+                                  th:text="${notification.notificationType}">SYSTEM</span>
+                            <span class="visually-hidden"
+                                  th:if="${notification.readAt == null}">No leída</span>
+                        </div>
+                        <h3 class="h6 mb-1" th:text="${notification.title}">Notificación</h3>
+                        <p class="text-secondary mb-1" th:text="${notification.message}">Detalle</p>
+                        <small class="text-secondary"
+                               th:text="${#temporals.format(notification.createdAt, 'dd/MM/yyyy HH:mm')}">23/08/2026</small>
+                    </div>
+                    <form th:if="${notification.readAt == null}"
+                          th:action="@{/notifications/{id}/read(id=${notification.id})}"
+                          method="post">
+                        <button class="btn btn-sm btn-outline-primary" type="submit">
+                            Abrir
+                        </button>
+                    </form>
+                    <a th:if="${notification.readAt != null and notification.targetUrl != null}"
+                       class="btn btn-sm btn-outline-secondary"
+                       th:href="${notification.targetUrl}">Ver</a>
+                </div>
+            </article>
+        </div>
+
+        <nav class="d-flex justify-content-between mt-4"
+             th:if="${notifications.totalPages > 1}"
+             aria-label="Paginación de notificaciones">
+            <a class="btn btn-outline-secondary"
+               th:classappend="${notifications.first} ? ' disabled'"
+               th:href="@{/notifications(page=${notifications.number - 1})}">Anterior</a>
+            <span class="align-self-center text-secondary"
+                  th:text="|Página ${notifications.number + 1} de ${notifications.totalPages}|">Página 1</span>
+            <a class="btn btn-outline-secondary"
+               th:classappend="${notifications.last} ? ' disabled'"
+               th:href="@{/notifications(page=${notifications.number + 1})}">Siguiente</a>
+        </nav>
+    </section>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
