@@ -14,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jairomatias.eventix.payment.entity.PaymentTransaction;
+import com.jairomatias.eventix.payment.repository.PaymentTransactionRepository;
 import com.jairomatias.eventix.role.entity.RoleName;
 import com.jairomatias.eventix.sale.entity.Sale;
 import com.jairomatias.eventix.sale.entity.SaleStatus;
@@ -43,10 +45,12 @@ public class DefaultOrganizerSettlementService
     private static final int MAX_NOTES_LENGTH = 1000;
     private static final List<SaleStatus> SETTLEABLE_SALE_STATUSES = List.of(
             SaleStatus.PAID,
+            SaleStatus.PARTIALLY_REFUNDED,
             SaleStatus.REFUNDED);
 
     private final OrganizerSettlementRepository settlementRepository;
     private final SaleRepository saleRepository;
+    private final PaymentTransactionRepository paymentRepository;
     private final UserRepository userRepository;
     private final Clock clock;
 
@@ -54,10 +58,12 @@ public class DefaultOrganizerSettlementService
     public DefaultOrganizerSettlementService(
             OrganizerSettlementRepository settlementRepository,
             SaleRepository saleRepository,
+            PaymentTransactionRepository paymentRepository,
             UserRepository userRepository) {
         this(
                 settlementRepository,
                 saleRepository,
+                paymentRepository,
                 userRepository,
                 Clock.systemDefaultZone());
     }
@@ -65,10 +71,12 @@ public class DefaultOrganizerSettlementService
     DefaultOrganizerSettlementService(
             OrganizerSettlementRepository settlementRepository,
             SaleRepository saleRepository,
+            PaymentTransactionRepository paymentRepository,
             UserRepository userRepository,
             Clock clock) {
         this.settlementRepository = settlementRepository;
         this.saleRepository = saleRepository;
+        this.paymentRepository = paymentRepository;
         this.userRepository = userRepository;
         this.clock = clock;
     }
@@ -141,7 +149,7 @@ public class DefaultOrganizerSettlementService
                 SETTLEABLE_SALE_STATUSES,
                 fromDate,
                 toDate);
-        List<Sale> refunds = saleRepository.findUnsettledRefundsForUpdate(
+        List<PaymentTransaction> refunds = paymentRepository.findUnsettledRefundsForUpdate(
                 organizer.getId(),
                 fromDate,
                 toDate);
