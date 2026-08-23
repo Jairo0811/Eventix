@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.jairomatias.eventix.eligibility.entity.EligibilityBenefitType;
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.promotion.entity.Coupon;
 import com.jairomatias.eventix.promotion.entity.DiscountType;
@@ -81,6 +82,22 @@ public class Sale extends AuditableEntity {
     @Column(name = "coupon_discount_value", precision = 12, scale = 2)
     private BigDecimal couponDiscountValue;
 
+    @Column(name = "coupon_discount_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal couponDiscountAmount = BigDecimal.ZERO;
+
+    @Column(name = "eligibility_benefit_id")
+    private Long eligibilityBenefitId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "eligibility_benefit_type", length = 30)
+    private EligibilityBenefitType eligibilityBenefitType;
+
+    @Column(name = "eligibility_discount_value", precision = 12, scale = 2)
+    private BigDecimal eligibilityDiscountValue;
+
+    @Column(name = "eligibility_discount_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal eligibilityDiscountAmount = BigDecimal.ZERO;
+
     @Column(name = "platform_fee_rate", nullable = false, precision = 5, scale = 4)
     private BigDecimal platformFeeRate;
 
@@ -142,6 +159,9 @@ public class Sale extends AuditableEntity {
         this.currency = currency;
         this.soldBy = soldBy;
         this.subtotal = BigDecimal.ZERO;
+        this.discountTotal = BigDecimal.ZERO;
+        this.couponDiscountAmount = BigDecimal.ZERO;
+        this.eligibilityDiscountAmount = BigDecimal.ZERO;
         this.total = BigDecimal.ZERO;
         this.platformFeeRate = DEFAULT_PLATFORM_FEE_RATE;
     }
@@ -155,16 +175,36 @@ public class Sale extends AuditableEntity {
     public void applyCoupon(
             Coupon appliedCoupon,
             BigDecimal discountAmount) {
-        if (discountAmount.compareTo(BigDecimal.ZERO) < 0
-                || discountAmount.compareTo(subtotal) > 0) {
-            throw new IllegalArgumentException(
-                    "El descuento debe estar entre cero y el subtotal.");
+        if (eligibilityDiscountAmount.compareTo(BigDecimal.ZERO) > 0) {
+            throw new IllegalStateException(
+                    "Los descuentos de cupón y elegibilidad no pueden acumularse en la misma venta.");
         }
+        validateDiscountAmount(discountAmount);
         coupon = appliedCoupon;
         couponCode = appliedCoupon.getCode();
         couponDiscountType = appliedCoupon.getDiscountType();
         couponDiscountValue = appliedCoupon.getValue();
-        discountTotal = discountAmount;
+        couponDiscountAmount = discountAmount;
+        recalculateTotals();
+    }
+
+    public void applyEligibilityDiscount(
+            Long benefitId,
+            EligibilityBenefitType benefitType,
+            BigDecimal configuredValue,
+            BigDecimal discountAmount) {
+        if (couponDiscountAmount.compareTo(BigDecimal.ZERO) > 0) {
+            throw new IllegalStateException(
+                    "Los descuentos de cupón y elegibilidad no pueden acumularse en la misma venta.");
+        }
+        if (benefitId == null || benefitType == null || !isMonetaryBenefit(benefitType)) {
+            throw new IllegalArgumentException("El beneficio de elegibilidad monetario es inválido.");
+        }
+        validateDiscountAmount(discountAmount);
+        eligibilityBenefitId = benefitId;
+        eligibilityBenefitType = benefitType;
+        eligibilityDiscountValue = configuredValue;
+        eligibilityDiscountAmount = discountAmount;
         recalculateTotals();
     }
 
@@ -185,10 +225,29 @@ public class Sale extends AuditableEntity {
         this.cancelledAt = cancelledAt;
     }
 
+    private void validateDiscountAmount(BigDecimal discountAmount) {
+        if (discountAmount == null
+                || discountAmount.compareTo(BigDecimal.ZERO) < 0
+                || discountAmount.compareTo(subtotal) > 0) {
+            throw new IllegalArgumentException(
+                    "El descuento debe estar entre cero y el subtotal.");
+        }
+    }
+
+    private boolean isMonetaryBenefit(EligibilityBenefitType benefitType) {
+        return benefitType == EligibilityBenefitType.PERCENTAGE_DISCOUNT
+                || benefitType == EligibilityBenefitType.FIXED_DISCOUNT
+                || benefitType == EligibilityBenefitType.FREE_ENTRY;
+    }
+
     private void recalculateTotals() {
         subtotal = items.stream()
                 .map(SaleItem::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        discountTotal = couponDiscountAmount
+                .add(eligibilityDiscountAmount)
+                .min(subtotal)
+                .max(BigDecimal.ZERO);
         total = subtotal.subtract(discountTotal);
     }
 
@@ -246,6 +305,26 @@ public class Sale extends AuditableEntity {
 
     public BigDecimal getCouponDiscountValue() {
         return couponDiscountValue;
+    }
+
+    public BigDecimal getCouponDiscountAmount() {
+        return couponDiscountAmount;
+    }
+
+    public Long getEligibilityBenefitId() {
+        return eligibilityBenefitId;
+    }
+
+    public EligibilityBenefitType getEligibilityBenefitType() {
+        return eligibilityBenefitType;
+    }
+
+    public BigDecimal getEligibilityDiscountValue() {
+        return eligibilityDiscountValue;
+    }
+
+    public BigDecimal getEligibilityDiscountAmount() {
+        return eligibilityDiscountAmount;
     }
 
     public BigDecimal getPlatformFeeRate() {
