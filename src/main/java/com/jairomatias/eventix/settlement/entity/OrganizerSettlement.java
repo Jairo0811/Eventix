@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.jairomatias.eventix.payment.entity.PaymentTransaction;
 import com.jairomatias.eventix.sale.entity.Sale;
 import com.jairomatias.eventix.shared.entity.AuditableEntity;
 import com.jairomatias.eventix.user.entity.User;
@@ -99,8 +100,8 @@ public class OrganizerSettlement extends AuditableEntity {
         addLine(OrganizerSettlementLine.sale(this, sale));
     }
 
-    public void addRefund(Sale sale) {
-        addLine(OrganizerSettlementLine.refund(this, sale));
+    public void addRefund(PaymentTransaction transaction) {
+        addLine(OrganizerSettlementLine.refund(this, transaction));
     }
 
     public void startProcessing(LocalDateTime at, String notes) {
