@@ -143,6 +143,7 @@ public class EligibilityBenefitManagementService {
             case FREE_ENTRY, PRIORITY_ACCESS -> {
                 // No additional scalar configuration is required.
             }
+            default -> throw new BusinessRuleException("El tipo de beneficio no está soportado.");
         }
     }
 
