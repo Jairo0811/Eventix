@@ -176,27 +176,4 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             @Param("statuses") Collection<SaleStatus> statuses,
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate);
-
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @EntityGraph(attributePaths = {"event", "event.organizer"})
-    @Query("""
-            SELECT s
-            FROM Sale s
-            WHERE s.event.organizer.id = :organizerId
-            AND s.status = com.jairomatias.eventix.sale.entity.SaleStatus.REFUNDED
-            AND s.refundedAt >= :fromDate
-            AND s.refundedAt < :toDate
-            AND NOT EXISTS (
-                SELECT line.id
-                FROM OrganizerSettlementLine line
-                WHERE line.sale = s
-                AND line.lineType = com.jairomatias.eventix.settlement.entity.SettlementLineType.REFUND
-                AND line.active = true
-            )
-            ORDER BY s.refundedAt ASC, s.id ASC
-            """)
-    List<Sale> findUnsettledRefundsForUpdate(
-            @Param("organizerId") Long organizerId,
-            @Param("fromDate") LocalDateTime fromDate,
-            @Param("toDate") LocalDateTime toDate);
 }
