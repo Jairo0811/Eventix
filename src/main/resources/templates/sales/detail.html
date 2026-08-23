@@ -151,9 +151,52 @@
 
     <section class="content-card mt-4"
              sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR')"
+             th:if="${(sale.status.name() == 'PAID' || sale.status.name() == 'PARTIALLY_REFUNDED') && !tickets.isEmpty()}">
+        <h2 class="h5 fw-bold mb-1">Reembolso parcial por boleta</h2>
+        <p class="text-secondary mb-4">
+            Selecciona únicamente las boletas que deben invalidarse. El importe se calcula proporcionalmente respetando los descuentos aplicados a la venta.
+        </p>
+        <form th:action="@{/sales/{id}/partial-refund(id=${sale.id})}"
+              method="post"
+              data-confirm="Las boletas seleccionadas serán invalidadas y se registrará el reembolso correspondiente.">
+            <div class="table-responsive mb-3">
+                <table class="table align-middle">
+                    <thead>
+                    <tr><th scope="col">Seleccionar</th><th scope="col">Código</th><th scope="col">Tipo</th><th scope="col">Estado</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="ticket : ${tickets}">
+                        <td>
+                            <input class="form-check-input" type="checkbox" name="ticketIds"
+                                   th:value="${ticket.id}"
+                                   th:disabled="${ticket.status.name() != 'ACTIVE'}"
+                                   th:attr="aria-label=|Reembolsar boleta ${ticket.uniqueCode}|">
+                        </td>
+                        <td><code th:text="${ticket.uniqueCode}">EVX-</code></td>
+                        <td th:text="${ticket.ticketTypeName}">General</td>
+                        <td th:text="${ticket.status.displayName}">Activa</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-10">
+                    <label class="form-label" for="partial-refund-reason">Motivo del reembolso</label>
+                    <input class="form-control" id="partial-refund-reason" name="reason"
+                           maxlength="500" required>
+                </div>
+                <div class="col-lg-2 d-grid">
+                    <button class="btn btn-outline-danger" type="submit">Reembolsar selección</button>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <section class="content-card mt-4"
+             sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR')"
              th:if="${sale.status.name() == 'PENDING' || sale.status.name() == 'PAID'}">
         <h2 class="h5 fw-bold mb-3"
-            th:text="${sale.status.name() == 'PAID'} ? 'Reembolsar venta' : 'Cancelar venta'">
+            th:text="${sale.status.name() == 'PAID'} ? 'Reembolsar venta completa' : 'Cancelar venta'">
             Operación
         </h2>
         <form class="row g-3 align-items-end"
@@ -163,7 +206,7 @@
                          : @{/sales/{id}/cancel(id=${sale.id})}"
               method="post"
               th:attr="data-confirm=${sale.status.name() == 'PAID'
-                       ? 'Se registrará el reembolso y se liberarán los cupos.'
+                       ? 'Se reembolsará el saldo completo y se invalidarán todas las boletas.'
                        : 'La venta será cancelada y se liberarán los cupos.'}">
             <div class="col-lg-10">
                 <label class="form-label" for="reason">Motivo</label>
@@ -172,7 +215,7 @@
             </div>
             <div class="col-lg-2 d-grid">
                 <button class="btn btn-outline-danger" type="submit"
-                        th:text="${sale.status.name() == 'PAID'} ? 'Reembolsar' : 'Cancelar'">
+                        th:text="${sale.status.name() == 'PAID'} ? 'Reembolsar todo' : 'Cancelar'">
                     Continuar
                 </button>
             </div>
@@ -183,11 +226,12 @@
         <h2 class="h5 fw-bold mb-4">Historial de transacciones</h2>
         <div class="table-responsive" th:if="${!sale.payments.isEmpty()}">
             <table class="table">
-                <thead><tr><th>Referencia</th><th>Tipo</th><th>Proveedor</th><th>Resultado</th><th>Fecha</th></tr></thead>
+                <thead><tr><th>Referencia</th><th>Tipo</th><th>Proveedor</th><th>Importe</th><th>Resultado</th><th>Fecha</th></tr></thead>
                 <tbody><tr th:each="payment : ${sale.payments}">
                     <td><code th:text="${payment.transactionReference}">PAY-</code></td>
                     <td th:text="${payment.transactionType.displayName}">Cobro</td>
                     <td th:text="${payment.provider.displayName}">Proveedor</td>
+                    <td th:text="|RD$ ${#numbers.formatDecimal(payment.amount, 1, 'COMMA', 2, 'POINT')}|">0</td>
                     <td><span class="badge-status"
                               th:classappend="${payment.status.name() == 'APPROVED'} ? ' badge-active' : ' badge-cancelled'"
                               th:text="${payment.status.displayName}">Estado</span></td>
@@ -201,7 +245,7 @@
     </section>
 
     <div class="alert alert-light border mt-4" th:if="${sale.refundReason != null}">
-        <strong>Motivo del reembolso:</strong> <span th:text="${sale.refundReason}">Motivo</span>
+        <strong>Último motivo de reembolso:</strong> <span th:text="${sale.refundReason}">Motivo</span>
     </div>
     <div class="alert alert-light border mt-4" th:if="${sale.cancellationReason != null}">
         <strong>Motivo de cancelación:</strong> <span th:text="${sale.cancellationReason}">Motivo</span>
