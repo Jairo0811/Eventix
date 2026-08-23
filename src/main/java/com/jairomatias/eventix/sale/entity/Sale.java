@@ -98,6 +98,9 @@ public class Sale extends AuditableEntity {
     @Column(name = "eligibility_discount_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal eligibilityDiscountAmount = BigDecimal.ZERO;
 
+    @Column(name = "refunded_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal refundedAmount = BigDecimal.ZERO;
+
     @Column(name = "platform_fee_rate", nullable = false, precision = 5, scale = 4)
     private BigDecimal platformFeeRate;
 
@@ -162,6 +165,7 @@ public class Sale extends AuditableEntity {
         this.discountTotal = BigDecimal.ZERO;
         this.couponDiscountAmount = BigDecimal.ZERO;
         this.eligibilityDiscountAmount = BigDecimal.ZERO;
+        this.refundedAmount = BigDecimal.ZERO;
         this.total = BigDecimal.ZERO;
         this.platformFeeRate = DEFAULT_PLATFORM_FEE_RATE;
     }
@@ -213,10 +217,30 @@ public class Sale extends AuditableEntity {
         this.paidAt = paidAt;
     }
 
+    public void recordRefund(
+            BigDecimal amount,
+            String reason,
+            LocalDateTime processedAt) {
+        if (status != SaleStatus.PAID && status != SaleStatus.PARTIALLY_REFUNDED) {
+            throw new IllegalStateException("La venta no admite reembolsos en su estado actual.");
+        }
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El importe del reembolso no puede ser negativo.");
+        }
+        BigDecimal nextRefundedAmount = refundedAmount.add(amount);
+        if (nextRefundedAmount.compareTo(total) > 0) {
+            throw new IllegalArgumentException("El reembolso acumulado no puede superar el total de la venta.");
+        }
+        refundedAmount = nextRefundedAmount;
+        refundReason = reason;
+        refundedAt = processedAt;
+        status = refundedAmount.compareTo(total) == 0
+                ? SaleStatus.REFUNDED
+                : SaleStatus.PARTIALLY_REFUNDED;
+    }
+
     public void markRefunded(String reason, LocalDateTime refundedAt) {
-        this.status = SaleStatus.REFUNDED;
-        this.refundReason = reason;
-        this.refundedAt = refundedAt;
+        recordRefund(total.subtract(refundedAmount), reason, refundedAt);
     }
 
     public void cancel(String reason, LocalDateTime cancelledAt) {
@@ -293,6 +317,14 @@ public class Sale extends AuditableEntity {
 
     public BigDecimal getTotal() {
         return total;
+    }
+
+    public BigDecimal getRefundedAmount() {
+        return refundedAmount;
+    }
+
+    public BigDecimal getRemainingAmount() {
+        return total.subtract(refundedAmount);
     }
 
     public String getCouponCode() {
