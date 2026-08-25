@@ -10,7 +10,7 @@
 
 **Plataforma web modular para gestión integral de eventos, reservaciones, ventas, pagos, ticketing digital, elegibilidad, beneficios y control de acceso.**
 
-[![Estado](https://img.shields.io/badge/Estado-v1.3.1%20estabilizaci%C3%B3n-2563EB?style=for-the-badge)](#-estado-del-proyecto)
+[![Estado](https://img.shields.io/badge/Estado-v1.3.1%20estable-2563EB?style=for-the-badge)](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.1)
 [![Eventix CI](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml/badge.svg)](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -20,7 +20,9 @@
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)](https://www.thymeleaf.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 
-> **Estado actual:** Eventix cuenta con **v1.3.0** como release funcional estable. La línea **v1.3.1** consolida configuración segura, documentación, pruebas del checkout y publicación de artefactos verificados. Los pagos comerciales y payouts automáticos permanecen reservados para la evolución posterior.
+> **Estado actual:** **Eventix v1.3.1** es la release funcional estable. Fue validada por CI con pruebas, Docker Compose y escaneo de seguridad, y publica el JAR ejecutable junto con su SBOM. Los pagos comerciales y payouts automáticos permanecen reservados para v1.4.0.
+>
+> **Descargas verificadas:** [release v1.3.1](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.1) · [eventix.jar](https://github.com/Jairo0811/Eventix/releases/download/v1.3.1/eventix.jar) · [SBOM SPDX](https://github.com/Jairo0811/Eventix/releases/download/v1.3.1/eventix-sbom.spdx.json)
 
 </div>
 
@@ -523,12 +525,12 @@ Entre las decisiones de seguridad del proyecto se encuentran:
 - [x] dashboard comercial y liquidaciones trazables para organizadores;
 - [x] centro interno de notificaciones persistentes.
 
-### v1.3.1 — Estabilización
+### v1.3.1 — Estabilización publicada
 
 - [x] secreto HMAC requerido y transferido por Docker Compose;
 - [x] versión, changelog, manuales y modelo de datos sincronizados;
 - [x] pruebas directas del checkout y contratos de despliegue;
-- [x] release posterior al CI con JAR y SBOM verificados;
+- [x] [release v1.3.1](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.1) posterior al CI con JAR y SBOM verificados;
 - [ ] cierre manual de accesibilidad con teclado, zoom, contraste y lector de pantalla.
 
 ### v1.4.0 — Pagos productivos
