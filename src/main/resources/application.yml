@@ -105,7 +105,7 @@ management:
 info:
   app:
     name: Eventix
-    version: 1.1.2
+    version: "@project.version@"
     description: Plataforma profesional de gestión de eventos y ticketing digital.
 
 app:
@@ -119,6 +119,9 @@ app:
     storage-path: ${EVENT_COVER_STORAGE_PATH:data/event-covers}
 
 eventix:
+  eligibility:
+    hmac-secret: ${EVENTIX_ELIGIBILITY_HMAC_SECRET:}
+
   security:
     allow-default-bootstrap-administrator: ${EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN:true}
     bootstrap-administrator-password: ${EVENTIX_BOOTSTRAP_ADMIN_PASSWORD:}

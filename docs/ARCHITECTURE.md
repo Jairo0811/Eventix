@@ -41,11 +41,13 @@ flowchart TB
     Platform["Eventix"]
     Platform --> Auth["auth / profile / user"]
     Platform --> Events["event"]
+    Platform --> Checkout["checkout"]
     Platform --> Reservations["reservation"]
     Platform --> Sales["sale"]
     Platform --> Promotions["promotion"]
     Platform --> Settlements["settlement"]
     Platform --> Payments["payment"]
+    Platform --> Eligibility["eligibility"]
     Platform --> Tickets["ticket"]
     Platform --> Notifications["notification"]
     Platform --> Reporting["reporting"]
@@ -98,6 +100,27 @@ flowchart LR
 ```
 
 El dominio de ventas no conoce detalles SOAP ni credenciales de proveedores. La infraestructura de pago implementa las estrategias y devuelve resultados normalizados al servicio de negocio.
+
+En v1.3.x, los proveedores no-wallet usan una estrategia simulada. El adaptador
+AZUL productivo disponible cubre Apple Pay y Google Pay cuando está configurado.
+La integración comercial completa, webhooks, reconciliación y payouts se
+mantienen fuera de este límite hasta v1.4.0.
+
+## Checkout y elegibilidad
+
+```mermaid
+flowchart LR
+    Customer["Cliente"] --> Checkout["Checkout"]
+    Checkout --> Inventory["Cupos / entradas"]
+    Checkout --> Coupons["Cupones"]
+    Checkout --> Eligibility["Eligibility & Benefits"]
+    Eligibility --> Memberships["Membresías verificadas"]
+    Eligibility --> Benefits["Descuentos / límites / exclusividad"]
+```
+
+El checkout vuelve a validar acceso al evento, visibilidad del tipo de entrada,
+límites, descuentos y cupos dentro de la operación del servidor. Ocultar una
+opción en Thymeleaf no sustituye la autorización de negocio.
 
 ## Ticketing y control de acceso
 

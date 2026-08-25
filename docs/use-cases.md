@@ -14,15 +14,25 @@
 | CU-10 | Administrador/Organizador | Exportar CSV, XLSX o PDF | Archivo descargable y exportación auditada. |
 | CU-11 | Administrador | Consultar auditoría | Trazabilidad filtrable por usuario, tipo, resultado y fecha. |
 | CU-12 | Operaciones | Consultar salud y métricas | Estado de disponibilidad y métricas Prometheus. |
+| CU-13 | Cliente | Comprar entradas desde un evento | Venta, pago de demostración y boletas asociadas a su cuenta. |
+| CU-14 | Cliente | Consultar compras y “Mis entradas” | Historial, detalle, QR, PDF y Wallet disponibles. |
+| CU-15 | Administrador/Organizador | Gestionar elegibilidad y beneficios | Grupos, miembros y privilegios limitados al evento autorizado. |
+| CU-16 | Cliente/Administrador/Organizador | Solicitar o revisar un vínculo familiar | Relación aprobada, rechazada o revocada con trazabilidad. |
+| CU-17 | Administrador/Operador | Reembolsar boletas específicas | Importe proporcional, boletas anuladas y ledger actualizado. |
+| CU-18 | Administrador/Organizador | Gestionar o consultar liquidaciones | Comisión y neto reconstruibles; pago externo registrado. |
+| CU-19 | Usuario autenticado | Consultar notificaciones internas | Eventos persistentes con estado leído/no leído. |
 
 ## Reglas de autorización
 
-| Capacidad | ADMINISTRATOR | OPERATOR | ORGANIZER | ACCESS_STAFF |
-|---|:---:|:---:|:---:|:---:|
-| Usuarios y categorías | ✓ | — | — | — |
-| Eventos | Todos | Consulta | Propios | Consulta |
-| Reservaciones y ventas | Todas | Operación | Propias | — |
-| Boletas | Todas | Operación | Propias | — |
-| Control de acceso | ✓ | ✓ | Propios | ✓ |
-| Reportes | Todos | — | Propios | — |
-| Auditoría central | ✓ | — | — | — |
+| Capacidad | ADMINISTRATOR | OPERATOR | ORGANIZER | ACCESS_STAFF | USER |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Usuarios y categorías | ✓ | — | — | — | Perfil propio |
+| Eventos | Todos | Consulta | Propios | Consulta | Descubrimiento |
+| Reservaciones y ventas | Todas | Operación | Propias | — | Compra propia |
+| Boletas | Todas | Operación | Propias | — | Propias |
+| Control de acceso | ✓ | ✓ | Propios | ✓ | — |
+| Elegibilidad y beneficios | Todos | — | Eventos propios | — | Membresía propia |
+| Liquidaciones | Gestiona | — | Consulta propias | — | — |
+| Notificaciones internas | Propias | Propias | Propias | Propias | Propias |
+| Reportes | Todos | — | Propios | — | — |
+| Auditoría central | ✓ | — | — | — | — |

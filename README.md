@@ -10,7 +10,7 @@
 
 **Plataforma web modular para gestión integral de eventos, reservaciones, ventas, pagos, ticketing digital, elegibilidad, beneficios y control de acceso.**
 
-[![Estado](https://img.shields.io/badge/Estado-v1.3.0%20en%20evoluci%C3%B3n-2563EB?style=for-the-badge)](#-estado-del-proyecto)
+[![Estado](https://img.shields.io/badge/Estado-v1.3.1%20estabilizaci%C3%B3n-2563EB?style=for-the-badge)](#-estado-del-proyecto)
 [![Eventix CI](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml/badge.svg)](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -20,7 +20,7 @@
 [![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)](https://www.thymeleaf.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 
-> **Estado actual:** Eventix mantiene **v1.1.2** como última versión estable etiquetada, mientras `main` incorpora la evolución hacia **v1.3.0**. El núcleo comercial, la experiencia del organizador y el nuevo dominio genérico de **Eligibility & Benefits** continúan madurando de forma incremental con validación automática mediante CI.
+> **Estado actual:** Eventix cuenta con **v1.3.0** como release funcional estable. La línea **v1.3.1** consolida configuración segura, documentación, pruebas del checkout y publicación de artefactos verificados. Los pagos comerciales y payouts automáticos permanecen reservados para la evolución posterior.
 
 </div>
 
@@ -102,7 +102,7 @@ src/main/java/com/jairomatias/eventix/
 
 ---
 
-## 🆕 v1.3.0 — Evolución actual
+## 🆕 v1.3.0 — Commerce & Organizer Experience
 
 ### 🪪 Eligibility & Benefits
 
@@ -168,9 +168,7 @@ El checkout ya integra la autorización de elegibilidad del lado del servidor.
 
 ### 👨‍👩‍👧 Familiares y relaciones
 
-El modelo está preparado para relaciones familiares verificadas. La relación no debe considerarse válida solo porque una persona declare ser familiar de otra.
-
-La evolución prevista requiere:
+Las relaciones familiares verificadas están implementadas sin aceptar la simple autodeclaración. El flujo incorpora:
 
 - solicitud de vínculo;
 - patrocinador/miembro previamente verificado o revisión administrativa;
@@ -284,7 +282,8 @@ El módulo de pagos utiliza contratos desacoplados para evitar acoplar el domini
 - infraestructura para notificaciones transaccionales;
 - preferencias de usuario;
 - recordatorios y eventos operativos;
-- evolución prevista hacia un centro interno de notificaciones en v1.3.0.
+- centro interno persistente con estados leído/no leído;
+- eventos internos de compra y reembolso.
 
 ---
 
@@ -364,7 +363,7 @@ src/main/resources/db/migration/
 La evolución actual incluye migraciones hasta:
 
 ```text
-V18__add_generic_eligibility_groups.sql
+V23__add_internal_notifications.sql
 ```
 
 Entre los dominios persistidos se encuentran:
@@ -383,7 +382,10 @@ Entre los dominios persistidos se encuentran:
 - intentos de verificación;
 - grupos genéricos de elegibilidad;
 - membresías;
-- beneficios.
+- relaciones familiares;
+- beneficios y snapshots de descuento;
+- reembolsos parciales y ledger de liquidaciones;
+- notificaciones internas.
 
 ---
 
@@ -452,13 +454,15 @@ Los secretos no deben persistirse en el repositorio.
 Ejemplos de configuración sensible:
 
 ```text
-SPRING_DATASOURCE_USERNAME
-SPRING_DATASOURCE_PASSWORD
+DB_USERNAME
+DB_PASSWORD
+FLYWAY_DB_USERNAME
+FLYWAY_DB_PASSWORD
 EVENTIX_ELIGIBILITY_HMAC_SECRET
 GOOGLE_MAPS_EMBED_API_KEY
 ```
 
-En producción deben suministrarse mediante variables de entorno o un gestor de secretos.
+En producción deben suministrarse mediante variables de entorno o un gestor de secretos. Genera el secreto de elegibilidad con `openssl rand -hex 32`, mantenlo estable y no lo rotes sin un procedimiento controlado de reimportación de padrones.
 
 ---
 
@@ -508,64 +512,40 @@ Entre las decisiones de seguridad del proyecto se encuentran:
 
 ## 📈 Roadmap
 
-### v1.3.0 — Customer & Organizer Experience
+### v1.3.0 — Entregada
 
-**Customer Experience**
-- [x] checkout transaccional existente
-- [x] ticketing digital
-- [ ] consolidar “Mis entradas”
-- [ ] historial de compras y detalle de órdenes
-- [ ] experiencia postcompra completa
+- [x] portal “Mis entradas”, historial y experiencia postcompra;
+- [x] reembolsos completos y parciales por boleta;
+- [x] recálculo de comisión y neto ante reembolsos;
+- [x] relaciones familiares verificadas y límites configurables;
+- [x] descuentos porcentuales/fijos y entradas gratuitas por elegibilidad;
+- [x] panel de administración de grupos, membresías, relaciones y beneficios;
+- [x] dashboard comercial y liquidaciones trazables para organizadores;
+- [x] centro interno de notificaciones persistentes.
 
-**Commerce Core**
-- [x] reservaciones y ventas
-- [x] cupones
-- [x] liquidaciones
-- [ ] formalizar refund parcial/completo
-- [ ] recalcular comisión/neto ante reembolsos
-- [ ] ampliar pruebas de concurrencia e inventario
+### v1.3.1 — Estabilización
 
-**Eligibility & Benefits**
-- [x] verificación escolar contra padrón autorizado
-- [x] HMAC de cédula
-- [x] importación CSV
-- [x] revisión manual y auditoría
-- [x] grupos genéricos
-- [x] membresías verificadas
-- [x] modos `PUBLIC`, `PRIVATE`, `CONTROLLED_ACCESS`
-- [x] autorización backend en checkout
-- [x] límite de compra por beneficio
-- [x] entrada exclusiva por grupo
-- [ ] flujo completo de relaciones familiares
-- [ ] inventario reservado
-- [ ] descuento porcentual/fijo aplicado al checkout
-- [ ] entrada gratuita por beneficio
-- [ ] early access con ventana comercial explícita
-- [ ] panel administrativo completo de Eligibility & Benefits
-
-**Organizer Experience**
-- [x] dashboard y liquidaciones base
-- [ ] Dashboard 2.0
-- [ ] ventas por día
-- [ ] ticket promedio
-- [ ] rendimiento por tipo de entrada/promoción
-- [ ] próximos settlements
-- [ ] administración de grupos y beneficios
-
-**Engagement, Audit & QA**
-- [x] auditoría de verificaciones
-- [x] pipeline de seguridad
-- [ ] centro interno de notificaciones
-- [ ] pruebas adicionales de abuso de elegibilidad
-- [ ] cierre de QA manual de accesibilidad
+- [x] secreto HMAC requerido y transferido por Docker Compose;
+- [x] versión, changelog, manuales y modelo de datos sincronizados;
+- [x] pruebas directas del checkout y contratos de despliegue;
+- [x] release posterior al CI con JAR y SBOM verificados;
+- [ ] cierre manual de accesibilidad con teclado, zoom, contraste y lector de pantalla.
 
 ### v1.4.0 — Pagos productivos
 
 - integración de gateway comercial real;
 - contratos/adaptadores de pagos productivos;
-- webhooks y reconciliación;
-- reembolsos externos;
+- webhooks, idempotencia y reconciliación;
+- reembolsos externos y manejo de disputas;
+- payouts reales a organizadores y conciliación de liquidaciones;
 - estrategia para wallets digitales según proveedor y mercado objetivo.
+
+### v1.5.0 — Acceso avanzado y escalabilidad
+
+- ventanas comerciales de early access;
+- inventario reservado transaccional;
+- prioridad y colas de acceso;
+- pruebas E2E de navegador, carga y concurrencia ampliada.
 
 ---
 
@@ -584,10 +564,13 @@ Entre las decisiones de seguridad del proyecto se encuentran:
 | Control de acceso | ✅ Implementado |
 | Liquidaciones | ✅ Implementado |
 | Elegibilidad escolar | ✅ Implementada |
-| Elegibilidad genérica | 🟡 En evolución |
-| Experiencia de organizador 2.0 | 🟡 En evolución |
-| Centro de notificaciones | 🟡 Pendiente |
+| Elegibilidad genérica | ✅ Implementada |
+| Relaciones familiares | ✅ Implementadas |
+| Beneficios monetarios | ✅ Implementados |
+| Experiencia de organizador 2.0 | ✅ Implementada |
+| Centro de notificaciones | ✅ Implementado |
 | Gateway real de producción | 🔵 Planificado para v1.4.0 |
+| Payouts automáticos | 🔵 Planificados para v1.4.0 |
 | QA manual de accesibilidad | 🟡 Pendiente de cierre |
 
 ---

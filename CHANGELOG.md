@@ -5,6 +5,47 @@ Todos los cambios relevantes de Eventix se documentan en este archivo.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 
+## [1.3.1] - 2026-08-24
+
+### Añadido
+
+- Pruebas directas del checkout del comprador y contratos de configuración de
+  despliegue.
+- Licencia MIT del proyecto.
+- JAR y SBOM verificados como activos de cada nueva release estable.
+
+### Cambiado
+
+- La versión expuesta por Actuator se obtiene de la versión Maven.
+- La publicación de releases espera un `Eventix CI` exitoso sobre `main` y es
+  idempotente cuando la versión ya fue publicada.
+- README, manuales, modelo ER y casos de uso se sincronizaron con v1.3.x.
+
+### Seguridad
+
+- Docker Compose exige y transfiere `EVENTIX_ELIGIBILITY_HMAC_SECRET`.
+- CI genera un secreto HMAC efímero de 256 bits para las pruebas de contenedor.
+- La protección HMAC rechaza secretos menores de 32 bytes.
+
+## [1.3.0] - 2026-08-23
+
+### Añadido
+
+- Checkout de autoservicio, historial postcompra y portal “Mis entradas”.
+- Eligibility & Benefits con padrón escolar, HMAC de cédula, grupos genéricos,
+  membresías, relaciones familiares y administración por evento.
+- Descuentos porcentuales/fijos, entrada gratuita, límites de compra y tipos de
+  entrada exclusivos aplicados en backend.
+- Reembolsos completos y parciales por boleta con ledger de liquidaciones.
+- Dashboard comercial del organizador y centro interno de notificaciones.
+
+### Seguridad
+
+- Revalidación de elegibilidad dentro del checkout transaccional.
+- Bloqueos pesimistas e idempotencia local en operaciones financieras
+  sensibles.
+- Migraciones incrementales V16 a V23 verificadas sobre SQL Server 2022.
+
 ## [1.1.2] - 2026-08-12
 
 ### Corregido
@@ -75,8 +116,9 @@ el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 - Integraciones preparadas para AZUL, Apple Pay, Google Pay, Apple Wallet y
   Google Wallet mediante configuración externa segura.
 
+[1.3.1]: https://github.com/Jairo0811/Eventix/compare/v1.3.0...v1.3.1
+[1.3.0]: https://github.com/Jairo0811/Eventix/compare/v1.1.2...v1.3.0
 [1.1.2]: https://github.com/Jairo0811/Eventix/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/Jairo0811/Eventix/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/Jairo0811/Eventix/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Jairo0811/Eventix/releases/tag/v1.0.0
-

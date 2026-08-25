@@ -2,13 +2,14 @@ name: Publish stable release
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/release.yml
+  workflow_run:
+    workflows:
+      - Eventix CI
+    types:
+      - completed
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -18,12 +19,18 @@ concurrency:
 jobs:
   publish:
     name: Publish GitHub release
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Resolve release metadata
         id: release
@@ -51,7 +58,13 @@ jobs:
             exit 1
           fi
 
-          TARGET="${{ github.sha }}"
+          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+            TARGET="${{ github.event.workflow_run.head_sha }}"
+            RUN_ID="${{ github.event.workflow_run.id }}"
+          else
+            TARGET="${{ github.sha }}"
+            RUN_ID=""
+          fi
           if ! git cat-file -e "${TARGET}^{commit}" 2>/dev/null; then
             echo "Release target is not a valid commit: $TARGET" >&2
             exit 1
@@ -61,9 +74,12 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "notes_file=$NOTES_FILE" >> "$GITHUB_OUTPUT"
           echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
       - name: Create release tag
+        id: tag
         env:
+          GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.release.outputs.tag }}
           TARGET: ${{ steps.release.outputs.target }}
         shell: bash
@@ -72,25 +88,74 @@ jobs:
 
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             TAG_TARGET="$(git rev-list -n 1 "$TAG")"
+            if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              echo "$TAG is already published from $TAG_TARGET; nothing to change."
+              echo "already_released=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
             if [[ "$TAG_TARGET" != "$TARGET" ]]; then
-              echo "Tag $TAG already exists on $TAG_TARGET, expected $TARGET" >&2
+              echo "Tag $TAG exists on $TAG_TARGET without a release; expected $TARGET." >&2
               exit 1
             fi
-            echo "$TAG already points to $TARGET; nothing to change."
-            exit 0
+            echo "$TAG already points to $TAG_TARGET; nothing to change."
+            echo "already_released=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_released=false" >> "$GITHUB_OUTPUT"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" "$TARGET" -m "Eventix $TAG"
+            git push origin "$TAG"
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" "$TARGET" -m "Eventix $TAG"
-          git push origin "$TAG"
+      - name: Download verified application artifact
+        if: >-
+          github.event_name == 'workflow_run' &&
+          steps.tag.outputs.already_released != 'true'
+        uses: actions/download-artifact@v6
+        with:
+          name: eventix-verification-${{ steps.release.outputs.target }}
+          path: release-assets/application
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.release.outputs.run_id }}
+
+      - name: Download verified SBOM
+        if: >-
+          github.event_name == 'workflow_run' &&
+          steps.tag.outputs.already_released != 'true'
+        uses: actions/download-artifact@v6
+        with:
+          name: eventix-sbom-${{ steps.release.outputs.target }}
+          path: release-assets/sbom
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.release.outputs.run_id }}
+
+      - name: Set up Java 21 for manual release
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          steps.tag.outputs.already_released != 'true'
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build application for manual release
+        if: >-
+          github.event_name == 'workflow_dispatch' &&
+          steps.tag.outputs.already_released != 'true'
+        run: |
+          mvn --batch-mode --no-transfer-progress -DskipTests package
+          mkdir -p release-assets/application
+          cp target/eventix.jar release-assets/application/eventix.jar
 
       - name: Publish GitHub Release
+        if: steps.tag.outputs.already_released != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.release.outputs.tag }}
           TARGET: ${{ steps.release.outputs.target }}
           NOTES_FILE: ${{ steps.release.outputs.notes_file }}
+          VERSION: ${{ steps.release.outputs.version }}
         shell: bash
         run: |
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
@@ -98,9 +163,22 @@ jobs:
             exit 0
           fi
 
+          JAR_PATH="$(find release-assets/application -type f -name 'eventix.jar' -print -quit)"
+          if [[ -z "$JAR_PATH" ]]; then
+            echo "Verified JAR not found." >&2
+            exit 1
+          fi
+
+          ASSETS=("$JAR_PATH#eventix-$VERSION.jar")
+          SBOM_PATH="$(find release-assets/sbom -type f -name '*.spdx.json' -print -quit 2>/dev/null || true)"
+          if [[ -n "$SBOM_PATH" ]]; then
+            ASSETS+=("$SBOM_PATH#eventix-$VERSION-sbom.spdx.json")
+          fi
+
           gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$TARGET" \
             --title "Eventix $TAG" \
             --notes-file "$NOTES_FILE" \
-            --latest
+            --latest \
+            "${ASSETS[@]}"
