@@ -22,10 +22,15 @@ En CI se activa el perfil `ci`, que ejecuta Enforcer, Checkstyle, JaCoCo y la su
 | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Conexión de ejecución. |
 | `FLYWAY_DB_URL`, `FLYWAY_DB_USERNAME`, `FLYWAY_DB_PASSWORD` | Conexión exclusiva para migraciones. |
 | `EVENTIX_BOOTSTRAP_ADMIN_PASSWORD` | Sustituye la clave inicial al arrancar producción por primera vez. |
+| `EVENTIX_ELIGIBILITY_HMAC_SECRET` | Clave estable de al menos 32 bytes para proteger identificadores de elegibilidad. |
 | `TICKETING_SIGNING_KEY_ID` | Identificador de la clave activa. |
 | `TICKETING_SIGNING_PRIVATE_KEY` | Clave privada Ed25519 PKCS#8 en Base64. |
 | `TICKETING_SIGNING_PUBLIC_KEY` | Clave pública Ed25519 X.509 en Base64. |
 | `TICKETING_VERIFICATION_PUBLIC_KEYS` | Claves históricas `id=base64,id2=base64`. |
+
+Genera el secreto de elegibilidad con `openssl rand -hex 32`. Docker Compose lo
+exige explícitamente. No lo cambies sin reimportar los padrones desde su fuente
+autorizada, ya que una nueva clave produce huellas de búsqueda diferentes.
 
 Consulta `docs/phase-5-digital-ticketing.md` para Google Wallet y Apple Wallet.
 
@@ -37,7 +42,22 @@ Consulta `docs/phase-5-digital-ticketing.md` para Google Wallet y Apple Wallet.
 
 ## Migraciones
 
-Nunca edites una migración aplicada. Crea una versión nueva. V7 agrega `audit_logs`; Hibernate mantiene `ddl-auto=validate` para detectar divergencias.
+Nunca edites una migración aplicada. Crea una versión nueva. Las migraciones
+actuales llegan hasta V23; Hibernate mantiene `ddl-auto=validate` para detectar
+divergencias.
+
+## Pagos y liquidaciones
+
+Los proveedores no-wallet continúan usando la estrategia simulada. El adaptador
+AZUL existente se limita a Apple Pay y Google Pay cuando se suministran las
+credenciales correspondientes. Una selección denominada PayPal, Stripe,
+CardNET, Qik, AZUL o transferencia no debe interpretarse como integración
+productiva hasta v1.4.0.
+
+Las liquidaciones calculan y preservan comisión, reembolsos y neto del
+organizador, pero el desembolso se realiza fuera de Eventix. El administrador
+solo debe marcar una liquidación como pagada después de verificar la
+transferencia externa y registrar su referencia.
 
 ## Observabilidad
 

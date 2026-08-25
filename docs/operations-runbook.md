@@ -5,10 +5,12 @@
 1. Provisiona SQL Server 2022 y almacenamiento persistente cifrado.
 2. Crea secretos distintos para `sa`, `eventix_migrator` y `eventix_app`.
 3. Define `APP_PROFILE=prod`, `APP_BASE_URL=https://...` y las claves Ed25519.
-4. Construye una imagen inmutable desde un commit cuyo CI esté verde.
-5. Ejecuta Flyway con `eventix_migrator`; la aplicación usa `eventix_app`.
-6. Espera `/actuator/health/readiness` antes de recibir tráfico.
-7. Conserva la versión anterior para rollback; nunca reviertas una migración
+4. Genera y conserva `EVENTIX_ELIGIBILITY_HMAC_SECRET` en el almacén de
+   secretos.
+5. Construye una imagen inmutable desde un commit cuyo CI esté verde.
+6. Ejecuta Flyway con `eventix_migrator`; la aplicación usa `eventix_app`.
+7. Espera `/actuator/health/readiness` antes de recibir tráfico.
+8. Conserva la versión anterior para rollback; nunca reviertas una migración
    aplicada editando archivos Flyway históricos.
 
 Eventix usa apagado graceful durante 30 segundos. El orquestador debe conceder
@@ -64,6 +66,26 @@ cuando cambiaron. La rotación de `sa` es una operación administrativa separada
 actualiza primero el login dentro de SQL Server y después
 `MSSQL_SA_PASSWORD`. Nunca elimines el volumen para rotar credenciales.
 
+## Secreto HMAC de elegibilidad
+
+Genera una clave inicial con `openssl rand -hex 32` y guárdala fuera del
+repositorio. La misma clave debe utilizarse en cada réplica y después de cada
+reinicio o despliegue.
+
+No la incluyas en respaldos de aplicación sin cifrar ni la registres en logs.
+Una rotación cambia todas las huellas HMAC: antes de rotarla, conserva la fuente
+autorizada de cada padrón, planifica una reimportación completa y valida las
+membresías afectadas. No elimines la clave anterior hasta terminar y auditar la
+transición.
+
+## Liquidaciones a organizadores
+
+Eventix no ejecuta todavía el desembolso. Una liquidación en `PROCESSING`
+representa un pago externo en curso. Márcala como `PAID` únicamente después de
+confirmar la transferencia y registra la referencia bancaria o del proveedor.
+Ante un fallo externo, usa `FAILED`; no marques pagada una operación pendiente
+de conciliación.
+
 ## SMTP y recordatorios
 
 Configura `EVENTIX_EMAIL_ENABLED=true`, remitente, host, puerto y credenciales.
@@ -105,4 +127,3 @@ y sus boletas permanecen válidas y el fallo se diagnostica por correlation ID.
 
 No pegues volcados completos que contengan tokens de recuperación, credenciales,
 datos de pago ni secretos de wallet en tickets de soporte.
-

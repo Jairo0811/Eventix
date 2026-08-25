@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class NationalIdLookupService {
 
     private static final String HMAC_ALGORITHM = "HmacSHA256";
+    private static final int MINIMUM_SECRET_BYTES = 32;
 
     private final String secret;
 
@@ -28,6 +29,11 @@ public class NationalIdLookupService {
         if (secret.isBlank()) {
             throw new IllegalStateException(
                     "EVENTIX_ELIGIBILITY_HMAC_SECRET debe configurarse antes de verificar cédulas.");
+        }
+        if (secret.getBytes(StandardCharsets.UTF_8).length
+                < MINIMUM_SECRET_BYTES) {
+            throw new IllegalStateException(
+                    "EVENTIX_ELIGIBILITY_HMAC_SECRET debe contener al menos 32 bytes.");
         }
         try {
             Mac mac = Mac.getInstance(HMAC_ALGORITHM);

@@ -50,6 +50,7 @@ jobs:
           echo "MSSQL_SA_PASSWORD=Sa$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
           echo "EVENTIX_DB_PASSWORD=Ev$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
           echo "EVENTIX_MIGRATOR_PASSWORD=Mg$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
+          echo "EVENTIX_ELIGIBILITY_HMAC_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
           echo "EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN=true" >> "$GITHUB_ENV"
           echo "TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY=true" >> "$GITHUB_ENV"
 

@@ -7,9 +7,12 @@ import org.junit.jupiter.api.Test;
 
 class NationalIdLookupServiceTest {
 
+    private static final String TEST_SECRET =
+            "0123456789abcdef0123456789abcdef";
+
     @Test
     void producesSameLookupForFormattedAndUnformattedNationalId() {
-        NationalIdLookupService service = new NationalIdLookupService("test-secret");
+        NationalIdLookupService service = new NationalIdLookupService(TEST_SECRET);
 
         String formatted = service.lookupKey("001-1234567-8");
         String plain = service.lookupKey("00112345678");
@@ -29,10 +32,20 @@ class NationalIdLookupServiceTest {
 
     @Test
     void refusesInvalidNationalIdLength() {
-        NationalIdLookupService service = new NationalIdLookupService("test-secret");
+        NationalIdLookupService service = new NationalIdLookupService(TEST_SECRET);
 
         assertThatThrownBy(() -> service.lookupKey("123"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("11 dígitos");
+    }
+
+    @Test
+    void refusesWeakSecret() {
+        NationalIdLookupService service =
+                new NationalIdLookupService("too-short");
+
+        assertThatThrownBy(() -> service.lookupKey("00112345678"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("al menos 32 bytes");
     }
 }
