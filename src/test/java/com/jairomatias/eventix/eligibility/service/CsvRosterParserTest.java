@@ -12,11 +12,11 @@ class CsvRosterParserTest {
     private final CsvRosterParser parser = new CsvRosterParser();
 
     @Test
-    void parsesQuotedNamesAndOptionalFields() {
+    void parsesQuotedNamesAndOptionalFieldsWithoutNationalId() {
         String csv = """
-                full_name,student_code,national_id,source_reference
-                "Pérez, Ana María",A-2017-01,001-1234567-8,"Acta 2017, folio 4"
-                Juan Rodríguez,,40212345678,
+                full_name,student_code,source_reference
+                "Pérez, Ana María",A-2017-01,"Acta 2017, folio 4"
+                Juan Rodríguez,,
                 """;
 
         var rows = parser.parse(csv.getBytes(StandardCharsets.UTF_8));
@@ -29,8 +29,9 @@ class CsvRosterParserTest {
     }
 
     @Test
-    void rejectsUnexpectedHeader() {
-        String csv = "name,id\nAna,00112345678\n";
+    void rejectsLegacyHeaderContainingNationalId() {
+        String csv = "full_name,student_code,national_id,source_reference\n"
+                + "Ana,EST-001,00112345678,Acta\n";
 
         assertThatThrownBy(() -> parser.parse(csv.getBytes(StandardCharsets.UTF_8)))
                 .isInstanceOf(IllegalArgumentException.class)
