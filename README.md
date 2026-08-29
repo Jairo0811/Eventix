@@ -10,19 +10,18 @@
 
 **Plataforma web modular para gestión integral de eventos, reservaciones, ventas, pagos, ticketing digital, elegibilidad, beneficios y control de acceso.**
 
-[![Estado](https://img.shields.io/badge/Estado-v1.3.1%20estable-2563EB?style=for-the-badge)](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.1)
+[![Estado](https://img.shields.io/badge/Estado-v1.3.2%20estable-2563EB?style=for-the-badge)](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.2)
 [![Eventix CI](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml/badge.svg)](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)](https://spring.io/projects/spring-security)
 [![SQL Server](https://img.shields.io/badge/SQL_Server_2022-CC2927?style=for-the-badge&logo=microsoftsqlserver&logoColor=white)](https://www.microsoft.com/sql-server)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=for-the-badge&logo=thymeleaf&logoColor=white)](https://www.thymeleaf.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 
-> **Estado actual:** **Eventix v1.3.1** es la release funcional estable. Fue validada por CI con pruebas, Docker Compose y escaneo de seguridad, y publica el JAR ejecutable junto con su SBOM. Los pagos comerciales y payouts automáticos permanecen reservados para v1.4.0.
+> **Estado actual:** **Eventix v1.3.2** es la release funcional estable. Fue validada por CI con Maven, SQL Server, Docker Compose, readiness, controles de seguridad, Trivy y SBOM. Los pagos comerciales reales y payouts automáticos permanecen planificados para v1.4.0.
 >
-> **Descargas verificadas:** [release v1.3.1](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.1) · [eventix.jar](https://github.com/Jairo0811/Eventix/releases/download/v1.3.1/eventix.jar) · [SBOM SPDX](https://github.com/Jairo0811/Eventix/releases/download/v1.3.1/eventix-sbom.spdx.json)
+> **Descargas verificadas:** [release v1.3.2](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.2) · [eventix.jar](https://github.com/Jairo0811/Eventix/releases/download/v1.3.2/eventix.jar) · [SBOM SPDX](https://github.com/Jairo0811/Eventix/releases/download/v1.3.2/eventix-sbom.spdx.json)
 
 </div>
 
@@ -40,30 +39,27 @@ Forma parte de una secuencia académica de tres proyectos desarrollados posterio
 | 2 | SOF-012 | Estructuras de Datos | [**Aerolinea**](https://github.com/Jairo0811/Aerolinea) | 2018-C1 | Estructuras de datos, relaciones y rutas |
 | 3 | SOF-011 | Programación WEB | [**ITLA Crush**](https://github.com/Jairo0811/ITLAcrushReact) | 2018-C2 | Desarrollo web, JavaScript, React y Firebase |
 
-La versión moderna de Eventix conserva esa identidad académica, pero ha sido reconstruida y ampliada con criterios de arquitectura, seguridad, accesibilidad, pruebas, observabilidad y despliegue propios de una aplicación profesional.
+La versión moderna de Eventix conserva esa identidad académica, pero ha sido reconstruida con criterios de arquitectura, seguridad, accesibilidad, pruebas, observabilidad y despliegue propios de una aplicación profesional.
 
 ---
 
 ## 📌 Descripción
 
-**Eventix** administra el ciclo operativo y comercial de un evento desde su publicación hasta el control de acceso.
+Eventix administra el ciclo operativo y comercial de un evento desde su publicación hasta el control de acceso.
 
-Incluye capacidades para:
+Incluye:
 
-- descubrimiento público de eventos;
-- gestión de eventos y categorías;
+- descubrimiento público y gestión de eventos;
 - reservaciones y control de cupos;
-- venta y checkout;
-- promociones y cupones;
-- ticketing digital con PDF y QR;
-- control de acceso;
-- liquidaciones a organizadores;
-- reportes y métricas;
-- notificaciones;
-- elegibilidad y beneficios para audiencias controladas;
-- auditoría y trazabilidad de operaciones sensibles.
+- ventas, checkout, cupones y reembolsos;
+- boletas digitales PDF/QR;
+- control de acceso y auditoría;
+- liquidaciones y métricas para organizadores;
+- notificaciones internas y transaccionales;
+- Eligibility & Benefits para audiencias controladas;
+- promociones escolares con padrón autorizado y verificación de identidad.
 
-La aplicación utiliza un **monolito modular por dominio**, evitando concentrar toda la lógica en controladores o servicios globales.
+La solución utiliza un **monolito modular por dominio**, con reglas críticas ejecutadas en backend y persistencia versionada mediante Flyway.
 
 ---
 
@@ -72,261 +68,161 @@ La aplicación utiliza un **monolito modular por dominio**, evitando concentrar 
 ```text
 src/main/java/com/jairomatias/eventix/
 ├── access/             # Control de acceso y escaneo
-├── category/           # Categorías de eventos
+├── category/           # Categorías
 ├── checkout/           # Checkout del comprador
 ├── commerce/           # Casos comerciales compartidos
-├── eligibility/        # Elegibilidad, verificaciones y beneficios
-├── event/              # Gestión de eventos
+├── eligibility/        # Elegibilidad, promociones y beneficios
+├── event/              # Eventos
 ├── notification/       # Notificaciones
 ├── payment/            # Contratos y adaptadores de pago
-├── promotion/          # Cupones y promociones
+├── promotion/          # Cupones
 ├── reporting/          # Reportes y analítica
-├── reservation/        # Reservaciones y ocupación
+├── reservation/        # Reservaciones
 ├── sale/               # Ventas y tipos de entrada
-├── settlement/         # Liquidaciones a organizadores
+├── settlement/         # Liquidaciones
 ├── ticket/             # Ticketing, PDF, QR y wallets
 ├── user/               # Usuarios y perfiles
 └── shared/             # Infraestructura transversal
 ```
 
-### Principios aplicados
+### Principios
 
-- Clean Code
-- SOLID
-- DRY
-- KISS
+- Clean Code, SOLID, DRY y KISS;
 - separación de responsabilidades;
-- reglas de negocio ejecutadas en backend;
-- autorización por rol y propiedad del recurso;
+- autorización por rol y propiedad;
 - transacciones para operaciones críticas;
-- migraciones incrementales con Flyway;
-- pruebas automatizadas e integración continua.
+- migraciones incrementales;
+- pruebas automatizadas e integración continua;
+- secretos externos al repositorio.
 
 ---
 
-## 🆕 v1.3.0 — Commerce & Organizer Experience
+## 🆕 v1.3.2 — Promociones escolares de extremo a extremo
 
-### 🪪 Eligibility & Benefits
+v1.3.2 completa la experiencia escolar que había quedado disponible principalmente a nivel de dominio/backend en v1.3.0.
 
-Eventix incorpora un dominio genérico para controlar acceso y beneficios sin acoplar el sistema exclusivamente a promociones escolares.
+### 🏫 Administración escolar
 
-#### Grupos soportados por diseño
+- instituciones educativas y promociones;
+- activación/desactivación controlada;
+- importación de padrón CSV;
+- checksum y prevención de reimportaciones duplicadas;
+- plantilla CSV descargable;
+- historial de importaciones;
+- consulta del padrón sin exponer la cédula completa;
+- revisión manual administrativa con aprobación, rechazo y revocación justificadas.
 
-- miembros de promociones;
-- egresados;
-- familiares;
-- personal institucional;
-- VIP;
-- comunidades privadas;
-- grupos personalizados definidos por el organizador.
+El CSV utiliza el encabezado exacto:
 
-#### Seguridad de elegibilidad
-
-- ningún beneficio se concede por simple autodeclaración;
-- la elegibilidad debe proceder de una fuente autorizada o de una aprobación explícita;
-- estados pendientes o en revisión manual no otorgan privilegios;
-- las decisiones se revalidan en backend durante disponibilidad y compra;
-- eventos admiten modos `PUBLIC`, `PRIVATE` y `CONTROLLED_ACCESS`;
-- grupos, membresías y beneficios se modelan separadamente del mecanismo que demuestra la identidad.
-
-### 🏫 Verificación para colegios y promociones
-
-El primer proveedor concreto de evidencias de elegibilidad está orientado a promociones escolares.
-
-- instituciones y promociones registradas;
-- padrón autorizado de miembros;
-- importación CSV con validación, checksum y deduplicación;
-- verificación por identidad + nombre;
-- revisión manual ante discrepancias;
-- auditoría de intentos exitosos, fallidos y enviados a revisión;
-- aprobación, rechazo y revocación con justificación.
-
-#### Protección de cédula
-
-Eventix evita persistir la cédula completa como dato de consulta.
-
-- normalización únicamente durante el proceso de verificación;
-- clave de búsqueda mediante **HMAC-SHA-256**;
-- persistencia únicamente de la huella de búsqueda y últimos cuatro dígitos cuando corresponde;
-- secreto HMAC suministrado mediante variable de entorno;
-- la cédula completa no debe aparecer en logs, auditoría ni respuestas HTTP.
-
-```text
-EVENTIX_ELIGIBILITY_HMAC_SECRET=<secreto-fuerte>
+```csv
+full_name,student_code,national_id,source_reference
 ```
 
-### 🎫 Checkout con autorización de elegibilidad
+### 🪪 Verificación del usuario
 
-El checkout ya integra la autorización de elegibilidad del lado del servidor.
+Los usuarios `USER` disponen del flujo **Mi promoción escolar**. La verificación compara la identidad contra el padrón autorizado y usa **HMAC-SHA-256** para generar la clave de búsqueda.
 
-- eventos públicos continúan disponibles para cualquier comprador autorizado;
-- eventos privados o controlados requieren membresía verificada;
-- tipos de entrada exclusivos pueden restringirse a determinados grupos;
-- límites de compra pueden aplicarse por beneficio;
-- la autorización se revalida nuevamente dentro de la operación de compra;
-- ocultar una entrada en la UI nunca sustituye la validación de backend.
+- coincidencia de cédula + nombre → `VERIFIED`;
+- cédula encontrada con discrepancia de nombre → `MANUAL_REVIEW`;
+- identidad no encontrada → sin elegibilidad;
+- la cédula completa no se persiste como clave de consulta ni debe aparecer en logs o respuestas HTTP.
 
-> Los cupones y la elegibilidad permanecen como dominios distintos: un cupón valida un código promocional; Eligibility valida identidad, pertenencia o relación.
+```text
+EVENTIX_ELIGIBILITY_HMAC_SECRET=<secreto-fuerte-y-estable>
+```
 
-### 👨‍👩‍👧 Familiares y relaciones
+### 🎫 Integración con Eligibility & Benefits
 
-Las relaciones familiares verificadas están implementadas sin aceptar la simple autodeclaración. El flujo incorpora:
+La verificación escolar ya está conectada directamente con el modelo genérico utilizado por el checkout:
 
-- solicitud de vínculo;
-- patrocinador/miembro previamente verificado o revisión administrativa;
-- aprobación o rechazo explícito;
-- límites de familiares/invitados por miembro;
-- trazabilidad de la decisión.
+```text
+Padrón escolar
+      ↓
+Verificación de identidad
+      ↓
+VERIFIED
+      ↓
+eligibility_memberships
+      ↓
+Grupo PROMOTION_MEMBER
+      ↓
+Beneficios / acceso
+      ↓
+Checkout
+```
+
+Los grupos `PROMOTION_MEMBER` pueden asociarse a una promoción concreta. Una verificación aprobada sincroniza la membresía correspondiente; rechazo o revocación retiran las membresías derivadas.
+
+Los beneficios soportados incluyen:
+
+- descuentos porcentuales;
+- descuentos fijos;
+- entrada gratuita;
+- límites de compra;
+- tipos de entrada exclusivos;
+- acceso a eventos `PRIVATE` o `CONTROLLED_ACCESS`.
+
+Los grupos desactivados no conceden acceso ni beneficios.
 
 ---
 
-## ✨ Funcionalidades
+## ✨ Funcionalidades principales
 
 ### 🔐 Seguridad y usuarios
 
-- autenticación con Spring Security;
-- login mediante correo o nombre de usuario;
-- contraseñas BCrypt;
-- cambio obligatorio de contraseña temporal;
-- recuperación de contraseña con tokens de un solo uso;
-- protección CSRF;
-- autorización por rutas, servicios, roles y propiedad;
-- perfiles y preferencias de notificación;
+- Spring Security;
+- login por correo o usuario;
+- BCrypt;
+- recuperación y cambio obligatorio de contraseña temporal;
+- CSRF;
+- RBAC y autorización por propiedad;
 - roles `ADMINISTRATOR`, `OPERATOR`, `ORGANIZER`, `ACCESS_STAFF` y `USER`;
 - rate limiting;
 - CSP, HSTS y Permissions Policy;
-- identificadores de correlación;
-- manejo diferenciado de errores HTTP `403`, `404`, `405` y `500`.
+- Correlation ID y manejo diferenciado de errores.
 
 ### 📅 Eventos
 
-- CRUD de eventos y categorías;
-- estados borrador, publicado, cancelado y finalizado;
-- capacidad y reglas de disponibilidad;
+- CRUD y categorías;
+- borrador, publicado, cancelado y finalizado;
 - eventos gratuitos o de pago;
-- tipos de entrada configurables;
-- carga persistente de portadas;
-- integración de ubicación con Google Maps;
+- capacidad y disponibilidad;
+- tipos de entrada;
+- portadas y Google Maps;
 - búsqueda, filtros y paginación;
-- descubrimiento público;
-- modos de acceso público, privado y controlado.
+- acceso `PUBLIC`, `PRIVATE` y `CONTROLLED_ACCESS`.
 
-### 🎟️ Reservaciones y ventas
+### 🎟️ Reservaciones, checkout y ventas
 
-- reservaciones con historial permanente;
-- estados pendiente, confirmada, cancelada y expirada;
-- expiración de reservas y liberación de cupos;
-- bloqueo transaccional para reducir riesgo de sobreventa;
-- prevención de reservaciones activas duplicadas;
-- ventas vinculadas a reservaciones;
-- distribución de entradas con precio histórico;
-- ventas pendientes, pagadas, reembolsadas y canceladas;
-- comprobantes PDF;
-- cupones por porcentaje o monto fijo;
-- límites globales y por comprador;
-- cálculo de descuentos exclusivamente en backend.
+- reservaciones con expiración y liberación de cupos;
+- bloqueo transaccional para reducir sobreventa;
+- ventas con precio histórico;
+- cupones porcentuales y fijos;
+- beneficios monetarios de elegibilidad calculados en backend;
+- reembolsos completos y parciales por boleta;
+- comprobantes PDF.
 
-### 💰 Pagos
+### 📱 Ticketing y acceso
 
-El módulo de pagos utiliza contratos desacoplados para evitar acoplar el dominio comercial a un proveedor específico.
+- emisión idempotente de entradas;
+- PDF y QR individual;
+- Ed25519 + SHA-256;
+- revocación ante reembolso/cancelación;
+- escáner web por cámara y entrada manual;
+- control de primer ingreso, reingreso, duplicados e inválidos;
+- auditoría de accesos.
 
-- patrón Strategy para proveedores;
-- registro de intentos y estados de pago;
-- soporte conceptual para cargos y reembolsos;
-- adaptadores preparados para evolución posterior;
-- checkout actualmente validado sin asumir un gateway comercial real en producción.
+### 💸 Liquidaciones y reporting
 
-> La integración productiva con proveedores de pago reales se reserva para la evolución de **v1.4.0**.
-
-### 📱 Ticketing digital
-
-- emisión idempotente de entradas por venta pagada;
-- PDF descargable;
-- QR individual;
-- Apache PDFBox;
-- ZXing;
-- firma Ed25519;
-- huella SHA-256;
-- código antifraude;
-- estados activa, utilizada, cancelada y vencida;
-- revocación asociada a reembolsos o cancelaciones.
-
-### 🚪 Control de acceso
-
-- escáner web mediante cámara;
-- entrada manual de respaldo;
-- validación transaccional;
-- control de primer acceso y reingreso;
-- detección de duplicados y entradas inválidas;
-- auditoría de intentos;
-- dispositivo, fecha e IP cuando corresponde;
-- almacenamiento de huellas en lugar del contenido QR sensible cuando aplica.
-
-### 💸 Liquidaciones
-
-- cálculo de comisión de Eventix;
-- neto del organizador;
-- estados pendiente, procesando, pagada, fallida y cancelada;
+- comisión de Eventix y neto del organizador;
+- estados de liquidación;
 - prevención de doble liquidación;
-- confirmaciones explícitas en operaciones financieras;
-- trazabilidad administrativa.
+- métricas de ventas, ingresos, ocupación y asistencia;
+- centro interno de notificaciones.
 
-### 📊 Reportes y dashboard
+### 💳 Pagos
 
-- métricas de ventas e ingresos;
-- eventos y entradas;
-- ocupación y asistencia;
-- información para organizadores;
-- reportes operativos y financieros.
-
-### 🔔 Notificaciones
-
-- infraestructura para notificaciones transaccionales;
-- preferencias de usuario;
-- recordatorios y eventos operativos;
-- centro interno persistente con estados leído/no leído;
-- eventos internos de compra y reembolso.
-
----
-
-## ♿ Accesibilidad
-
-Eventix adopta **NORTIC B2:2017 / WCAG 2.0 Nivel AA** como objetivo técnico interno.
-
-La interfaz incorpora, entre otros:
-
-- `lang="es"`;
-- landmarks;
-- navegación con teclado;
-- `aria-current`;
-- `aria-describedby` y `aria-invalid`;
-- regiones `aria-live`;
-- `role="status"` y `role="alert"`;
-- estados de foco visibles;
-- soporte de `prefers-reduced-motion`;
-- soporte de `forced-colors`;
-- controles de contraste para temas claro y oscuro;
-- protecciones de layout para zoom elevado.
-
-La documentación de accesibilidad se encuentra en:
-
-[`docs/accessibility-nortic-b2.md`](docs/accessibility-nortic-b2.md)
-
-> La implementación técnica y las pruebas internas no equivalen a una certificación oficial de OGTIC.
-
----
-
-## 🌓 UI / UX
-
-- interfaz responsive con Bootstrap 5;
-- Thymeleaf para renderizado server-side;
-- temas `light`, `dark` y preferencia del sistema;
-- dashboard operativo;
-- formularios accesibles;
-- feedback de errores y estados;
-- landing pública;
-- mapas y portadas de eventos;
-- vistas específicas según rol.
+El dominio de pagos usa contratos desacoplados y Strategy. En v1.3.2 **no existe todavía un gateway comercial productivo**; los proveedores comerciales reales, webhooks y payouts corresponden a v1.4.0.
 
 ---
 
@@ -341,53 +237,32 @@ La documentación de accesibilidad se encuentra en:
 | Base de datos | SQL Server 2022 |
 | Migraciones | Flyway |
 | Frontend | Thymeleaf + Bootstrap 5 + JavaScript |
-| Build | Maven |
 | PDF | Apache PDFBox |
 | QR | ZXing |
+| Build | Maven |
 | Testing | JUnit 5, Mockito, Spring Test, Testcontainers |
 | Contenedores | Docker / Docker Compose |
 | CI/CD | GitHub Actions |
 | Seguridad CI | Dependency Review + Trivy |
-| Supply Chain | SBOM |
+| Supply Chain | SBOM SPDX |
 
 ---
 
 ## 🗄️ Base de datos
 
-Eventix utiliza **SQL Server 2022** y administra el esquema exclusivamente mediante **Flyway**.
-
-Las migraciones se encuentran en:
+SQL Server 2022 es la base principal y el esquema se administra mediante Flyway:
 
 ```text
 src/main/resources/db/migration/
 ```
 
-La evolución actual incluye migraciones hasta:
+La versión estable v1.3.2 llega hasta:
 
 ```text
-V23__add_internal_notifications.sql
+V24__link_school_promotions_to_eligibility_groups.sql
 ```
 
-Entre los dominios persistidos se encuentran:
-
-- usuarios y roles;
-- eventos y categorías;
-- reservaciones;
-- ventas y tipos de entrada;
-- pagos;
-- tickets;
-- cupones;
-- liquidaciones;
-- notificaciones;
-- instituciones/promociones escolares;
-- verificaciones de elegibilidad;
-- intentos de verificación;
-- grupos genéricos de elegibilidad;
-- membresías;
-- relaciones familiares;
-- beneficios y snapshots de descuento;
-- reembolsos parciales y ledger de liquidaciones;
-- notificaciones internas.
+V24 enlaza `eligibility_groups.school_promotion_id` con `school_promotions`, permitiendo que una promoción verificada participe directamente en las reglas de acceso y beneficios del checkout.
 
 ---
 
@@ -400,60 +275,55 @@ Entre los dominios persistidos se encuentran:
 - Docker Desktop o SQL Server 2022
 - Git
 
-### Clonar
+### Clonar y probar
 
 ```bash
 git clone https://github.com/Jairo0811/Eventix.git
 cd Eventix
-```
-
-### Ejecutar pruebas
-
-```bash
 mvn clean verify
 ```
 
-### Ejecutar con Docker Compose
+### Docker Compose
 
-Revisa las variables de entorno del repositorio y luego ejecuta:
+Configura las variables del `.env` y ejecuta:
 
 ```bash
 docker compose up --build
 ```
 
-Para detener:
+Para detener sin eliminar los datos:
 
 ```bash
 docker compose down
 ```
 
-### 📱 Acceso desde un móvil en la red local
+Readiness:
 
-Con el perfil de desarrollo, Spring Boot escucha en `0.0.0.0:8080`. Para probar Eventix desde un teléfono conectado a la misma red que la PC:
+```text
+http://localhost:8080/actuator/health/readiness
+```
 
-1. Levanta la aplicación con el perfil `dev`.
-2. Obtén la IPv4 de la PC con `ipconfig`.
-3. Abre en el navegador móvil:
+Aplicación:
+
+```text
+http://localhost:8080
+```
+
+### 📱 Acceso desde móvil en la LAN
+
+Con el perfil `dev`, abre desde un dispositivo conectado a la misma red:
 
 ```text
 http://<IP-DE-LA-PC>:8080
 ```
 
-Ejemplo:
-
-```text
-http://192.168.1.50:8080
-```
-
-Si Windows solicita permiso de firewall para Java, permite únicamente redes privadas.
+Obtén la IPv4 con `ipconfig` y, si Windows lo solicita, habilita Java únicamente para redes privadas.
 
 ---
 
 ## 🔒 Variables sensibles
 
-Los secretos no deben persistirse en el repositorio.
-
-Ejemplos de configuración sensible:
+Los secretos no deben persistirse en Git.
 
 ```text
 DB_USERNAME
@@ -464,90 +334,67 @@ EVENTIX_ELIGIBILITY_HMAC_SECRET
 GOOGLE_MAPS_EMBED_API_KEY
 ```
 
-En producción deben suministrarse mediante variables de entorno o un gestor de secretos. Genera el secreto de elegibilidad con `openssl rand -hex 32`, mantenlo estable y no lo rotes sin un procedimiento controlado de reimportación de padrones.
+`EVENTIX_ELIGIBILITY_HMAC_SECRET` debe contener al menos 32 bytes y mantenerse estable. Rotarlo sin un procedimiento controlado invalida las claves HMAC usadas para consultar padrones previamente importados.
 
 ---
 
 ## 🧪 Calidad y CI
 
-El workflow principal valida el proyecto antes de considerar una integración segura.
+El pipeline principal verifica:
 
-### Pipeline
+1. Java 21 y toolchain;
+2. `mvn clean verify`;
+3. pruebas y evidencia;
+4. SQL Server + Docker Compose;
+5. readiness, login y headers de seguridad;
+6. reinicio persistente y rotación de credenciales;
+7. Trivy;
+8. SBOM;
+9. Dependency Review en Pull Requests.
 
-1. checkout del repositorio;
-2. Java 21;
-3. credenciales Docker efímeras;
-4. `mvn clean verify`;
-5. pruebas y evidencia;
-6. arranque con Docker Compose;
-7. readiness y login;
-8. headers de seguridad;
-9. reinicio persistente y rotación de credenciales;
-10. análisis de imagen con Trivy;
-11. generación de SBOM;
-12. Dependency Review.
-
-El bloque de Eligibility & Benefits integrado en `main` fue validado con este pipeline completo antes de su fusión.
+La publicación estable reutiliza los artefactos del CI exitoso y adjunta `eventix.jar` y `eventix-sbom.spdx.json` a la GitHub Release.
 
 ---
 
-## 🛡️ Seguridad
+## ♿ Accesibilidad
 
-Entre las decisiones de seguridad del proyecto se encuentran:
+Eventix adopta **NORTIC B2:2017 / WCAG 2.0 Nivel AA** como objetivo técnico interno. La interfaz incluye landmarks, navegación por teclado, atributos ARIA, foco visible, `prefers-reduced-motion`, `forced-colors` y protecciones para zoom elevado.
 
-- BCrypt para contraseñas;
-- CSRF habilitado;
-- autorización por servicio además de rutas;
-- validación backend para reglas comerciales;
-- HMAC-SHA-256 para búsquedas de identidad sensibles;
-- prevención de almacenamiento innecesario de cédulas completas;
-- auditoría de verificaciones;
-- bloqueo transaccional en operaciones críticas;
-- rate limiting;
-- CSP y HSTS;
-- Dependency Review;
-- Trivy;
-- generación de SBOM;
-- secretos externos al código fuente.
+Consulta [`docs/accessibility-nortic-b2.md`](docs/accessibility-nortic-b2.md).
+
+> La implementación técnica y las pruebas internas no equivalen a certificación oficial de OGTIC. El cierre manual con teclado, zoom, contraste y lector de pantalla continúa pendiente.
 
 ---
 
 ## 📈 Roadmap
 
-### v1.3.0 — Entregada
+### v1.3.2 — ✅ Estable
 
-- [x] portal “Mis entradas”, historial y experiencia postcompra;
-- [x] reembolsos completos y parciales por boleta;
-- [x] recálculo de comisión y neto ante reembolsos;
-- [x] relaciones familiares verificadas y límites configurables;
-- [x] descuentos porcentuales/fijos y entradas gratuitas por elegibilidad;
-- [x] panel de administración de grupos, membresías, relaciones y beneficios;
-- [x] dashboard comercial y liquidaciones trazables para organizadores;
-- [x] centro interno de notificaciones persistentes.
-
-### v1.3.1 — Estabilización publicada
-
-- [x] secreto HMAC requerido y transferido por Docker Compose;
-- [x] versión, changelog, manuales y modelo de datos sincronizados;
-- [x] pruebas directas del checkout y contratos de despliegue;
-- [x] [release v1.3.1](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.1) posterior al CI con JAR y SBOM verificados;
-- [ ] cierre manual de accesibilidad con teclado, zoom, contraste y lector de pantalla.
+- [x] administración de instituciones/promociones;
+- [x] importación e historial de padrones CSV;
+- [x] verificación escolar de autoservicio;
+- [x] revisión manual;
+- [x] puente `school_promotions` → `eligibility_memberships`;
+- [x] beneficios escolares aplicados por checkout;
+- [x] Flyway V24;
+- [x] release con JAR y SBOM verificados.
 
 ### v1.4.0 — Pagos productivos
 
-- integración de gateway comercial real;
-- contratos/adaptadores de pagos productivos;
-- webhooks, idempotencia y reconciliación;
-- reembolsos externos y manejo de disputas;
-- payouts reales a organizadores y conciliación de liquidaciones;
-- estrategia para wallets digitales según proveedor y mercado objetivo.
+- gateway comercial real;
+- webhooks e idempotencia externa;
+- reconciliación;
+- reembolsos externos y disputas;
+- payouts reales a organizadores;
+- conciliación de liquidaciones.
 
 ### v1.5.0 — Acceso avanzado y escalabilidad
 
-- ventanas comerciales de early access;
+- early access operativo;
 - inventario reservado transaccional;
 - prioridad y colas de acceso;
-- pruebas E2E de navegador, carga y concurrencia ampliada.
+- pruebas E2E de navegador;
+- carga y concurrencia ampliadas.
 
 ---
 
@@ -557,29 +404,24 @@ Entre las decisiones de seguridad del proyecto se encuentran:
 |---|---|
 | Arquitectura modular | ✅ Implementada |
 | Seguridad base | ✅ Implementada |
-| Usuarios y roles | ✅ Implementado |
-| Eventos | ✅ Implementado |
-| Reservaciones | ✅ Implementado |
-| Ventas | ✅ Implementado |
-| Cupones | ✅ Implementado |
+| Eventos y reservaciones | ✅ Implementados |
+| Ventas y checkout | ✅ Implementados |
+| Cupones | ✅ Implementados |
 | Ticketing QR/PDF | ✅ Implementado |
 | Control de acceso | ✅ Implementado |
-| Liquidaciones | ✅ Implementado |
-| Elegibilidad escolar | ✅ Implementada |
+| Liquidaciones y reporting | ✅ Implementados |
+| Elegibilidad escolar E2E | ✅ Implementada |
 | Elegibilidad genérica | ✅ Implementada |
 | Relaciones familiares | ✅ Implementadas |
 | Beneficios monetarios | ✅ Implementados |
-| Experiencia de organizador 2.0 | ✅ Implementada |
 | Centro de notificaciones | ✅ Implementado |
-| Gateway real de producción | 🔵 Planificado para v1.4.0 |
-| Payouts automáticos | 🔵 Planificados para v1.4.0 |
+| Gateway real de producción | 🔵 v1.4.0 |
+| Payouts automáticos | 🔵 v1.4.0 |
 | QA manual de accesibilidad | 🟡 Pendiente de cierre |
 
 ---
 
 ## 🤝 Contribución
-
-El repositorio utiliza ramas de trabajo y Pull Requests para cambios relevantes.
 
 Flujo recomendado:
 
@@ -606,4 +448,4 @@ GitHub: [@Jairo0811](https://github.com/Jairo0811)
 
 ## 📄 Licencia
 
-Consulta el archivo [`LICENSE`](LICENSE) del repositorio para los términos aplicables.
+Consulta [`LICENSE`](LICENSE).
