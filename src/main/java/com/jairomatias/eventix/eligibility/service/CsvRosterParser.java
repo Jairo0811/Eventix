@@ -2,7 +2,9 @@ package com.jairomatias.eventix.eligibility.service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
@@ -11,11 +13,13 @@ import com.jairomatias.eventix.eligibility.dto.RosterImportRow;
 @Component
 public class CsvRosterParser {
 
-    private static final List<String> EXPECTED_HEADER = List.of(
-            "full_name",
-            "student_code",
-            "national_id",
-            "source_reference");
+    private static final String FULL_NAME = "full_name";
+    private static final String STUDENT_CODE = "student_code";
+    private static final String SOURCE_REFERENCE = "source_reference";
+    private static final Set<String> ALLOWED_HEADERS = Set.of(
+            FULL_NAME,
+            STUDENT_CODE,
+            SOURCE_REFERENCE);
 
     public List<RosterImportRow> parse(byte[] content) {
         if (content == null || content.length == 0) {
@@ -33,10 +37,11 @@ public class CsvRosterParser {
                 .map(String::trim)
                 .map(String::toLowerCase)
                 .toList();
-        if (!header.equals(EXPECTED_HEADER)) {
-            throw new IllegalArgumentException(
-                    "Encabezado inválido. Use: full_name,student_code,national_id,source_reference");
-        }
+        validateHeader(header);
+
+        int fullNameIndex = header.indexOf(FULL_NAME);
+        int studentCodeIndex = header.indexOf(STUDENT_CODE);
+        int sourceReferenceIndex = header.indexOf(SOURCE_REFERENCE);
 
         List<RosterImportRow> result = new ArrayList<>();
         for (int index = 1; index < rows.size(); index++) {
@@ -44,18 +49,31 @@ public class CsvRosterParser {
             if (row.stream().allMatch(String::isBlank)) {
                 continue;
             }
-            if (row.size() != EXPECTED_HEADER.size()) {
+            if (row.size() != header.size()) {
                 throw new IllegalArgumentException(
-                        "La fila " + (index + 1) + " no contiene exactamente 4 columnas.");
+                        "La fila " + (index + 1) + " no contiene la misma cantidad de columnas que el encabezado.");
             }
             result.add(new RosterImportRow(
                     index + 1,
-                    row.get(0).trim(),
-                    nullable(row.get(1)),
-                    row.get(2).trim(),
-                    nullable(row.get(3))));
+                    row.get(fullNameIndex).trim(),
+                    optionalValue(row, studentCodeIndex),
+                    optionalValue(row, sourceReferenceIndex)));
         }
         return result;
+    }
+
+    private void validateHeader(List<String> header) {
+        if (header.isEmpty()
+                || !header.contains(FULL_NAME)
+                || header.stream().anyMatch(value -> !ALLOWED_HEADERS.contains(value))
+                || new HashSet<>(header).size() != header.size()) {
+            throw new IllegalArgumentException(
+                    "Encabezado inválido. 'full_name' es obligatorio; 'student_code' y 'source_reference' son opcionales.");
+        }
+    }
+
+    private String optionalValue(List<String> row, int index) {
+        return index < 0 ? null : nullable(row.get(index));
     }
 
     private String nullable(String value) {
