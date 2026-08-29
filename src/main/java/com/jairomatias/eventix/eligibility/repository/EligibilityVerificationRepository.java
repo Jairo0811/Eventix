@@ -21,6 +21,11 @@ public interface EligibilityVerificationRepository
             "promotionMember.promotion.institution", "verifiedBy"})
     List<EligibilityVerification> findAllByOrderByCreatedAtDesc();
 
+    @EntityGraph(attributePaths = {
+            "user", "promotionMember", "promotionMember.promotion",
+            "promotionMember.promotion.institution", "verifiedBy"})
+    List<EligibilityVerification> findAllByUser_IdOrderByCreatedAtDesc(Long userId);
+
     @EntityGraph(attributePaths = {"user", "promotionMember", "promotionMember.promotion"})
     List<EligibilityVerification> findAllByPromotionMember_Promotion_IdAndStatus(
             Long promotionId,
