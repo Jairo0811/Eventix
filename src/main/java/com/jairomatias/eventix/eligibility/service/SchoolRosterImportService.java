@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class SchoolRosterImportService {
     private static final int MAX_FILE_BYTES = 5 * 1024 * 1024;
 
     private final CsvRosterParser csvRosterParser;
-    private final NationalIdLookupService nationalIdLookupService;
+    private final PersonNameNormalizer nameNormalizer;
     private final PromotionMemberRepository promotionMemberRepository;
     private final SchoolPromotionRepository schoolPromotionRepository;
     private final SchoolRosterImportRepository rosterImportRepository;
@@ -38,13 +39,13 @@ public class SchoolRosterImportService {
 
     public SchoolRosterImportService(
             CsvRosterParser csvRosterParser,
-            NationalIdLookupService nationalIdLookupService,
+            PersonNameNormalizer nameNormalizer,
             PromotionMemberRepository promotionMemberRepository,
             SchoolPromotionRepository schoolPromotionRepository,
             SchoolRosterImportRepository rosterImportRepository,
             UserRepository userRepository) {
         this.csvRosterParser = csvRosterParser;
-        this.nationalIdLookupService = nationalIdLookupService;
+        this.nameNormalizer = nameNormalizer;
         this.promotionMemberRepository = promotionMemberRepository;
         this.schoolPromotionRepository = schoolPromotionRepository;
         this.rosterImportRepository = rosterImportRepository;
@@ -81,26 +82,20 @@ public class SchoolRosterImportService {
         List<RosterImportRow> rows = csvRosterParser.parse(content);
         List<PromotionMember> accepted = new ArrayList<>();
         List<RosterImportError> errors = new ArrayList<>();
-        Set<String> seenLookupKeys = new HashSet<>();
+        Set<String> seenStudentCodes = new HashSet<>();
 
         for (RosterImportRow row : rows) {
             try {
                 validateRow(row);
-                String lookupKey = nationalIdLookupService.lookupKey(row.nationalId());
-                if (!seenLookupKeys.add(lookupKey)) {
-                    throw new IllegalArgumentException("Cédula duplicada dentro del archivo.");
-                }
-                if (promotionMemberRepository.existsByPromotion_IdAndNationalIdLookup(
-                        promotionId,
-                        lookupKey)) {
-                    throw new IllegalArgumentException("La persona ya existe en este padrón.");
-                }
+                String normalizedName = nameNormalizer.normalize(row.fullName());
+                String studentCode = trimToNull(row.studentCode());
+                validateStudentCodeUniqueness(promotionId, studentCode, seenStudentCodes);
+
                 accepted.add(new PromotionMember(
                         promotion,
                         row.fullName().trim(),
-                        trimToNull(row.studentCode()),
-                        lookupKey,
-                        nationalIdLookupService.last4(row.nationalId()),
+                        normalizedName,
+                        studentCode,
                         trimToNull(row.sourceReference())));
             } catch (IllegalArgumentException exception) {
                 errors.add(new RosterImportError(row.rowNumber(), exception.getMessage()));
@@ -123,6 +118,24 @@ public class SchoolRosterImportService {
                 accepted.size(),
                 errors.size(),
                 List.copyOf(errors));
+    }
+
+    private void validateStudentCodeUniqueness(
+            Long promotionId,
+            String studentCode,
+            Set<String> seenStudentCodes) {
+        if (studentCode == null) {
+            return;
+        }
+        String normalizedCode = studentCode.toUpperCase(Locale.ROOT);
+        if (!seenStudentCodes.add(normalizedCode)) {
+            throw new IllegalArgumentException("Código estudiantil duplicado dentro del archivo.");
+        }
+        if (promotionMemberRepository.existsByPromotion_IdAndStudentCodeIgnoreCase(
+                promotionId,
+                studentCode)) {
+            throw new IllegalArgumentException("El código estudiantil ya existe en este padrón.");
+        }
     }
 
     private void validateFile(String sourceName, byte[] content) {
