@@ -1,3 +1,3 @@
-full_name,student_code,national_id,source_reference
-Ana Perez Gomez,EST-001,00112345678,Acta oficial 2026
-Luis Ramirez Santos,EST-002,00187654321,Acta oficial 2026
+full_name,student_code,source_reference
+Ana Perez Gomez,EST-001,Acta oficial 2026
+Luis Ramirez Santos,EST-002,Acta oficial 2026
