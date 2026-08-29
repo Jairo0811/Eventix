@@ -10,10 +10,13 @@ import jakarta.persistence.Table;
 @Table(name = "school_institutions")
 public class SchoolInstitution extends AuditableEntity {
 
-    @Column(nullable = false, length = 180)
+    private static final int MAX_NAME_LENGTH = 180;
+    private static final int MAX_CODE_LENGTH = 50;
+
+    @Column(nullable = false, length = MAX_NAME_LENGTH)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = MAX_CODE_LENGTH)
     private String code;
 
     @Column(nullable = false)
@@ -27,14 +30,19 @@ public class SchoolInstitution extends AuditableEntity {
     }
 
     public void update(String name, String code) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("El nombre de la institución es obligatorio.");
+        String normalizedName = requireText(name, "El nombre de la institución es obligatorio.");
+        String normalizedCode = requireText(code, "El código de la institución es obligatorio.")
+                .toUpperCase();
+        if (normalizedName.length() > MAX_NAME_LENGTH) {
+            throw new IllegalArgumentException(
+                    "El nombre de la institución no puede superar 180 caracteres.");
         }
-        if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException("El código de la institución es obligatorio.");
+        if (normalizedCode.length() > MAX_CODE_LENGTH) {
+            throw new IllegalArgumentException(
+                    "El código de la institución no puede superar 50 caracteres.");
         }
-        this.name = name.trim();
-        this.code = code.trim().toUpperCase();
+        this.name = normalizedName;
+        this.code = normalizedCode;
     }
 
     public void activate() {
@@ -55,5 +63,12 @@ public class SchoolInstitution extends AuditableEntity {
 
     public boolean isActive() {
         return active;
+    }
+
+    private String requireText(String value, String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
+        return value.trim();
     }
 }
