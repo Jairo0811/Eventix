@@ -20,14 +20,11 @@ public class PromotionMember extends AuditableEntity {
     @Column(name = "full_name", nullable = false, length = 180)
     private String fullName;
 
+    @Column(name = "normalized_full_name", nullable = false, length = 180)
+    private String normalizedFullName;
+
     @Column(name = "student_code", length = 80)
     private String studentCode;
-
-    @Column(name = "national_id_lookup", nullable = false, length = 64)
-    private String nationalIdLookup;
-
-    @Column(name = "national_id_last4", nullable = false, length = 4)
-    private String nationalIdLast4;
 
     @Column(name = "source_reference", length = 240)
     private String sourceReference;
@@ -38,13 +35,16 @@ public class PromotionMember extends AuditableEntity {
     protected PromotionMember() {
     }
 
-    public PromotionMember(SchoolPromotion promotion, String fullName, String studentCode,
-            String nationalIdLookup, String nationalIdLast4, String sourceReference) {
+    public PromotionMember(
+            SchoolPromotion promotion,
+            String fullName,
+            String normalizedFullName,
+            String studentCode,
+            String sourceReference) {
         this.promotion = promotion;
         this.fullName = fullName;
+        this.normalizedFullName = normalizedFullName;
         this.studentCode = studentCode;
-        this.nationalIdLookup = nationalIdLookup;
-        this.nationalIdLast4 = nationalIdLast4;
         this.sourceReference = sourceReference;
     }
 
@@ -56,16 +56,12 @@ public class PromotionMember extends AuditableEntity {
         return fullName;
     }
 
+    public String getNormalizedFullName() {
+        return normalizedFullName;
+    }
+
     public String getStudentCode() {
         return studentCode;
-    }
-
-    public String getNationalIdLookup() {
-        return nationalIdLookup;
-    }
-
-    public String getNationalIdLast4() {
-        return nationalIdLast4;
     }
 
     public String getSourceReference() {
