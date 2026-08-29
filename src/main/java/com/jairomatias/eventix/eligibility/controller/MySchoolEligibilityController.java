@@ -48,11 +48,15 @@ public class MySchoolEligibilityController {
                     principal(authentication).getId(), promotionId, nationalId);
             switch (result.status()) {
                 case "VERIFIED" -> redirectAttributes.addFlashAttribute(
-                        "successMessage", "Promoción verificada correctamente. Tus beneficios ya están disponibles.");
+                        "successMessage", "Promoción verificada correctamente.");
                 case "MANUAL_REVIEW" -> redirectAttributes.addFlashAttribute(
-                        "warningMessage", "La identidad fue encontrada, pero requiere revisión manual.");
+                        "warningMessage", "La coincidencia requiere revisión manual.");
                 case "NOT_FOUND" -> redirectAttributes.addFlashAttribute(
-                        "errorMessage", "No encontramos tu identidad en el padrón autorizado de esa promoción.");
+                        "errorMessage", "El nombre asociado a la cédula no aparece en el padrón de esa promoción.");
+                case "IDENTITY_NOT_FOUND" -> redirectAttributes.addFlashAttribute(
+                        "errorMessage", "No pudimos obtener una identidad válida para la cédula indicada.");
+                case "IDENTITY_PROVIDER_UNAVAILABLE" -> redirectAttributes.addFlashAttribute(
+                        "warningMessage", "La fuente de identidad no está disponible. Intenta más tarde.");
                 default -> redirectAttributes.addFlashAttribute(
                         "errorMessage", "La verificación no puede aprobarse en su estado actual: " + result.status());
             }
