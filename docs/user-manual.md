@@ -28,9 +28,46 @@ Una autodeclaración no concede acceso. Los administradores u organizadores
 propietarios pueden gestionar grupos, miembros, beneficios y solicitudes
 familiares; toda aprobación, rechazo o revocación queda trazable.
 
-La verificación escolar compara identidad y nombre contra un padrón autorizado.
-Las discrepancias pasan a revisión manual y no conceden beneficios mientras
-estén pendientes.
+### Verificar una promoción escolar
+
+Una cuenta `USER` puede abrir `Verificar promoción` en la navegación lateral.
+
+1. Selecciona la institución y promoción disponibles.
+2. Introduce la cédula que figura en el padrón autorizado.
+3. Eventix genera internamente una clave HMAC para localizar el registro; la
+   cédula completa no se persiste en el padrón.
+4. Si cédula y nombre coinciden, la verificación queda `VERIFIED`.
+5. Si la cédula coincide pero el nombre requiere comprobación, el estado queda
+   `MANUAL_REVIEW` hasta que un administrador tome una decisión.
+6. Si no existe coincidencia, Eventix registra el intento sin conceder acceso ni
+   beneficios.
+
+Una verificación `VERIFIED` se sincroniza automáticamente con los grupos
+`PROMOTION_MEMBER` vinculados a esa promoción. A partir de ese momento el
+checkout puede reconocer los beneficios configurados para esos grupos. Una
+revocación o rechazo administrativo retira las membresías derivadas.
+
+### Administración de promociones escolares
+
+Solo `ADMINISTRATOR` puede abrir `Promociones escolares`.
+
+1. Registra la institución y su código interno.
+2. Crea la promoción y su año de graduación.
+3. Abre `Padrón` y descarga la plantilla CSV si la necesita.
+4. Importa el listado oficial con el encabezado exacto:
+   `full_name,student_code,national_id,source_reference`.
+5. Revisa los miembros aceptados y el historial de importaciones.
+6. Abre `Ver verificaciones` para aprobar, rechazar o revocar casos que requieran
+   intervención administrativa, registrando siempre una justificación.
+
+El importador limita cada archivo a 5 MB, evita volver a procesar el mismo
+archivo mediante checksum SHA-256 y detecta duplicados dentro del padrón.
+
+Para otorgar beneficios en un evento, el administrador u organizador propietario
+abre la elegibilidad del evento, crea un grupo `PROMOTION_MEMBER` y selecciona la
+promoción escolar correspondiente. Los usuarios ya verificados se sincronizan
+con el nuevo grupo y los futuros usuarios se incorporan cuando completen su
+verificación.
 
 ## Flujo operativo administrativo
 
@@ -79,5 +116,7 @@ Solo el administrador abre `Auditoría`. Puede buscar por usuario, acción o cor
 
 - No compartas cuentas.
 - Verifica evento y comprador antes de cobrar.
+- Usa únicamente padrones autorizados y conserva la referencia de origen.
+- No compartas archivos de padrón fuera del flujo administrativo autorizado.
 - No desactives la cámara durante una jornada de acceso sin disponer de entrada manual.
 - Reporta al administrador el `X-Correlation-ID` cuando ocurra un error.
