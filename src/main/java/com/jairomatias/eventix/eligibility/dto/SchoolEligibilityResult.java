@@ -43,4 +43,16 @@ public record SchoolEligibilityResult(
     public static SchoolEligibilityResult notFound() {
         return new SchoolEligibilityResult(false, "NOT_FOUND", null, null, null, null);
     }
+
+    public static SchoolEligibilityResult identityNotFound() {
+        return new SchoolEligibilityResult(false, "IDENTITY_NOT_FOUND", null, null, null, null);
+    }
+
+    public static SchoolEligibilityResult providerUnavailable() {
+        return new SchoolEligibilityResult(false, "PROVIDER_UNAVAILABLE", null, null, null, null);
+    }
+
+    public static SchoolEligibilityResult ambiguousMatch() {
+        return new SchoolEligibilityResult(false, "AMBIGUOUS_MATCH", null, null, null, null);
+    }
 }
