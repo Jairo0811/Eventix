@@ -19,9 +19,15 @@ class EventixApplicationTests {
     }
 
     @Test
-    void flywaySeedsInitialEventCategories() {
+    void flywaySeedsCurrentEventCategories() {
         org.assertj.core.api.Assertions
-                .assertThat(categoryRepository.count())
-                .isEqualTo(4);
+                .assertThat(categoryRepository.findAllByActiveTrueOrderByNameAsc())
+                .extracting(category -> category.getName())
+                .containsExactlyInAnyOrder(
+                        "Conferencia",
+                        "Concierto",
+                        "Deportivo",
+                        "Taller",
+                        "Promoción escolar");
     }
 }
