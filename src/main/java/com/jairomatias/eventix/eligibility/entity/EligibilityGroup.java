@@ -30,6 +30,10 @@ public class EligibilityGroup extends AuditableEntity {
     @Column(name = "max_related_people")
     private Integer maxRelatedPeople;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "school_promotion_id")
+    private SchoolPromotion schoolPromotion;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -41,11 +45,28 @@ public class EligibilityGroup extends AuditableEntity {
             String name,
             EligibilityGroupType groupType,
             Integer maxRelatedPeople) {
+        this(event, name, groupType, maxRelatedPeople, null);
+    }
+
+    public EligibilityGroup(
+            Event event,
+            String name,
+            EligibilityGroupType groupType,
+            Integer maxRelatedPeople,
+            SchoolPromotion schoolPromotion) {
         this.event = event;
-        update(name, groupType, maxRelatedPeople);
+        update(name, groupType, maxRelatedPeople, schoolPromotion);
     }
 
     public void update(String name, EligibilityGroupType groupType, Integer maxRelatedPeople) {
+        update(name, groupType, maxRelatedPeople, null);
+    }
+
+    public void update(
+            String name,
+            EligibilityGroupType groupType,
+            Integer maxRelatedPeople,
+            SchoolPromotion schoolPromotion) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("El nombre del grupo es obligatorio.");
         }
@@ -58,6 +79,7 @@ public class EligibilityGroup extends AuditableEntity {
         this.name = name.trim();
         this.groupType = groupType;
         this.maxRelatedPeople = groupType == EligibilityGroupType.FAMILY ? maxRelatedPeople : null;
+        this.schoolPromotion = groupType == EligibilityGroupType.PROMOTION_MEMBER ? schoolPromotion : null;
     }
 
     public void activate() {
@@ -82,6 +104,10 @@ public class EligibilityGroup extends AuditableEntity {
 
     public Integer getMaxRelatedPeople() {
         return maxRelatedPeople;
+    }
+
+    public SchoolPromotion getSchoolPromotion() {
+        return schoolPromotion;
     }
 
     public boolean isActive() {

@@ -14,5 +14,10 @@ public record EligibilityGroupForm(
         @NotNull(message = "El tipo de grupo es obligatorio.")
         EligibilityGroupType groupType,
         @Min(value = 0, message = "El límite de familiares no puede ser negativo.")
-        Integer maxRelatedPeople) {
+        Integer maxRelatedPeople,
+        Long schoolPromotionId) {
+
+    public EligibilityGroupForm(String name, EligibilityGroupType groupType, Integer maxRelatedPeople) {
+        this(name, groupType, maxRelatedPeople, null);
+    }
 }

@@ -31,8 +31,26 @@ public class SchoolPromotion extends AuditableEntity {
 
     public SchoolPromotion(SchoolInstitution institution, String name, int graduationYear) {
         this.institution = institution;
-        this.name = name;
+        update(name, graduationYear);
+    }
+
+    public void update(String name, int graduationYear) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("El nombre de la promoción es obligatorio.");
+        }
+        if (graduationYear < 1900 || graduationYear > 2200) {
+            throw new IllegalArgumentException("El año de graduación debe estar entre 1900 y 2200.");
+        }
+        this.name = name.trim();
         this.graduationYear = graduationYear;
+    }
+
+    public void activate() {
+        this.active = true;
+    }
+
+    public void deactivate() {
+        this.active = false;
     }
 
     public SchoolInstitution getInstitution() {

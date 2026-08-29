@@ -23,8 +23,26 @@ public class SchoolInstitution extends AuditableEntity {
     }
 
     public SchoolInstitution(String name, String code) {
-        this.name = name;
-        this.code = code;
+        update(name, code);
+    }
+
+    public void update(String name, String code) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("El nombre de la institución es obligatorio.");
+        }
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("El código de la institución es obligatorio.");
+        }
+        this.name = name.trim();
+        this.code = code.trim().toUpperCase();
+    }
+
+    public void activate() {
+        this.active = true;
+    }
+
+    public void deactivate() {
+        this.active = false;
     }
 
     public String getName() {
@@ -37,9 +55,5 @@ public class SchoolInstitution extends AuditableEntity {
 
     public boolean isActive() {
         return active;
-    }
-
-    public void deactivate() {
-        this.active = false;
     }
 }
