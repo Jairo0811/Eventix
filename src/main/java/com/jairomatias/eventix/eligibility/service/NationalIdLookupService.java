@@ -24,8 +24,19 @@ public class NationalIdLookupService {
         this.secret = secret == null ? "" : secret.trim();
     }
 
+    public String normalizeNationalId(String nationalId) {
+        if (nationalId == null) {
+            throw new IllegalArgumentException("La cédula es obligatoria.");
+        }
+        String normalized = nationalId.replaceAll("\\D", "");
+        if (normalized.length() != 11) {
+            throw new IllegalArgumentException("La cédula debe contener 11 dígitos.");
+        }
+        return normalized;
+    }
+
     public String lookupKey(String nationalId) {
-        String normalized = normalize(nationalId);
+        String normalized = normalizeNationalId(nationalId);
         if (secret.isBlank()) {
             throw new IllegalStateException(
                     "EVENTIX_ELIGIBILITY_HMAC_SECRET debe configurarse antes de verificar cédulas.");
@@ -45,18 +56,7 @@ public class NationalIdLookupService {
     }
 
     public String last4(String nationalId) {
-        String normalized = normalize(nationalId);
+        String normalized = normalizeNationalId(nationalId);
         return normalized.substring(normalized.length() - 4);
-    }
-
-    private String normalize(String nationalId) {
-        if (nationalId == null) {
-            throw new IllegalArgumentException("La cédula es obligatoria.");
-        }
-        String normalized = nationalId.replaceAll("\\D", "");
-        if (normalized.length() != 11) {
-            throw new IllegalArgumentException("La cédula debe contener 11 dígitos.");
-        }
-        return normalized;
     }
 }
