@@ -1,8 +1,7 @@
 /*
- * Eventix Light/Dark contrast hardening.
+ * Eventix fixed hybrid-theme contrast hardening.
  * Target: NORTIC B2:2017 / WCAG 2.0 AA, especially 1.4.3.
- * Loaded after theme.css and accessibility.css so semantic Bootstrap helpers
- * cannot accidentally reduce readability in either theme.
+ * The application uses dark navigation surfaces and light content surfaces.
  */
 
 :root {
@@ -16,19 +15,6 @@
     --eventix-aa-success: #126b36;
     --eventix-aa-warning: #694700;
     --eventix-aa-info: #075985;
-}
-
-html[data-theme="dark"] {
-    --eventix-aa-text: #edf5f7;
-    --eventix-aa-muted: #bdcad1;
-    --eventix-aa-border: #536975;
-    --eventix-aa-soft-bg: #172832;
-    --eventix-aa-soft-text: #edf5f7;
-    --eventix-aa-link: #8df0b1;
-    --eventix-aa-danger: #ffc1c7;
-    --eventix-aa-success: #a7f3c0;
-    --eventix-aa-warning: #ffe08a;
-    --eventix-aa-info: #b9e6ff;
 }
 
 body,
@@ -62,59 +48,23 @@ body,
     color: var(--eventix-aa-soft-text) !important;
 }
 
-html[data-theme="dark"] .bg-white,
-html[data-theme="dark"] .bg-body-tertiary,
-html[data-theme="dark"] .bg-body-secondary {
-    background-color: var(--eventix-elevated) !important;
-    color: var(--eventix-aa-text) !important;
-}
-
-.table > :not(caption) > * > * { color: inherit; }
-
-html[data-theme="dark"] .table {
-    --bs-table-color: var(--eventix-aa-text);
-    --bs-table-bg: transparent;
-    --bs-table-striped-color: var(--eventix-aa-text);
-    --bs-table-striped-bg: rgb(255 255 255 / 4%);
-    --bs-table-hover-color: #ffffff;
-    --bs-table-hover-bg: rgb(74 222 128 / 8%);
-    --bs-table-border-color: var(--eventix-border);
-}
-
-html[data-theme="dark"] .table-light,
-html[data-theme="dark"] thead.table-light {
-    --bs-table-bg: #172832;
-    --bs-table-color: #f1f7f4;
-    --bs-table-border-color: #536975;
+.table > :not(caption) > * > * {
+    color: inherit;
 }
 
 .table caption,
-caption { color: var(--eventix-aa-muted); }
+caption {
+    color: var(--eventix-aa-muted);
+}
 
-.alert { border-width: 1px; }
+.alert {
+    border-width: 1px;
+}
+
 .alert-success { --bs-alert-color: var(--eventix-aa-success); }
 .alert-danger { --bs-alert-color: var(--eventix-aa-danger); }
 .alert-warning { --bs-alert-color: var(--eventix-aa-warning); }
 .alert-info { --bs-alert-color: var(--eventix-aa-info); }
-
-html[data-theme="dark"] .alert-warning {
-    --bs-alert-bg: rgb(245 158 11 / 13%);
-    --bs-alert-border-color: rgb(250 204 21 / 45%);
-}
-html[data-theme="dark"] .alert-info {
-    --bs-alert-bg: rgb(14 165 233 / 12%);
-    --bs-alert-border-color: rgb(125 211 252 / 40%);
-}
-html[data-theme="dark"] .alert-light {
-    --bs-alert-bg: #172832;
-    --bs-alert-border-color: #536975;
-    --bs-alert-color: #edf5f7;
-}
-
-html[data-theme="dark"] .text-success { color: var(--eventix-aa-success) !important; }
-html[data-theme="dark"] .text-danger { color: var(--eventix-aa-danger) !important; }
-html[data-theme="dark"] .text-warning { color: var(--eventix-aa-warning) !important; }
-html[data-theme="dark"] .text-info { color: var(--eventix-aa-info) !important; }
 
 .form-control,
 .form-select,
@@ -124,140 +74,8 @@ html[data-theme="dark"] .text-info { color: var(--eventix-aa-info) !important; }
 
 .invalid-feedback,
 .validation-message,
-.field-error { color: var(--eventix-aa-danger); }
-
-html[data-theme="dark"] .form-control:disabled,
-html[data-theme="dark"] .form-select:disabled,
-html[data-theme="dark"] .form-control[readonly] {
-    background-color: #0d1a21;
-    color: #c8d5db;
-    -webkit-text-fill-color: #c8d5db;
-}
-
-html[data-theme="dark"] input:-webkit-autofill,
-html[data-theme="dark"] input:-webkit-autofill:hover,
-html[data-theme="dark"] input:-webkit-autofill:focus,
-html[data-theme="dark"] textarea:-webkit-autofill,
-html[data-theme="dark"] select:-webkit-autofill {
-    -webkit-text-fill-color: var(--eventix-input-text);
-    -webkit-box-shadow: 0 0 0 1000px var(--eventix-input-bg) inset;
-    caret-color: var(--eventix-input-text);
-}
-
-html[data-theme="dark"] .btn-outline-primary {
-    --bs-btn-color: #96efb6;
-    --bs-btn-border-color: #62cf8b;
-    --bs-btn-hover-bg: #1f7a45;
-    --bs-btn-hover-border-color: #77dfa0;
-    --bs-btn-hover-color: #ffffff;
-}
-
-html[data-theme="dark"] .btn-outline-danger {
-    --bs-btn-color: #ffc1c7;
-    --bs-btn-border-color: #e87984;
-    --bs-btn-hover-bg: #9f2634;
-    --bs-btn-hover-border-color: #f09aa3;
-    --bs-btn-hover-color: #ffffff;
-}
-
-a:not(.btn):not(.nav-link):not(.dropdown-item) {
-    text-decoration-thickness: 0.08em;
-    text-underline-offset: 0.15em;
-}
-
-html[data-theme="dark"] a:not(.btn):not(.nav-link):not(.dropdown-item) { color: var(--eventix-aa-link); }
-
-.theme-selector button,
-.theme-floating-control button { color: var(--eventix-aa-muted); }
-.theme-selector button.active,
-.theme-floating-control button.active { border: 1px solid currentColor; }
-
-html[data-theme="dark"] .swal2-popup,
-html[data-theme="dark"] .swal2-title,
-html[data-theme="dark"] .swal2-html-container { color: var(--eventix-aa-text); }
-html[data-theme="dark"] .swal2-cancel { color: #f4f7f8 !important; }
-
-/* Dashboard */
-.dashboard-section-heading p,
-.dashboard-kpi-label,
-.dashboard-kpi-caption,
-.dashboard-stat-row span,
-.dashboard-quick-action small,
-.dashboard-empty { color: var(--eventix-aa-muted) !important; }
-.dashboard-trend-period { color: #3f5064; }
-.dashboard-trend-value { color: #125e32; }
-.dashboard-quick-action { color: var(--eventix-aa-text); }
-.dashboard-quick-action i,
-.dashboard-kpi-icon,
-.dashboard-panel-icon { color: #126b36; }
-
-html[data-theme="dark"] .dashboard-kpi,
-html[data-theme="dark"] .dashboard-panel,
-html[data-theme="dark"] .dashboard-operation-card,
-html[data-theme="dark"] .dashboard-quick-action {
-    background: var(--eventix-surface);
-    border-color: var(--eventix-aa-border);
-    color: var(--eventix-aa-text);
-}
-
-html[data-theme="dark"] .dashboard-operation-head {
-    background: linear-gradient(135deg, #142630, #123329);
-    border-bottom-color: var(--eventix-aa-border);
-    color: var(--eventix-aa-text);
-}
-
-html[data-theme="dark"] .dashboard-trend-period,
-html[data-theme="dark"] .dashboard-kpi-label,
-html[data-theme="dark"] .dashboard-kpi-caption,
-html[data-theme="dark"] .dashboard-stat-row span,
-html[data-theme="dark"] .dashboard-quick-action small,
-html[data-theme="dark"] .dashboard-empty { color: var(--eventix-aa-muted) !important; }
-
-html[data-theme="dark"] .dashboard-trend-value,
-html[data-theme="dark"] .dashboard-quick-action i,
-html[data-theme="dark"] .dashboard-kpi-icon,
-html[data-theme="dark"] .dashboard-panel-icon { color: var(--eventix-aa-success); }
-
-html[data-theme="dark"] .dashboard-quick-action:hover,
-html[data-theme="dark"] .dashboard-quick-action:focus-visible {
-    background: #142b25;
-    border-color: #78d89a;
-    color: #ffffff;
-}
-
-/* Lists */
-.table tbody tr.text-secondary,
-.list-group-item.text-secondary { color: var(--eventix-aa-muted) !important; }
-html[data-theme="dark"] .table-hover > tbody > tr:hover > * { color: #ffffff; }
-
-html[data-theme="dark"] .pagination {
-    --bs-pagination-color: #9be9b7;
-    --bs-pagination-bg: var(--eventix-surface);
-    --bs-pagination-border-color: var(--eventix-aa-border);
-    --bs-pagination-hover-color: #ffffff;
-    --bs-pagination-hover-bg: #1c3a30;
-    --bs-pagination-hover-border-color: #78d89a;
-    --bs-pagination-active-color: #ffffff;
-    --bs-pagination-active-bg: #176b3c;
-    --bs-pagination-active-border-color: #78d89a;
-    --bs-pagination-disabled-color: #93a4ad;
-    --bs-pagination-disabled-bg: #101d25;
-    --bs-pagination-disabled-border-color: #425761;
-}
-
-/* Forms and transactional/financial screens. */
-.form-section-title,
-.detail-value,
-.metric-value,
-legend,
-fieldset {
-    color: var(--eventix-aa-text);
-}
-
-.form-check-label,
-.form-check-inline,
-.form-switch .form-check-label {
-    color: var(--eventix-aa-text);
+.field-error {
+    color: var(--eventix-aa-danger);
 }
 
 .form-control.is-invalid,
@@ -272,49 +90,41 @@ fieldset {
     border-color: var(--eventix-aa-success);
 }
 
-.valid-feedback { color: var(--eventix-aa-success); }
-
-html[data-theme="dark"] .form-control,
-html[data-theme="dark"] .form-select,
-html[data-theme="dark"] .input-group-text,
-html[data-theme="dark"] textarea {
-    background-color: var(--eventix-input-bg);
-    border-color: var(--eventix-aa-border);
-    color: var(--eventix-input-text);
+.valid-feedback {
+    color: var(--eventix-aa-success);
 }
 
-html[data-theme="dark"] .form-control:focus,
-html[data-theme="dark"] .form-select:focus,
-html[data-theme="dark"] textarea:focus {
-    background-color: #13262f;
-    border-color: #8df0b1;
-    color: #ffffff;
+a:not(.btn):not(.nav-link):not(.dropdown-item) {
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.15em;
 }
 
-html[data-theme="dark"] .form-check-input {
-    background-color: #13262f;
-    border-color: #718894;
+.dashboard-section-heading p,
+.dashboard-kpi-label,
+.dashboard-kpi-caption,
+.dashboard-stat-row span,
+.dashboard-quick-action small,
+.dashboard-empty {
+    color: var(--eventix-aa-muted) !important;
 }
 
-html[data-theme="dark"] .form-check-input:checked {
-    background-color: #1f7a45;
-    border-color: #9be9b7;
+.dashboard-trend-period {
+    color: #3f5064;
 }
 
-/* Financial summaries must remain readable even when semantic utility colors are applied. */
-.metric-value-money,
+.dashboard-trend-value {
+    color: #125e32;
+}
+
+.dashboard-quick-action,
+.form-section-title,
 .detail-value,
-.fw-semibold.text-success,
-.fw-semibold.text-danger {
-    text-shadow: none;
-}
-
-html[data-theme="dark"] .metric-value-money.text-success,
-html[data-theme="dark"] .detail-value.text-success { color: #b5f6c9 !important; }
-html[data-theme="dark"] .metric-value-money.text-danger,
-html[data-theme="dark"] .detail-value.text-danger { color: #ffd0d5 !important; }
-
-/* Checkout/payment panels and provider selectors. */
+.metric-value,
+legend,
+fieldset,
+.form-check-label,
+.form-check-inline,
+.form-switch .form-check-label,
 .wallet-payment-panel,
 .payment-provider-panel,
 .checkout-summary,
@@ -322,43 +132,20 @@ html[data-theme="dark"] .detail-value.text-danger { color: #ffd0d5 !important; }
     color: var(--eventix-aa-text);
 }
 
-html[data-theme="dark"] .wallet-payment-panel,
-html[data-theme="dark"] .payment-provider-panel,
-html[data-theme="dark"] .checkout-summary,
-html[data-theme="dark"] .checkout-review {
-    background-color: var(--eventix-surface);
-    border-color: var(--eventix-aa-border);
-    color: var(--eventix-aa-text);
+.dashboard-quick-action i,
+.dashboard-kpi-icon,
+.dashboard-panel-icon {
+    color: #126b36;
 }
 
-html[data-theme="dark"] .wallet-payment-panel .apple-pay-button {
-    outline: 1px solid #a7b8c0;
-    outline-offset: 2px;
+.table tbody tr.text-secondary,
+.list-group-item.text-secondary {
+    color: var(--eventix-aa-muted) !important;
 }
 
-/* Badges used in sales, reservations and settlements should stay readable. */
-html[data-theme="dark"] [class*="badge-settlement-"],
-html[data-theme="dark"] [class*="badge-sale-"],
-html[data-theme="dark"] [class*="badge-reservation-"] {
-    border-color: currentColor;
-    font-weight: 700;
-}
-
-/* Button states used in financial actions. */
-html[data-theme="dark"] .btn-success {
-    --bs-btn-bg: #176b3c;
-    --bs-btn-border-color: #78d89a;
-    --bs-btn-color: #ffffff;
-    --bs-btn-hover-bg: #1d7a45;
-    --bs-btn-hover-border-color: #9be9b7;
-    --bs-btn-hover-color: #ffffff;
-}
-
-html[data-theme="dark"] .btn-danger {
-    --bs-btn-bg: #8f2632;
-    --bs-btn-border-color: #e87984;
-    --bs-btn-color: #ffffff;
-    --bs-btn-hover-bg: #a52f3d;
-    --bs-btn-hover-border-color: #f09aa3;
-    --bs-btn-hover-color: #ffffff;
+.metric-value-money,
+.detail-value,
+.fw-semibold.text-success,
+.fw-semibold.text-danger {
+    text-shadow: none;
 }
