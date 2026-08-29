@@ -16,3 +16,8 @@
     backdrop-filter: blur(16px);
     background: var(--eventix-topbar-bg);
 }
+
+.theme-selector,
+.theme-floating-control {
+    display: none !important;
+}
