@@ -49,7 +49,6 @@ class EventEligibilityServiceTest {
     void allowsPublicEventWithoutMembership() {
         Event event = event(10L, EventAccessMode.PUBLIC);
         User user = user(20L);
-
         service.assertPurchaseAllowed(event, user, 30L, 1);
     }
 
@@ -57,7 +56,7 @@ class EventEligibilityServiceTest {
     void rejectsControlledEventWithoutVerifiedMembership() {
         Event event = event(10L, EventAccessMode.CONTROLLED_ACCESS);
         User user = user(20L);
-        when(membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrue(
+        when(membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrueAndGroup_ActiveTrue(
                 10L, 20L, EligibilityMembershipStatus.VERIFIED)).thenReturn(List.of());
 
         assertThatThrownBy(() -> service.assertPurchaseAllowed(event, user, 30L, 1))
@@ -73,12 +72,11 @@ class EventEligibilityServiceTest {
         EligibilityMembership membership = membership(group);
         EligibilityBenefit limit = benefit(50L, EligibilityBenefitType.PURCHASE_LIMIT, null, null, 2);
 
-        when(membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrue(
+        when(membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrueAndGroup_ActiveTrue(
                 10L, 20L, EligibilityMembershipStatus.VERIFIED)).thenReturn(List.of(membership));
         when(benefitRepository.findAllByTicketType_IdAndBenefitTypeAndActiveTrue(
                 30L, EligibilityBenefitType.EXCLUSIVE_TICKET)).thenReturn(List.of());
-        when(benefitRepository.findAllByGroup_IdInAndActiveTrue(anyCollection()))
-                .thenReturn(List.of(limit));
+        when(benefitRepository.findAllByGroup_IdInAndActiveTrue(anyCollection())).thenReturn(List.of(limit));
 
         assertThatThrownBy(() -> service.assertPurchaseAllowed(event, user, 30L, 3))
                 .isInstanceOf(BusinessRuleException.class)
@@ -92,16 +90,12 @@ class EventEligibilityServiceTest {
         EligibilityGroup group = group(40L);
         EligibilityMembership membership = membership(group);
         EligibilityBenefit discount = benefit(
-                51L,
-                EligibilityBenefitType.PERCENTAGE_DISCOUNT,
-                new BigDecimal("25.00"),
-                null,
-                null);
+                51L, EligibilityBenefitType.PERCENTAGE_DISCOUNT,
+                new BigDecimal("25.00"), null, null);
 
-        when(membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrue(
+        when(membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrueAndGroup_ActiveTrue(
                 10L, 20L, EligibilityMembershipStatus.VERIFIED)).thenReturn(List.of(membership));
-        when(benefitRepository.findAllByGroup_IdInAndActiveTrue(anyCollection()))
-                .thenReturn(List.of(discount));
+        when(benefitRepository.findAllByGroup_IdInAndActiveTrue(anyCollection())).thenReturn(List.of(discount));
 
         EligibilityDiscountDecision decision = service.resolveMonetaryDiscount(
                         event, user, 30L, new BigDecimal("1000.00"))
@@ -119,19 +113,13 @@ class EventEligibilityServiceTest {
         EligibilityGroup group = group(40L);
         EligibilityMembership membership = membership(group);
         EligibilityBenefit percentage = benefit(
-                51L,
-                EligibilityBenefitType.PERCENTAGE_DISCOUNT,
-                new BigDecimal("10.00"),
-                null,
-                null);
+                51L, EligibilityBenefitType.PERCENTAGE_DISCOUNT,
+                new BigDecimal("10.00"), null, null);
         EligibilityBenefit fixed = benefit(
-                52L,
-                EligibilityBenefitType.FIXED_DISCOUNT,
-                new BigDecimal("300.00"),
-                null,
-                null);
+                52L, EligibilityBenefitType.FIXED_DISCOUNT,
+                new BigDecimal("300.00"), null, null);
 
-        when(membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrue(
+        when(membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrueAndGroup_ActiveTrue(
                 10L, 20L, EligibilityMembershipStatus.VERIFIED)).thenReturn(List.of(membership));
         when(benefitRepository.findAllByGroup_IdInAndActiveTrue(anyCollection()))
                 .thenReturn(List.of(percentage, fixed));
@@ -153,16 +141,12 @@ class EventEligibilityServiceTest {
         TicketType otherTicket = mock(TicketType.class);
         when(otherTicket.getId()).thenReturn(99L);
         EligibilityBenefit discount = benefit(
-                51L,
-                EligibilityBenefitType.FIXED_DISCOUNT,
-                new BigDecimal("300.00"),
-                otherTicket,
-                null);
+                51L, EligibilityBenefitType.FIXED_DISCOUNT,
+                new BigDecimal("300.00"), otherTicket, null);
 
-        when(membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrue(
+        when(membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrueAndGroup_ActiveTrue(
                 10L, 20L, EligibilityMembershipStatus.VERIFIED)).thenReturn(List.of(membership));
-        when(benefitRepository.findAllByGroup_IdInAndActiveTrue(anyCollection()))
-                .thenReturn(List.of(discount));
+        when(benefitRepository.findAllByGroup_IdInAndActiveTrue(anyCollection())).thenReturn(List.of(discount));
 
         assertThat(service.resolveMonetaryDiscount(
                 event, user, 30L, new BigDecimal("1000.00"))).isEmpty();
@@ -193,12 +177,8 @@ class EventEligibilityServiceTest {
         return membership;
     }
 
-    private EligibilityBenefit benefit(
-            Long id,
-            EligibilityBenefitType type,
-            BigDecimal discountValue,
-            TicketType ticketType,
-            Integer maxTickets) {
+    private EligibilityBenefit benefit(Long id, EligibilityBenefitType type,
+            BigDecimal discountValue, TicketType ticketType, Integer maxTickets) {
         EligibilityBenefit benefit = mock(EligibilityBenefit.class);
         lenient().when(benefit.getId()).thenReturn(id);
         lenient().when(benefit.getBenefitType()).thenReturn(type);
