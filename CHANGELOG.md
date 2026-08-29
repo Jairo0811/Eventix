@@ -5,6 +5,38 @@ Todos los cambios relevantes de Eventix se documentan en este archivo.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 
+## [1.3.2] - 2026-08-29
+
+### Añadido
+
+- Administración web de instituciones y promociones escolares.
+- Importación de padrones CSV desde la aplicación, historial de importaciones y
+  plantilla descargable con el formato esperado.
+- Flujo de autoservicio para que usuarios `USER` verifiquen su pertenencia a una
+  promoción escolar contra un padrón autorizado.
+- Pantalla administrativa para aprobar, rechazar o revocar verificaciones que
+  requieren revisión manual.
+- Vínculo persistente entre promociones escolares y grupos de elegibilidad
+  `PROMOTION_MEMBER` mediante la migración Flyway V24.
+
+### Cambiado
+
+- Una verificación escolar `VERIFIED` sincroniza automáticamente la membresía de
+  elegibilidad necesaria para que checkout aplique acceso, descuentos, entrada
+  gratuita, límites y tipos de entrada exclusivos configurados para el grupo.
+- Al crear o reactivar un grupo vinculado a una promoción se incorporan las
+  verificaciones escolares ya aprobadas para evitar inconsistencias históricas.
+- Los grupos de elegibilidad inactivos ya no conceden acceso ni beneficios.
+
+### Seguridad
+
+- La importación de padrones escolares exige rol `ADMINISTRATOR` tanto en Spring
+  Security como en la capa de servicio.
+- Rechazar o revocar una verificación escolar revoca las membresías derivadas de
+  esa promoción.
+- La UI continúa mostrando únicamente los últimos cuatro dígitos de la cédula;
+  la búsqueda utiliza HMAC-SHA-256 y no persiste la cédula completa.
+
 ## [1.3.1] - 2026-08-24
 
 ### Añadido
@@ -116,6 +148,7 @@ el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 - Integraciones preparadas para AZUL, Apple Pay, Google Pay, Apple Wallet y
   Google Wallet mediante configuración externa segura.
 
+[1.3.2]: https://github.com/Jairo0811/Eventix/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/Jairo0811/Eventix/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Jairo0811/Eventix/compare/v1.1.2...v1.3.0
 [1.1.2]: https://github.com/Jairo0811/Eventix/compare/v1.1.1...v1.1.2
