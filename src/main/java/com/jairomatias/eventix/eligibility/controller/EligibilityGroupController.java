@@ -20,6 +20,7 @@ import com.jairomatias.eventix.eligibility.entity.EligibilityGroupType;
 import com.jairomatias.eventix.eligibility.service.EligibilityBenefitManagementService;
 import com.jairomatias.eventix.eligibility.service.EligibilityGroupManagementService;
 import com.jairomatias.eventix.eligibility.service.EligibilityMembershipManagementService;
+import com.jairomatias.eventix.eligibility.service.SchoolPromotionManagementService;
 import com.jairomatias.eventix.sale.repository.TicketTypeRepository;
 import com.jairomatias.eventix.security.UserPrincipal;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
@@ -34,16 +35,19 @@ public class EligibilityGroupController {
     private final EligibilityGroupManagementService groupService;
     private final EligibilityMembershipManagementService membershipService;
     private final EligibilityBenefitManagementService benefitService;
+    private final SchoolPromotionManagementService schoolPromotionManagementService;
     private final TicketTypeRepository ticketTypeRepository;
 
     public EligibilityGroupController(
             EligibilityGroupManagementService groupService,
             EligibilityMembershipManagementService membershipService,
             EligibilityBenefitManagementService benefitService,
+            SchoolPromotionManagementService schoolPromotionManagementService,
             TicketTypeRepository ticketTypeRepository) {
         this.groupService = groupService;
         this.membershipService = membershipService;
         this.benefitService = benefitService;
+        this.schoolPromotionManagementService = schoolPromotionManagementService;
         this.ticketTypeRepository = ticketTypeRepository;
     }
 
@@ -53,8 +57,9 @@ public class EligibilityGroupController {
         model.addAttribute("eventId", eventId);
         model.addAttribute("groups", groupService.list(eventId, actorId));
         model.addAttribute("groupTypes", EligibilityGroupType.values());
+        model.addAttribute("schoolPromotions", schoolPromotionManagementService.listActivePromotions());
         if (!model.containsAttribute("groupForm")) {
-            model.addAttribute("groupForm", new EligibilityGroupForm("", EligibilityGroupType.CUSTOM, null));
+            model.addAttribute("groupForm", new EligibilityGroupForm("", EligibilityGroupType.CUSTOM, null, null));
         }
         return "eligibility/groups";
     }
@@ -70,7 +75,6 @@ public class EligibilityGroupController {
                 .filter(item -> item.id().equals(groupId))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró el grupo en este evento."));
-
         model.addAttribute("eventId", eventId);
         model.addAttribute("group", group);
         model.addAttribute("memberships", membershipService.list(groupId, actorId));
@@ -129,30 +133,21 @@ public class EligibilityGroupController {
     }
 
     @PostMapping("/groups/{groupId}/activate")
-    public String activate(
-            @PathVariable Long eventId,
-            @PathVariable Long groupId,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes) {
+    public String activate(@PathVariable Long eventId, @PathVariable Long groupId,
+            Authentication authentication, RedirectAttributes redirectAttributes) {
         return changeGroupStatus(eventId, groupId, true, authentication, redirectAttributes);
     }
 
     @PostMapping("/groups/{groupId}/deactivate")
-    public String deactivate(
-            @PathVariable Long eventId,
-            @PathVariable Long groupId,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes) {
+    public String deactivate(@PathVariable Long eventId, @PathVariable Long groupId,
+            Authentication authentication, RedirectAttributes redirectAttributes) {
         return changeGroupStatus(eventId, groupId, false, authentication, redirectAttributes);
     }
 
     @PostMapping("/groups/{groupId}/members")
-    public String addMember(
-            @PathVariable Long eventId,
-            @PathVariable Long groupId,
+    public String addMember(@PathVariable Long eventId, @PathVariable Long groupId,
             @Valid @ModelAttribute("membershipForm") EligibilityMembershipForm form,
-            BindingResult bindingResult,
-            Authentication authentication,
+            BindingResult bindingResult, Authentication authentication,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("errorMessage", firstError(bindingResult));
@@ -168,11 +163,8 @@ public class EligibilityGroupController {
     }
 
     @PostMapping("/groups/{groupId}/members/{membershipId}/revoke")
-    public String revokeMember(
-            @PathVariable Long eventId,
-            @PathVariable Long groupId,
-            @PathVariable Long membershipId,
-            Authentication authentication,
+    public String revokeMember(@PathVariable Long eventId, @PathVariable Long groupId,
+            @PathVariable Long membershipId, Authentication authentication,
             RedirectAttributes redirectAttributes) {
         try {
             membershipService.revoke(membershipId, principal(authentication).getId());
@@ -184,12 +176,9 @@ public class EligibilityGroupController {
     }
 
     @PostMapping("/groups/{groupId}/benefits")
-    public String addBenefit(
-            @PathVariable Long eventId,
-            @PathVariable Long groupId,
+    public String addBenefit(@PathVariable Long eventId, @PathVariable Long groupId,
             @Valid @ModelAttribute("benefitForm") EligibilityBenefitForm form,
-            BindingResult bindingResult,
-            Authentication authentication,
+            BindingResult bindingResult, Authentication authentication,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("errorMessage", firstError(bindingResult));
@@ -205,35 +194,24 @@ public class EligibilityGroupController {
     }
 
     @PostMapping("/groups/{groupId}/benefits/{benefitId}/activate")
-    public String activateBenefit(
-            @PathVariable Long eventId,
-            @PathVariable Long groupId,
-            @PathVariable Long benefitId,
-            Authentication authentication,
+    public String activateBenefit(@PathVariable Long eventId, @PathVariable Long groupId,
+            @PathVariable Long benefitId, Authentication authentication,
             RedirectAttributes redirectAttributes) {
         return changeBenefitStatus(eventId, groupId, benefitId, true, authentication, redirectAttributes);
     }
 
     @PostMapping("/groups/{groupId}/benefits/{benefitId}/deactivate")
-    public String deactivateBenefit(
-            @PathVariable Long eventId,
-            @PathVariable Long groupId,
-            @PathVariable Long benefitId,
-            Authentication authentication,
+    public String deactivateBenefit(@PathVariable Long eventId, @PathVariable Long groupId,
+            @PathVariable Long benefitId, Authentication authentication,
             RedirectAttributes redirectAttributes) {
         return changeBenefitStatus(eventId, groupId, benefitId, false, authentication, redirectAttributes);
     }
 
-    private String changeGroupStatus(
-            Long eventId,
-            Long groupId,
-            boolean active,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes) {
+    private String changeGroupStatus(Long eventId, Long groupId, boolean active,
+            Authentication authentication, RedirectAttributes redirectAttributes) {
         try {
             groupService.setActive(groupId, active, principal(authentication).getId());
-            redirectAttributes.addFlashAttribute(
-                    "successMessage",
+            redirectAttributes.addFlashAttribute("successMessage",
                     active ? "Grupo activado correctamente." : "Grupo desactivado correctamente.");
         } catch (BusinessRuleException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
@@ -241,17 +219,11 @@ public class EligibilityGroupController {
         return redirect(eventId);
     }
 
-    private String changeBenefitStatus(
-            Long eventId,
-            Long groupId,
-            Long benefitId,
-            boolean active,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes) {
+    private String changeBenefitStatus(Long eventId, Long groupId, Long benefitId, boolean active,
+            Authentication authentication, RedirectAttributes redirectAttributes) {
         try {
             benefitService.setActive(benefitId, active, principal(authentication).getId());
-            redirectAttributes.addFlashAttribute(
-                    "successMessage",
+            redirectAttributes.addFlashAttribute("successMessage",
                     active ? "Beneficio activado correctamente." : "Beneficio desactivado correctamente.");
         } catch (BusinessRuleException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());

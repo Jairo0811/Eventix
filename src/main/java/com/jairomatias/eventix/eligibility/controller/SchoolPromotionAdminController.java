@@ -58,11 +58,8 @@ public class SchoolPromotionAdminController {
     }
 
     @PostMapping("/institutions")
-    public String createInstitution(
-            @Valid @ModelAttribute("institutionForm") SchoolInstitutionForm form,
-            BindingResult bindingResult,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes) {
+    public String createInstitution(@Valid @ModelAttribute("institutionForm") SchoolInstitutionForm form,
+            BindingResult bindingResult, Authentication authentication, RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             return error(redirectAttributes, firstError(bindingResult), "/school-promotions");
         }
@@ -75,12 +72,33 @@ public class SchoolPromotionAdminController {
         return "redirect:/school-promotions";
     }
 
-    @PostMapping("/promotions")
-    public String createPromotion(
-            @Valid @ModelAttribute("promotionForm") SchoolPromotionForm form,
-            BindingResult bindingResult,
-            Authentication authentication,
+    @PostMapping("/institutions/{institutionId}")
+    public String updateInstitution(@PathVariable Long institutionId, SchoolInstitutionForm form,
+            Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            managementService.updateInstitution(institutionId, form, principal(authentication).getId());
+            redirectAttributes.addFlashAttribute("successMessage", "Institución actualizada correctamente.");
+        } catch (BusinessRuleException | IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/school-promotions";
+    }
+
+    @PostMapping("/institutions/{institutionId}/activate")
+    public String activateInstitution(@PathVariable Long institutionId, Authentication authentication,
             RedirectAttributes redirectAttributes) {
+        return changeInstitutionStatus(institutionId, true, authentication, redirectAttributes);
+    }
+
+    @PostMapping("/institutions/{institutionId}/deactivate")
+    public String deactivateInstitution(@PathVariable Long institutionId, Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+        return changeInstitutionStatus(institutionId, false, authentication, redirectAttributes);
+    }
+
+    @PostMapping("/promotions")
+    public String createPromotion(@Valid @ModelAttribute("promotionForm") SchoolPromotionForm form,
+            BindingResult bindingResult, Authentication authentication, RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             return error(redirectAttributes, firstError(bindingResult), "/school-promotions");
         }
@@ -94,6 +112,30 @@ public class SchoolPromotionAdminController {
         }
     }
 
+    @PostMapping("/promotions/{promotionId}")
+    public String updatePromotion(@PathVariable Long promotionId, SchoolPromotionForm form,
+            Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            managementService.updatePromotion(promotionId, form, principal(authentication).getId());
+            redirectAttributes.addFlashAttribute("successMessage", "Promoción actualizada correctamente.");
+        } catch (BusinessRuleException | IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/school-promotions";
+    }
+
+    @PostMapping("/promotions/{promotionId}/activate")
+    public String activatePromotion(@PathVariable Long promotionId, Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+        return changePromotionStatus(promotionId, true, authentication, redirectAttributes);
+    }
+
+    @PostMapping("/promotions/{promotionId}/deactivate")
+    public String deactivatePromotion(@PathVariable Long promotionId, Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+        return changePromotionStatus(promotionId, false, authentication, redirectAttributes);
+    }
+
     @GetMapping("/promotions/{promotionId}")
     public String detail(@PathVariable Long promotionId, Authentication authentication, Model model) {
         Long actorId = principal(authentication).getId();
@@ -104,18 +146,15 @@ public class SchoolPromotionAdminController {
     }
 
     @PostMapping("/promotions/{promotionId}/roster")
-    public String importRoster(
-            @PathVariable Long promotionId,
+    public String importRoster(@PathVariable Long promotionId,
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "sourceName", required = false) String sourceName,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes) {
+            Authentication authentication, RedirectAttributes redirectAttributes) {
         Long actorId = principal(authentication).getId();
         managementService.getPromotion(promotionId, actorId);
         String source = sourceName == null || sourceName.isBlank() ? file.getOriginalFilename() : sourceName;
         try {
-            RosterImportResult result = rosterImportService.importCsv(
-                    promotionId, actorId, source, file.getBytes());
+            RosterImportResult result = rosterImportService.importCsv(promotionId, actorId, source, file.getBytes());
             redirectAttributes.addFlashAttribute("successMessage",
                     "Padrón importado: " + result.acceptedRows() + " aceptados y "
                             + result.rejectedRows() + " rechazados.");
@@ -129,8 +168,7 @@ public class SchoolPromotionAdminController {
 
     @GetMapping("/verifications")
     public String verifications(Authentication authentication, Model model) {
-        model.addAttribute("verifications",
-                managementService.listVerifications(principal(authentication).getId()));
+        model.addAttribute("verifications", managementService.listVerifications(principal(authentication).getId()));
         return "school-promotions/verifications";
     }
 
@@ -150,6 +188,30 @@ public class SchoolPromotionAdminController {
     public String revoke(@PathVariable Long verificationId, @RequestParam String reason,
             Authentication authentication, RedirectAttributes redirectAttributes) {
         return review(verificationId, reason, "revoke", authentication, redirectAttributes);
+    }
+
+    private String changeInstitutionStatus(Long id, boolean active, Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+        try {
+            managementService.setInstitutionActive(id, active, principal(authentication).getId());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    active ? "Institución activada." : "Institución desactivada.");
+        } catch (BusinessRuleException | IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/school-promotions";
+    }
+
+    private String changePromotionStatus(Long id, boolean active, Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+        try {
+            managementService.setPromotionActive(id, active, principal(authentication).getId());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    active ? "Promoción activada." : "Promoción desactivada.");
+        } catch (BusinessRuleException | IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/school-promotions";
     }
 
     private String review(Long verificationId, String reason, String action,

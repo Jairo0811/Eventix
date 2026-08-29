@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="messages" aria-live="polite" aria-atomic="true">
-    <div class="alert alert-success alert-dismissible fade show"
-         role="status"
-         th:if="${successMessage}">
+    <div class="alert alert-success alert-dismissible fade show" role="status" th:if="${successMessage}">
         <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
         <span th:text="${successMessage}">Operación completada.</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar mensaje de confirmación"></button>
     </div>
-    <div class="alert alert-danger alert-dismissible fade show"
-         role="alert"
-         aria-live="assertive"
-         th:if="${errorMessage}">
+    <div class="alert alert-warning alert-dismissible fade show" role="status" th:if="${warningMessage}">
+        <i class="bi bi-hourglass-split me-2" aria-hidden="true"></i>
+        <span th:text="${warningMessage}">La operación requiere revisión.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar mensaje de advertencia"></button>
+    </div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="assertive" th:if="${errorMessage}">
         <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
         <span th:text="${errorMessage}">No fue posible completar la operación.</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar mensaje de error"></button>

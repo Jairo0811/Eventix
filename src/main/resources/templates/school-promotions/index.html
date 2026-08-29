@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Promociones escolares')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('school-promotions')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div><h1 class="page-title mb-1">Promociones escolares</h1><p class="text-muted mb-0">Gestiona instituciones, promociones y padrones autorizados.</p></div>
+        <a class="btn btn-outline-primary" th:href="@{/school-promotions/verifications}"><i class="bi bi-person-check me-1"></i>Ver verificaciones</a>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-xl-6"><section class="content-card h-100"><h2 class="h5 mb-3">Nueva institución</h2>
+            <form th:action="@{/school-promotions/institutions}" th:object="${institutionForm}" method="post" class="row g-3">
+                <div class="col-md-8"><label for="institution-name" class="form-label">Nombre</label><input id="institution-name" class="form-control" th:field="*{name}" maxlength="180" required></div>
+                <div class="col-md-4"><label for="institution-code" class="form-label">Código</label><input id="institution-code" class="form-control" th:field="*{code}" maxlength="50" required></div>
+                <div class="col-12"><button class="btn btn-primary" type="submit">Crear institución</button></div>
+            </form></section></div>
+        <div class="col-xl-6"><section class="content-card h-100"><h2 class="h5 mb-3">Nueva promoción</h2>
+            <form th:action="@{/school-promotions/promotions}" th:object="${promotionForm}" method="post" class="row g-3">
+                <div class="col-12"><label for="promotion-institution" class="form-label">Institución</label><select id="promotion-institution" class="form-select" th:field="*{institutionId}" required><option value="">Selecciona</option><option th:each="institution : ${institutions}" th:if="${institution.active}" th:value="${institution.id}" th:text="|${institution.name} (${institution.code})|"></option></select></div>
+                <div class="col-md-8"><label for="promotion-name" class="form-label">Nombre</label><input id="promotion-name" class="form-control" th:field="*{name}" maxlength="120" placeholder="Promoción / generación" required></div>
+                <div class="col-md-4"><label for="promotion-year" class="form-label">Año</label><input id="promotion-year" class="form-control" type="number" min="1900" max="2200" th:field="*{graduationYear}" required></div>
+                <div class="col-12"><button class="btn btn-primary" type="submit">Crear promoción</button></div>
+            </form></section></div>
+    </div>
+    <section class="content-card mb-4"><h2 class="h5 mb-3">Instituciones</h2>
+        <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Institución</th><th>Código</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead><tbody>
+        <tr th:each="institution : ${institutions}">
+            <td><form th:id="|institution-${institution.id}|" th:action="@{/school-promotions/institutions/{id}(id=${institution.id})}" method="post"><input class="form-control form-control-sm" name="name" th:value="${institution.name}" maxlength="180" required><input type="hidden" name="code" th:value="${institution.code}"></form></td>
+            <td th:text="${institution.code}">COD</td><td><span class="badge" th:classappend="${institution.active} ? ' text-bg-success' : ' text-bg-secondary'" th:text="${institution.active ? 'Activa' : 'Inactiva'}"></span></td>
+            <td class="text-end"><div class="d-inline-flex gap-2"><button class="btn btn-sm btn-outline-primary" th:form="|institution-${institution.id}|">Guardar</button><form th:if="${institution.active}" th:action="@{/school-promotions/institutions/{id}/deactivate(id=${institution.id})}" method="post"><button class="btn btn-sm btn-outline-danger">Desactivar</button></form><form th:unless="${institution.active}" th:action="@{/school-promotions/institutions/{id}/activate(id=${institution.id})}" method="post"><button class="btn btn-sm btn-outline-success">Activar</button></form></div></td>
+        </tr></tbody></table></div>
+    </section>
+    <section class="content-card"><h2 class="h5 mb-3">Promociones</h2>
+        <div class="alert alert-light border" th:if="${#lists.isEmpty(promotions)}">Aún no hay promociones registradas.</div>
+        <div class="table-responsive" th:unless="${#lists.isEmpty(promotions)}"><table class="table align-middle"><thead><tr><th>Institución</th><th>Promoción</th><th>Año</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead><tbody>
+        <tr th:each="promotion : ${promotions}"><td th:text="${promotion.institutionName}"></td><td th:text="${promotion.name}"></td><td th:text="${promotion.graduationYear}"></td><td><span class="badge" th:classappend="${promotion.active} ? ' text-bg-success' : ' text-bg-secondary'" th:text="${promotion.active ? 'Activa' : 'Inactiva'}"></span></td><td class="text-end"><div class="d-inline-flex gap-2"><a class="btn btn-sm btn-primary" th:href="@{/school-promotions/promotions/{id}(id=${promotion.id})}">Padrón</a><form th:if="${promotion.active}" th:action="@{/school-promotions/promotions/{id}/deactivate(id=${promotion.id})}" method="post"><button class="btn btn-sm btn-outline-danger">Desactivar</button></form><form th:unless="${promotion.active}" th:action="@{/school-promotions/promotions/{id}/activate(id=${promotion.id})}" method="post"><button class="btn btn-sm btn-outline-success">Activar</button></form></div></td></tr>
+        </tbody></table></div>
+    </section>
+</main>
+</body>
+</html>
