@@ -1,6 +1,7 @@
 package com.jairomatias.eventix.eligibility.service;
 
-import java.text.Normalizer;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,9 @@ import com.jairomatias.eventix.eligibility.entity.SchoolPromotion;
 import com.jairomatias.eventix.eligibility.entity.VerificationAttemptResult;
 import com.jairomatias.eventix.eligibility.entity.VerificationMethod;
 import com.jairomatias.eventix.eligibility.entity.VerificationStatus;
+import com.jairomatias.eventix.eligibility.identity.CitizenIdentity;
+import com.jairomatias.eventix.eligibility.identity.CitizenIdentityProvider;
+import com.jairomatias.eventix.eligibility.identity.CitizenIdentityProviderUnavailableException;
 import com.jairomatias.eventix.eligibility.repository.EligibilityVerificationAttemptRepository;
 import com.jairomatias.eventix.eligibility.repository.EligibilityVerificationRepository;
 import com.jairomatias.eventix.eligibility.repository.PromotionMemberRepository;
@@ -25,6 +29,8 @@ public class SchoolEligibilityService {
 
     private final PromotionMemberRepository promotionMemberRepository;
     private final NationalIdLookupService nationalIdLookupService;
+    private final PersonNameNormalizer nameNormalizer;
+    private final CitizenIdentityProvider identityProvider;
     private final EligibilityVerificationRepository verificationRepository;
     private final EligibilityVerificationAttemptRepository attemptRepository;
     private final SchoolPromotionRepository schoolPromotionRepository;
@@ -34,6 +40,8 @@ public class SchoolEligibilityService {
     public SchoolEligibilityService(
             PromotionMemberRepository promotionMemberRepository,
             NationalIdLookupService nationalIdLookupService,
+            PersonNameNormalizer nameNormalizer,
+            CitizenIdentityProvider identityProvider,
             EligibilityVerificationRepository verificationRepository,
             EligibilityVerificationAttemptRepository attemptRepository,
             SchoolPromotionRepository schoolPromotionRepository,
@@ -41,6 +49,8 @@ public class SchoolEligibilityService {
             SchoolPromotionMembershipSyncService membershipSyncService) {
         this.promotionMemberRepository = promotionMemberRepository;
         this.nationalIdLookupService = nationalIdLookupService;
+        this.nameNormalizer = nameNormalizer;
+        this.identityProvider = identityProvider;
         this.verificationRepository = verificationRepository;
         this.attemptRepository = attemptRepository;
         this.schoolPromotionRepository = schoolPromotionRepository;
@@ -50,11 +60,27 @@ public class SchoolEligibilityService {
 
     @Transactional(readOnly = true)
     public SchoolEligibilityResult verifyPromotionMember(Long promotionId, String nationalId) {
-        String lookup = nationalIdLookupService.lookupKey(nationalId);
-        PromotionMember member = promotionMemberRepository
-                .findByPromotion_IdAndNationalIdLookupAndActiveTrue(promotionId, lookup)
-                .orElse(null);
-        return member == null ? SchoolEligibilityResult.notFound() : verifiedResult(member);
+        String normalizedNationalId = nationalIdLookupService.normalizeNationalId(nationalId);
+        Optional<CitizenIdentity> identity;
+        try {
+            identity = identityProvider.findByNationalId(normalizedNationalId);
+        } catch (CitizenIdentityProviderUnavailableException exception) {
+            return SchoolEligibilityResult.providerUnavailable();
+        }
+        if (identity.isEmpty()) {
+            return SchoolEligibilityResult.identityNotFound();
+        }
+
+        List<PromotionMember> matches = findActiveRosterMatches(
+                promotionId,
+                identity.get().fullName());
+        if (matches.isEmpty()) {
+            return SchoolEligibilityResult.notFound();
+        }
+        if (matches.size() > 1) {
+            return SchoolEligibilityResult.ambiguousMatch();
+        }
+        return verifiedResult(matches.getFirst(), nationalIdLookupService.last4(normalizedNationalId));
     }
 
     @Transactional
@@ -67,18 +93,42 @@ public class SchoolEligibilityService {
             throw new IllegalArgumentException("La promoción seleccionada no está disponible para verificación.");
         }
 
-        String lookup = nationalIdLookupService.lookupKey(nationalId);
-        String last4 = nationalIdLookupService.last4(nationalId);
-        PromotionMember member = promotionMemberRepository
-                .findByPromotion_IdAndNationalIdLookupAndActiveTrue(promotionId, lookup)
-                .orElse(null);
+        String normalizedNationalId = nationalIdLookupService.normalizeNationalId(nationalId);
+        String lookup = nationalIdLookupService.lookupKey(normalizedNationalId);
+        String last4 = nationalIdLookupService.last4(normalizedNationalId);
 
-        if (member == null) {
+        Optional<CitizenIdentity> identity;
+        try {
+            identity = identityProvider.findByNationalId(normalizedNationalId);
+        } catch (CitizenIdentityProviderUnavailableException exception) {
+            recordAttempt(user, promotion, lookup, last4, VerificationAttemptResult.PROVIDER_UNAVAILABLE,
+                    "El proveedor autorizado de identidad no está disponible.");
+            return SchoolEligibilityResult.providerUnavailable();
+        }
+
+        if (identity.isEmpty()) {
+            recordAttempt(user, promotion, lookup, last4, VerificationAttemptResult.IDENTITY_NOT_FOUND,
+                    "La cédula no pudo resolverse en el proveedor autorizado de identidad.");
+            return SchoolEligibilityResult.identityNotFound();
+        }
+
+        List<PromotionMember> matches = findActiveRosterMatches(
+                promotionId,
+                identity.get().fullName());
+
+        if (matches.isEmpty()) {
             recordAttempt(user, promotion, lookup, last4, VerificationAttemptResult.NO_MATCH,
-                    "La cédula no coincide con el padrón autorizado.");
+                    "El nombre asociado a la cédula no aparece en el padrón autorizado.");
             return SchoolEligibilityResult.notFound();
         }
 
+        if (matches.size() > 1) {
+            recordAttempt(user, promotion, lookup, last4, VerificationAttemptResult.AMBIGUOUS_MATCH,
+                    "El nombre asociado a la cédula aparece más de una vez en el padrón.");
+            return SchoolEligibilityResult.ambiguousMatch();
+        }
+
+        PromotionMember member = matches.getFirst();
         EligibilityVerification existing = verificationRepository
                 .findByUser_IdAndPromotionMember_Id(userId, member.getId())
                 .orElse(null);
@@ -87,7 +137,7 @@ public class SchoolEligibilityService {
             recordAttempt(user, promotion, lookup, last4, VerificationAttemptResult.VERIFIED,
                     "La pertenencia ya estaba verificada.");
             membershipSyncService.syncVerifiedUser(userId, promotionId);
-            return verifiedResult(member);
+            return verifiedResult(member, last4);
         }
 
         if (existing != null
@@ -98,33 +148,33 @@ public class SchoolEligibilityService {
             return SchoolEligibilityResult.rejected(existing.getStatus().name());
         }
 
-        boolean nameMatches = normalizeName(user.getFullName())
-                .equals(normalizeName(member.getFullName()));
-
-        if (!nameMatches || (existing != null && existing.getStatus() == VerificationStatus.MANUAL_REVIEW)) {
-            EligibilityVerification verification = existing == null
-                    ? new EligibilityVerification(user, member, VerificationStatus.MANUAL_REVIEW,
-                            VerificationMethod.MANUAL_REVIEW,
-                            "La cédula coincide, pero el nombre requiere revisión manual.")
-                    : existing;
-            verification.sendToManualReview("La cédula coincide, pero el nombre requiere revisión manual.");
-            verificationRepository.save(verification);
+        if (existing != null && existing.getStatus() == VerificationStatus.MANUAL_REVIEW) {
             recordAttempt(user, promotion, lookup, last4, VerificationAttemptResult.MANUAL_REVIEW,
-                    verification.getReason());
-            return SchoolEligibilityResult.manualReview(member.getFullName(), promotion.getName(),
-                    promotion.getGraduationYear(), member.getNationalIdLast4());
+                    existing.getReason());
+            return SchoolEligibilityResult.manualReview(
+                    member.getFullName(),
+                    promotion.getName(),
+                    promotion.getGraduationYear(),
+                    last4);
         }
 
         EligibilityVerification verification = existing == null
                 ? new EligibilityVerification(user, member, VerificationStatus.PENDING,
                         VerificationMethod.NATIONAL_ID, null)
                 : existing;
-        verification.verifyAutomatically("Cédula y nombre coinciden con el padrón autorizado de la institución.");
+        verification.verifyAutomatically(
+                "El nombre obtenido del proveedor de identidad coincide con el padrón autorizado de la institución.");
         verificationRepository.save(verification);
         recordAttempt(user, promotion, lookup, last4, VerificationAttemptResult.VERIFIED,
                 verification.getReason());
         membershipSyncService.syncVerifiedUser(userId, promotionId);
-        return verifiedResult(member);
+        return verifiedResult(member, last4);
+    }
+
+    private List<PromotionMember> findActiveRosterMatches(Long promotionId, String officialName) {
+        String normalizedName = nameNormalizer.normalize(officialName);
+        return promotionMemberRepository
+                .findAllByPromotion_IdAndNormalizedFullNameAndActiveTrue(promotionId, normalizedName);
     }
 
     private void recordAttempt(User user, SchoolPromotion promotion, String lookup, String last4,
@@ -133,14 +183,11 @@ public class SchoolEligibilityService {
                 user, promotion, lookup, last4, result, reason));
     }
 
-    private SchoolEligibilityResult verifiedResult(PromotionMember member) {
-        return SchoolEligibilityResult.verified(member.getFullName(), member.getPromotion().getName(),
-                member.getPromotion().getGraduationYear(), member.getNationalIdLast4());
-    }
-
-    private String normalizeName(String value) {
-        String normalized = value == null ? "" : value.trim().toUpperCase();
-        normalized = Normalizer.normalize(normalized, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
-        return normalized.replaceAll("\\s+", " ");
+    private SchoolEligibilityResult verifiedResult(PromotionMember member, String nationalIdLast4) {
+        return SchoolEligibilityResult.verified(
+                member.getFullName(),
+                member.getPromotion().getName(),
+                member.getPromotion().getGraduationYear(),
+                nationalIdLast4);
     }
 }
