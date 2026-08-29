@@ -30,6 +30,9 @@
         <a class="nav-link" sec:authorize="hasRole('USER')" th:classappend="${activePage == 'my-tickets'} ? ' active'" th:attr="aria-current=${activePage == 'my-tickets'} ? 'page' : null" th:href="@{/my/tickets}">
             <i class="bi bi-ticket-perforated-fill" aria-hidden="true"></i>Mis boletas
         </a>
+        <a class="nav-link" sec:authorize="hasRole('USER')" th:classappend="${activePage == 'my-school-eligibility'} ? ' active'" th:attr="aria-current=${activePage == 'my-school-eligibility'} ? 'page' : null" th:href="@{/my/eligibility/school}">
+            <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>Verificar promoción
+        </a>
         <a class="nav-link" th:classappend="${activePage == 'profile'} ? ' active'" th:attr="aria-current=${activePage == 'profile'} ? 'page' : null" th:href="@{/profile}">
             <i class="bi bi-person-circle" aria-hidden="true"></i>Mi perfil
         </a>
@@ -78,6 +81,9 @@
         </a>
         <a class="nav-link" sec:authorize="hasRole('ADMINISTRATOR')" th:classappend="${activePage == 'categories'} ? ' active'" th:attr="aria-current=${activePage == 'categories'} ? 'page' : null" th:href="@{/categories}">
             <i class="bi bi-tags-fill" aria-hidden="true"></i>Categorías
+        </a>
+        <a class="nav-link" sec:authorize="hasRole('ADMINISTRATOR')" th:classappend="${activePage == 'school-promotions'} ? ' active'" th:attr="aria-current=${activePage == 'school-promotions'} ? 'page' : null" th:href="@{/school-promotions}">
+            <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>Promociones escolares
         </a>
         <a class="nav-link" sec:authorize="hasRole('ADMINISTRATOR')" th:classappend="${activePage == 'coupons'} ? ' active'" th:attr="aria-current=${activePage == 'coupons'} ? 'page' : null" th:href="@{/promotions/coupons}">
             <i class="bi bi-percent" aria-hidden="true"></i>Cupones

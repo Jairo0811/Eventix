@@ -2,6 +2,7 @@ package com.jairomatias.eventix.eligibility.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,6 +39,8 @@ class SchoolEligibilityServiceTest {
     private SchoolPromotionRepository schoolPromotionRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private SchoolPromotionMembershipSyncService membershipSyncService;
 
     private SchoolEligibilityService service;
 
@@ -49,11 +52,12 @@ class SchoolEligibilityServiceTest {
                 verificationRepository,
                 attemptRepository,
                 schoolPromotionRepository,
-                userRepository);
+                userRepository,
+                membershipSyncService);
     }
 
     @Test
-    void verifiesWhenNationalIdAndNameMatchAuthorizedRoster() {
+    void verifiesWhenNationalIdAndNameMatchAuthorizedRosterAndSyncsBenefits() {
         User user = user("Ana", "Pérez Gómez");
         SchoolPromotion promotion = promotion();
         PromotionMember member = member(promotion, "Ana Pérez Gómez");
@@ -65,10 +69,11 @@ class SchoolEligibilityServiceTest {
         assertThat(result.status()).isEqualTo("VERIFIED");
         verify(verificationRepository).save(any());
         verify(attemptRepository).save(any());
+        verify(membershipSyncService).syncVerifiedUser(1L, 10L);
     }
 
     @Test
-    void requiresManualReviewWhenNationalIdMatchesButNameDiffers() {
+    void requiresManualReviewWhenNationalIdMatchesButNameDiffersWithoutGrantingBenefits() {
         User user = user("Ana", "Pérez Gómez");
         SchoolPromotion promotion = promotion();
         PromotionMember member = member(promotion, "Ana María Pérez Gómez");
@@ -80,32 +85,22 @@ class SchoolEligibilityServiceTest {
         assertThat(result.status()).isEqualTo("MANUAL_REVIEW");
         verify(verificationRepository).save(any());
         verify(attemptRepository).save(any());
+        verify(membershipSyncService, never()).syncVerifiedUser(any(), any());
     }
 
-    private void stubLookup(
-            User user,
-            SchoolPromotion promotion,
-            PromotionMember member) {
+    private void stubLookup(User user, SchoolPromotion promotion, PromotionMember member) {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(schoolPromotionRepository.findById(10L)).thenReturn(Optional.of(promotion));
         when(nationalIdLookupService.lookupKey("00112345678")).thenReturn("lookup");
         when(nationalIdLookupService.last4("00112345678")).thenReturn("5678");
-        when(promotionMemberRepository
-                .findByPromotion_IdAndNationalIdLookupAndActiveTrue(10L, "lookup"))
+        when(promotionMemberRepository.findByPromotion_IdAndNationalIdLookupAndActiveTrue(10L, "lookup"))
                 .thenReturn(Optional.of(member));
         when(verificationRepository.findByUser_IdAndPromotionMember_Id(1L, null))
                 .thenReturn(Optional.empty());
     }
 
     private User user(String firstName, String lastName) {
-        return new User(
-                firstName,
-                lastName,
-                "ana@example.com",
-                "ana",
-                "hash",
-                null,
-                null);
+        return new User(firstName, lastName, "ana@example.com", "ana", "hash", null, null);
     }
 
     private SchoolPromotion promotion() {
@@ -115,11 +110,6 @@ class SchoolEligibilityServiceTest {
 
     private PromotionMember member(SchoolPromotion promotion, String name) {
         return new PromotionMember(
-                promotion,
-                name,
-                "A-2017-01",
-                "lookup",
-                "5678",
-                "Acta oficial");
+                promotion, name, "A-2017-01", "lookup", "5678", "Acta oficial");
     }
 }

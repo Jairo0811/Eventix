@@ -20,6 +20,7 @@ import com.jairomatias.eventix.eligibility.entity.SchoolRosterImport;
 import com.jairomatias.eventix.eligibility.repository.PromotionMemberRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolPromotionRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolRosterImportRepository;
+import com.jairomatias.eventix.role.entity.RoleName;
 import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.repository.UserRepository;
 
@@ -62,6 +63,14 @@ public class SchoolRosterImportService {
                 .orElseThrow(() -> new IllegalArgumentException("La promoción indicada no existe."));
         User importedBy = userRepository.findById(importedById)
                 .orElseThrow(() -> new IllegalArgumentException("El usuario importador no existe."));
+        if (importedBy.getRole().getName() != RoleName.ADMINISTRATOR) {
+            throw new IllegalArgumentException(
+                    "Solo un administrador puede importar padrones escolares.");
+        }
+        if (!promotion.isActive() || !promotion.getInstitution().isActive()) {
+            throw new IllegalArgumentException(
+                    "La institución y la promoción deben estar activas para importar el padrón.");
+        }
 
         String checksum = checksum(content);
         if (rosterImportRepository.existsByPromotion_IdAndFileChecksum(promotionId, checksum)) {

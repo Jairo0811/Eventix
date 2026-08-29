@@ -46,8 +46,7 @@ public class EventEligibilityService {
             return;
         }
         if (verifiedMemberships(event, user).isEmpty()) {
-            throw new BusinessRuleException(
-                    "No tienes una elegibilidad verificada para acceder a este evento.");
+            throw new BusinessRuleException("No tienes una elegibilidad verificada para acceder a este evento.");
         }
     }
 
@@ -62,64 +61,45 @@ public class EventEligibilityService {
     }
 
     @Transactional(readOnly = true)
-    public void assertPurchaseAllowed(
-            Event event,
-            User user,
-            Long ticketTypeId,
-            int quantity) {
+    public void assertPurchaseAllowed(Event event, User user, Long ticketTypeId, int quantity) {
         assertEventAccess(event, user);
-
         List<EligibilityMembership> memberships = verifiedMemberships(event, user);
         Set<Long> groupIds = groupIds(memberships);
-
         enforceExclusiveTicket(groupIds, ticketTypeId);
         if (groupIds.isEmpty()) {
             return;
         }
-
-        List<EligibilityBenefit> benefits = benefitRepository.findAllByGroup_IdInAndActiveTrue(groupIds);
-        enforcePurchaseLimit(benefits, quantity);
+        enforcePurchaseLimit(benefitRepository.findAllByGroup_IdInAndActiveTrue(groupIds), quantity);
     }
 
     @Transactional(readOnly = true)
     public Optional<EligibilityDiscountDecision> resolveMonetaryDiscount(
-            Event event,
-            User user,
-            Long ticketTypeId,
-            BigDecimal subtotal) {
+            Event event, User user, Long ticketTypeId, BigDecimal subtotal) {
         if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
             return Optional.empty();
         }
-
         Set<Long> groupIds = groupIds(verifiedMemberships(event, user));
         if (groupIds.isEmpty()) {
             return Optional.empty();
         }
-
-        return benefitRepository.findAllByGroup_IdInAndActiveTrue(groupIds)
-                .stream()
+        return benefitRepository.findAllByGroup_IdInAndActiveTrue(groupIds).stream()
                 .filter(this::isMonetaryBenefit)
                 .filter(benefit -> appliesToTicket(benefit, ticketTypeId))
                 .map(benefit -> toDiscountDecision(benefit, subtotal))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .max(Comparator
-                        .comparing(EligibilityDiscountDecision::discountAmount)
+                .max(Comparator.comparing(EligibilityDiscountDecision::discountAmount)
                         .thenComparing(EligibilityDiscountDecision::benefitId));
     }
 
     private Optional<EligibilityDiscountDecision> toDiscountDecision(
-            EligibilityBenefit benefit,
-            BigDecimal subtotal) {
+            EligibilityBenefit benefit, BigDecimal subtotal) {
         BigDecimal discount = calculateDiscount(benefit, subtotal);
         if (discount.compareTo(BigDecimal.ZERO) <= 0) {
             return Optional.empty();
         }
         return Optional.of(new EligibilityDiscountDecision(
-                benefit.getId(),
-                benefit.getBenefitType(),
-                benefit.getDiscountValue(),
-                discount));
+                benefit.getId(), benefit.getBenefitType(), benefit.getDiscountValue(), discount));
     }
 
     private BigDecimal calculateDiscount(EligibilityBenefit benefit, BigDecimal subtotal) {
@@ -133,27 +113,21 @@ public class EventEligibilityService {
     }
 
     private BigDecimal percentageDiscount(BigDecimal configuredValue, BigDecimal subtotal) {
-        if (configuredValue == null
-                || configuredValue.compareTo(BigDecimal.ZERO) <= 0
+        if (configuredValue == null || configuredValue.compareTo(BigDecimal.ZERO) <= 0
                 || configuredValue.compareTo(ONE_HUNDRED) > 0) {
             return BigDecimal.ZERO.setScale(MONEY_SCALE, MONEY_ROUNDING);
         }
         return subtotal.multiply(configuredValue)
                 .divide(ONE_HUNDRED, MONEY_SCALE, MONEY_ROUNDING)
-                .min(subtotal)
-                .max(BigDecimal.ZERO)
-                .setScale(MONEY_SCALE, MONEY_ROUNDING);
+                .min(subtotal).max(BigDecimal.ZERO).setScale(MONEY_SCALE, MONEY_ROUNDING);
     }
 
     private BigDecimal fixedDiscount(BigDecimal configuredValue, BigDecimal subtotal) {
         if (configuredValue == null || configuredValue.compareTo(BigDecimal.ZERO) <= 0) {
             return BigDecimal.ZERO.setScale(MONEY_SCALE, MONEY_ROUNDING);
         }
-        return configuredValue
-                .setScale(MONEY_SCALE, MONEY_ROUNDING)
-                .min(subtotal)
-                .max(BigDecimal.ZERO)
-                .setScale(MONEY_SCALE, MONEY_ROUNDING);
+        return configuredValue.setScale(MONEY_SCALE, MONEY_ROUNDING)
+                .min(subtotal).max(BigDecimal.ZERO).setScale(MONEY_SCALE, MONEY_ROUNDING);
     }
 
     private boolean isMonetaryBenefit(EligibilityBenefit benefit) {
@@ -163,18 +137,15 @@ public class EventEligibilityService {
     }
 
     private boolean appliesToTicket(EligibilityBenefit benefit, Long ticketTypeId) {
-        return benefit.getTicketType() == null
-                || benefit.getTicketType().getId().equals(ticketTypeId);
+        return benefit.getTicketType() == null || benefit.getTicketType().getId().equals(ticketTypeId);
     }
 
     private Set<Long> groupIds(List<EligibilityMembership> memberships) {
-        return memberships.stream()
-                .map(membership -> membership.getGroup().getId())
-                .collect(Collectors.toSet());
+        return memberships.stream().map(membership -> membership.getGroup().getId()).collect(Collectors.toSet());
     }
 
     private List<EligibilityMembership> verifiedMemberships(Event event, User user) {
-        return membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrue(
+        return membershipRepository.findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrueAndGroup_ActiveTrue(
                 event.getId(), user.getId(), EligibilityMembershipStatus.VERIFIED);
     }
 

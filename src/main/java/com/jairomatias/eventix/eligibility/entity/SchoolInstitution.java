@@ -10,10 +10,13 @@ import jakarta.persistence.Table;
 @Table(name = "school_institutions")
 public class SchoolInstitution extends AuditableEntity {
 
-    @Column(nullable = false, length = 180)
+    private static final int MAX_NAME_LENGTH = 180;
+    private static final int MAX_CODE_LENGTH = 50;
+
+    @Column(nullable = false, length = MAX_NAME_LENGTH)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = MAX_CODE_LENGTH)
     private String code;
 
     @Column(nullable = false)
@@ -23,8 +26,31 @@ public class SchoolInstitution extends AuditableEntity {
     }
 
     public SchoolInstitution(String name, String code) {
-        this.name = name;
-        this.code = code;
+        update(name, code);
+    }
+
+    public void update(String name, String code) {
+        String normalizedName = requireText(name, "El nombre de la institución es obligatorio.");
+        String normalizedCode = requireText(code, "El código de la institución es obligatorio.")
+                .toUpperCase();
+        if (normalizedName.length() > MAX_NAME_LENGTH) {
+            throw new IllegalArgumentException(
+                    "El nombre de la institución no puede superar 180 caracteres.");
+        }
+        if (normalizedCode.length() > MAX_CODE_LENGTH) {
+            throw new IllegalArgumentException(
+                    "El código de la institución no puede superar 50 caracteres.");
+        }
+        this.name = normalizedName;
+        this.code = normalizedCode;
+    }
+
+    public void activate() {
+        this.active = true;
+    }
+
+    public void deactivate() {
+        this.active = false;
     }
 
     public String getName() {
@@ -39,7 +65,10 @@ public class SchoolInstitution extends AuditableEntity {
         return active;
     }
 
-    public void deactivate() {
-        this.active = false;
+    private String requireText(String value, String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
+        return value.trim();
     }
 }

@@ -16,7 +16,7 @@
 
     <groupId>com.jairomatias</groupId>
     <artifactId>eventix</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
 
     <name>Eventix</name>
 

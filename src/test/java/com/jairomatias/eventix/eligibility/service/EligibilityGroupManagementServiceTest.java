@@ -18,7 +18,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.jairomatias.eventix.eligibility.dto.EligibilityGroupForm;
 import com.jairomatias.eventix.eligibility.entity.EligibilityGroup;
 import com.jairomatias.eventix.eligibility.entity.EligibilityGroupType;
+import com.jairomatias.eventix.eligibility.entity.SchoolInstitution;
+import com.jairomatias.eventix.eligibility.entity.SchoolPromotion;
 import com.jairomatias.eventix.eligibility.repository.EligibilityGroupRepository;
+import com.jairomatias.eventix.eligibility.repository.SchoolPromotionRepository;
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.event.repository.EventRepository;
 import com.jairomatias.eventix.role.entity.Role;
@@ -36,12 +39,21 @@ class EligibilityGroupManagementServiceTest {
     private EventRepository eventRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private SchoolPromotionRepository schoolPromotionRepository;
+    @Mock
+    private SchoolPromotionMembershipSyncService membershipSyncService;
 
     private EligibilityGroupManagementService service;
 
     @BeforeEach
     void setUp() {
-        service = new EligibilityGroupManagementService(groupRepository, eventRepository, userRepository);
+        service = new EligibilityGroupManagementService(
+                groupRepository,
+                eventRepository,
+                userRepository,
+                schoolPromotionRepository,
+                membershipSyncService);
     }
 
     @Test
@@ -91,6 +103,46 @@ class EligibilityGroupManagementServiceTest {
                 .hasMessageContaining("Ya existe");
 
         verify(groupRepository, never()).save(any());
+    }
+
+    @Test
+    void promotionMemberGroupRequiresSchoolPromotion() {
+        Event event = mock(Event.class);
+        User administrator = user(RoleName.ADMINISTRATOR);
+        EligibilityGroupForm form = new EligibilityGroupForm(
+                "Promoción 2017", EligibilityGroupType.PROMOTION_MEMBER, null, null);
+
+        when(eventRepository.findDetailedById(100L)).thenReturn(Optional.of(event));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(administrator));
+        when(groupRepository.existsByEvent_IdAndNameIgnoreCase(100L, "Promoción 2017")).thenReturn(false);
+
+        assertThatThrownBy(() -> service.create(100L, form, 1L))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("promoción escolar");
+
+        verify(groupRepository, never()).save(any());
+    }
+
+    @Test
+    void promotionMemberGroupBackfillsVerifiedSchoolMembers() {
+        Event event = mock(Event.class);
+        User administrator = user(RoleName.ADMINISTRATOR);
+        SchoolInstitution institution = new SchoolInstitution("Colegio Demo", "DEMO");
+        SchoolPromotion promotion = new SchoolPromotion(institution, "Promoción 2017", 2017);
+        EligibilityGroup saved = mock(EligibilityGroup.class);
+        when(saved.getId()).thenReturn(300L);
+        EligibilityGroupForm form = new EligibilityGroupForm(
+                "Promoción 2017", EligibilityGroupType.PROMOTION_MEMBER, null, 10L);
+
+        when(eventRepository.findDetailedById(100L)).thenReturn(Optional.of(event));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(administrator));
+        when(groupRepository.existsByEvent_IdAndNameIgnoreCase(100L, "Promoción 2017")).thenReturn(false);
+        when(schoolPromotionRepository.findById(10L)).thenReturn(Optional.of(promotion));
+        when(groupRepository.save(any(EligibilityGroup.class))).thenReturn(saved);
+
+        service.create(100L, form, 1L);
+
+        verify(membershipSyncService).syncGroup(300L);
     }
 
     private Event eventOwnedBy(Long organizerId) {
