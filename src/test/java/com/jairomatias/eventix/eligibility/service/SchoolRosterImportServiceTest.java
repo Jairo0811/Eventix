@@ -30,8 +30,6 @@ class SchoolRosterImportServiceTest {
     @Mock
     private CsvRosterParser csvRosterParser;
     @Mock
-    private NationalIdLookupService nationalIdLookupService;
-    @Mock
     private PromotionMemberRepository promotionMemberRepository;
     @Mock
     private SchoolPromotionRepository schoolPromotionRepository;
@@ -46,7 +44,7 @@ class SchoolRosterImportServiceTest {
     void setUp() {
         service = new SchoolRosterImportService(
                 csvRosterParser,
-                nationalIdLookupService,
+                new PersonNameNormalizer(),
                 promotionMemberRepository,
                 schoolPromotionRepository,
                 rosterImportRepository,
@@ -95,7 +93,7 @@ class SchoolRosterImportServiceTest {
     }
 
     private byte[] validContent() {
-        return "full_name,student_code,national_id,source_reference\n"
+        return "full_name,student_code,source_reference\n"
                 .getBytes(StandardCharsets.UTF_8);
     }
 }
