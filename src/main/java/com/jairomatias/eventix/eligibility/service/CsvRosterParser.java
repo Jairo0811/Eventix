@@ -14,7 +14,6 @@ public class CsvRosterParser {
     private static final List<String> EXPECTED_HEADER = List.of(
             "full_name",
             "student_code",
-            "national_id",
             "source_reference");
 
     public List<RosterImportRow> parse(byte[] content) {
@@ -35,7 +34,7 @@ public class CsvRosterParser {
                 .toList();
         if (!header.equals(EXPECTED_HEADER)) {
             throw new IllegalArgumentException(
-                    "Encabezado inválido. Use: full_name,student_code,national_id,source_reference");
+                    "Encabezado inválido. Use: full_name,student_code,source_reference");
         }
 
         List<RosterImportRow> result = new ArrayList<>();
@@ -46,14 +45,13 @@ public class CsvRosterParser {
             }
             if (row.size() != EXPECTED_HEADER.size()) {
                 throw new IllegalArgumentException(
-                        "La fila " + (index + 1) + " no contiene exactamente 4 columnas.");
+                        "La fila " + (index + 1) + " no contiene exactamente 3 columnas.");
             }
             result.add(new RosterImportRow(
                     index + 1,
                     row.get(0).trim(),
                     nullable(row.get(1)),
-                    row.get(2).trim(),
-                    nullable(row.get(3))));
+                    nullable(row.get(2))));
         }
         return result;
     }

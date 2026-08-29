@@ -5,6 +5,40 @@ Todos los cambios relevantes de Eventix se documentan en este archivo.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 
+## [1.3.3] - 2026-08-29
+
+### Añadido
+
+- Contrato `CitizenIdentityProvider` para resolver de forma desacoplada una
+  cédula hacia el nombre devuelto por una fuente de identidad autorizada.
+- Proveedor configurable de identidades ficticias exclusivamente para el perfil
+  `dev` mediante `EVENTIX_IDENTITY_DEV_RECORDS`.
+- Estados de auditoría diferenciados cuando la identidad no existe o el
+  proveedor no está disponible.
+- Migración Flyway V25 para adaptar padrones y auditoría al nuevo modelo.
+
+### Cambiado
+
+- El padrón escolar deja de contener cédulas y utiliza el formato CSV
+  `full_name,student_code,source_reference`.
+- La elegibilidad escolar se decide comparando el nombre asociado a la cédula
+  por el proveedor de identidad contra los nombres del padrón; el nombre del
+  perfil Eventix ya no participa en esa decisión.
+- Una coincidencia única verifica automáticamente; múltiples coincidencias
+  exactas pasan a revisión manual.
+- Eventix adopta una única identidad visual híbrida con navegación oscura y
+  área de trabajo clara; se eliminan los modos claro/oscuro/sistema y su
+  preferencia persistente.
+
+### Seguridad
+
+- La cédula completa no forma parte del padrón escolar ni de las vistas de
+  verificaciones.
+- Los intentos continúan registrando una huella HMAC-SHA-256 y los últimos
+  cuatro dígitos para trazabilidad sin persistir la cédula completa.
+- En perfiles distintos de `dev`, la verificación falla de forma cerrada hasta
+  que exista un proveedor de identidad autorizado.
+
 ## [1.3.2] - 2026-08-29
 
 ### Añadido
@@ -148,6 +182,7 @@ el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 - Integraciones preparadas para AZUL, Apple Pay, Google Pay, Apple Wallet y
   Google Wallet mediante configuración externa segura.
 
+[1.3.3]: https://github.com/Jairo0811/Eventix/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/Jairo0811/Eventix/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/Jairo0811/Eventix/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Jairo0811/Eventix/compare/v1.1.2...v1.3.0
