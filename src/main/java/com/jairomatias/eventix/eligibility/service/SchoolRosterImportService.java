@@ -30,7 +30,7 @@ public class SchoolRosterImportService {
     private static final int MAX_FILE_BYTES = 5 * 1024 * 1024;
 
     private final CsvRosterParser csvRosterParser;
-    private final NationalIdLookupService nationalIdLookupService;
+    private final PersonNameNormalizer nameNormalizer;
     private final PromotionMemberRepository promotionMemberRepository;
     private final SchoolPromotionRepository schoolPromotionRepository;
     private final SchoolRosterImportRepository rosterImportRepository;
@@ -38,13 +38,13 @@ public class SchoolRosterImportService {
 
     public SchoolRosterImportService(
             CsvRosterParser csvRosterParser,
-            NationalIdLookupService nationalIdLookupService,
+            PersonNameNormalizer nameNormalizer,
             PromotionMemberRepository promotionMemberRepository,
             SchoolPromotionRepository schoolPromotionRepository,
             SchoolRosterImportRepository rosterImportRepository,
             UserRepository userRepository) {
         this.csvRosterParser = csvRosterParser;
-        this.nationalIdLookupService = nationalIdLookupService;
+        this.nameNormalizer = nameNormalizer;
         this.promotionMemberRepository = promotionMemberRepository;
         this.schoolPromotionRepository = schoolPromotionRepository;
         this.rosterImportRepository = rosterImportRepository;
@@ -81,26 +81,20 @@ public class SchoolRosterImportService {
         List<RosterImportRow> rows = csvRosterParser.parse(content);
         List<PromotionMember> accepted = new ArrayList<>();
         List<RosterImportError> errors = new ArrayList<>();
-        Set<String> seenLookupKeys = new HashSet<>();
+        Set<String> seenRows = existingRowKeys(promotionId);
 
         for (RosterImportRow row : rows) {
             try {
                 validateRow(row);
-                String lookupKey = nationalIdLookupService.lookupKey(row.nationalId());
-                if (!seenLookupKeys.add(lookupKey)) {
-                    throw new IllegalArgumentException("Cédula duplicada dentro del archivo.");
-                }
-                if (promotionMemberRepository.existsByPromotion_IdAndNationalIdLookup(
-                        promotionId,
-                        lookupKey)) {
-                    throw new IllegalArgumentException("La persona ya existe en este padrón.");
+                String rowKey = rowKey(row.fullName(), row.studentCode());
+                if (!seenRows.add(rowKey)) {
+                    throw new IllegalArgumentException(
+                            "La misma persona y código estudiantil ya existen en este padrón.");
                 }
                 accepted.add(new PromotionMember(
                         promotion,
                         row.fullName().trim(),
                         trimToNull(row.studentCode()),
-                        lookupKey,
-                        nationalIdLookupService.last4(row.nationalId()),
                         trimToNull(row.sourceReference())));
             } catch (IllegalArgumentException exception) {
                 errors.add(new RosterImportError(row.rowNumber(), exception.getMessage()));
@@ -123,6 +117,18 @@ public class SchoolRosterImportService {
                 accepted.size(),
                 errors.size(),
                 List.copyOf(errors));
+    }
+
+    private Set<String> existingRowKeys(Long promotionId) {
+        Set<String> keys = new HashSet<>();
+        promotionMemberRepository.findAllByPromotion_IdOrderByFullNameAsc(promotionId)
+                .forEach(member -> keys.add(rowKey(member.getFullName(), member.getStudentCode())));
+        return keys;
+    }
+
+    private String rowKey(String fullName, String studentCode) {
+        String code = studentCode == null ? "" : studentCode.trim().toUpperCase();
+        return nameNormalizer.normalize(fullName) + "|" + code;
     }
 
     private void validateFile(String sourceName, byte[] content) {
