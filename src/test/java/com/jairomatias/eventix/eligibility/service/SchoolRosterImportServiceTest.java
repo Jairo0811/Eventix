@@ -15,10 +15,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.jairomatias.eventix.eligibility.entity.SchoolPromotion;
 import com.jairomatias.eventix.eligibility.repository.PromotionMemberRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolPromotionRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolRosterImportRepository;
-import com.jairomatias.eventix.eligibility.entity.SchoolPromotion;
 import com.jairomatias.eventix.role.entity.Role;
 import com.jairomatias.eventix.role.entity.RoleName;
 import com.jairomatias.eventix.user.entity.User;
@@ -30,7 +30,7 @@ class SchoolRosterImportServiceTest {
     @Mock
     private CsvRosterParser csvRosterParser;
     @Mock
-    private NationalIdLookupService nationalIdLookupService;
+    private PersonNameNormalizer nameNormalizer;
     @Mock
     private PromotionMemberRepository promotionMemberRepository;
     @Mock
@@ -46,7 +46,7 @@ class SchoolRosterImportServiceTest {
     void setUp() {
         service = new SchoolRosterImportService(
                 csvRosterParser,
-                nationalIdLookupService,
+                nameNormalizer,
                 promotionMemberRepository,
                 schoolPromotionRepository,
                 rosterImportRepository,
@@ -95,7 +95,7 @@ class SchoolRosterImportServiceTest {
     }
 
     private byte[] validContent() {
-        return "full_name,student_code,national_id,source_reference\n"
+        return "full_name,student_code,source_reference\n"
                 .getBytes(StandardCharsets.UTF_8);
     }
 }
