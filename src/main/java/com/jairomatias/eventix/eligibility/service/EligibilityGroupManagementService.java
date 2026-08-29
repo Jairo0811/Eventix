@@ -8,7 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jairomatias.eventix.eligibility.dto.EligibilityGroupForm;
 import com.jairomatias.eventix.eligibility.dto.EligibilityGroupView;
 import com.jairomatias.eventix.eligibility.entity.EligibilityGroup;
+import com.jairomatias.eventix.eligibility.entity.EligibilityGroupType;
+import com.jairomatias.eventix.eligibility.entity.SchoolPromotion;
 import com.jairomatias.eventix.eligibility.repository.EligibilityGroupRepository;
+import com.jairomatias.eventix.eligibility.repository.SchoolPromotionRepository;
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.event.repository.EventRepository;
 import com.jairomatias.eventix.role.entity.RoleName;
@@ -23,22 +26,27 @@ public class EligibilityGroupManagementService {
     private final EligibilityGroupRepository groupRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final SchoolPromotionRepository schoolPromotionRepository;
+    private final SchoolPromotionMembershipSyncService membershipSyncService;
 
     public EligibilityGroupManagementService(
             EligibilityGroupRepository groupRepository,
             EventRepository eventRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            SchoolPromotionRepository schoolPromotionRepository,
+            SchoolPromotionMembershipSyncService membershipSyncService) {
         this.groupRepository = groupRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
+        this.schoolPromotionRepository = schoolPromotionRepository;
+        this.membershipSyncService = membershipSyncService;
     }
 
     @Transactional(readOnly = true)
     public List<EligibilityGroupView> list(Long eventId, Long actorId) {
         Event event = getEvent(eventId);
         authorize(actorId, event);
-        return groupRepository.findAllByEvent_IdOrderByNameAsc(eventId)
-                .stream()
+        return groupRepository.findAllByEvent_IdOrderByNameAsc(eventId).stream()
                 .map(EligibilityGroupView::from)
                 .toList();
     }
@@ -48,18 +56,18 @@ public class EligibilityGroupManagementService {
         Event event = getEvent(eventId);
         authorize(actorId, event);
         validateForm(form);
-
         String normalizedName = form.name().trim();
         if (groupRepository.existsByEvent_IdAndNameIgnoreCase(eventId, normalizedName)) {
             throw new BusinessRuleException("Ya existe un grupo de elegibilidad con ese nombre en el evento.");
         }
-
+        SchoolPromotion schoolPromotion = resolveSchoolPromotion(form);
         EligibilityGroup group = new EligibilityGroup(
-                event,
-                normalizedName,
-                form.groupType(),
-                form.maxRelatedPeople());
-        return groupRepository.save(group).getId();
+                event, normalizedName, form.groupType(), form.maxRelatedPeople(), schoolPromotion);
+        Long id = groupRepository.save(group).getId();
+        if (schoolPromotion != null) {
+            membershipSyncService.syncGroup(id);
+        }
+        return id;
     }
 
     @Transactional
@@ -67,15 +75,23 @@ public class EligibilityGroupManagementService {
         EligibilityGroup group = getGroupForUpdate(groupId);
         authorize(actorId, group.getEvent());
         validateForm(form);
-
         String normalizedName = form.name().trim();
         if (groupRepository.existsByEvent_IdAndNameIgnoreCaseAndIdNot(
                 group.getEvent().getId(), normalizedName, groupId)) {
             throw new BusinessRuleException("Ya existe otro grupo de elegibilidad con ese nombre en el evento.");
         }
-
-        group.update(normalizedName, form.groupType(), form.maxRelatedPeople());
+        SchoolPromotion schoolPromotion = resolveSchoolPromotion(form);
+        if (group.getSchoolPromotion() != null
+                && (schoolPromotion == null
+                        || !group.getSchoolPromotion().getId().equals(schoolPromotion.getId()))) {
+            throw new BusinessRuleException(
+                    "Una promoción escolar vinculada no puede cambiarse; crea otro grupo para preservar la trazabilidad.");
+        }
+        group.update(normalizedName, form.groupType(), form.maxRelatedPeople(), schoolPromotion);
         groupRepository.save(group);
+        if (schoolPromotion != null) {
+            membershipSyncService.syncGroup(groupId);
+        }
     }
 
     @Transactional
@@ -88,6 +104,25 @@ public class EligibilityGroupManagementService {
             group.deactivate();
         }
         groupRepository.save(group);
+        if (active && group.getSchoolPromotion() != null) {
+            membershipSyncService.syncGroup(groupId);
+        }
+    }
+
+    private SchoolPromotion resolveSchoolPromotion(EligibilityGroupForm form) {
+        if (form.groupType() != EligibilityGroupType.PROMOTION_MEMBER) {
+            return null;
+        }
+        if (form.schoolPromotionId() == null) {
+            throw new BusinessRuleException(
+                    "Los grupos PROMOTION_MEMBER deben vincularse a una promoción escolar.");
+        }
+        SchoolPromotion promotion = schoolPromotionRepository.findById(form.schoolPromotionId())
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la promoción escolar."));
+        if (!promotion.isActive() || !promotion.getInstitution().isActive()) {
+            throw new BusinessRuleException("La promoción escolar seleccionada debe estar activa.");
+        }
+        return promotion;
     }
 
     private Event getEvent(Long eventId) {

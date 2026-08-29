@@ -12,7 +12,7 @@ import com.jairomatias.eventix.eligibility.entity.EligibilityMembershipStatus;
 
 public interface EligibilityMembershipRepository extends JpaRepository<EligibilityMembership, Long> {
 
-    List<EligibilityMembership> findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrue(
+    List<EligibilityMembership> findAllByGroup_Event_IdAndUser_IdAndStatusAndActiveTrueAndGroup_ActiveTrue(
             Long eventId,
             Long userId,
             EligibilityMembershipStatus status);
@@ -29,7 +29,5 @@ public interface EligibilityMembershipRepository extends JpaRepository<Eligibili
     List<EligibilityMembership> findAllByGroup_IdOrderByUser_LastNameAscUser_FirstNameAsc(Long groupId);
 
     @EntityGraph(attributePaths = {"group", "group.schoolPromotion", "user"})
-    List<EligibilityMembership> findAllByGroup_SchoolPromotion_IdAndUser_Id(
-            Long promotionId,
-            Long userId);
+    List<EligibilityMembership> findAllByGroup_SchoolPromotion_IdAndUser_Id(Long promotionId, Long userId);
 }

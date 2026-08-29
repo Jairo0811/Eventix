@@ -15,23 +15,26 @@ public class EligibilityManualReviewService {
 
     private final EligibilityVerificationRepository verificationRepository;
     private final UserRepository userRepository;
+    private final SchoolPromotionMembershipSyncService membershipSyncService;
 
     public EligibilityManualReviewService(
             EligibilityVerificationRepository verificationRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            SchoolPromotionMembershipSyncService membershipSyncService) {
         this.verificationRepository = verificationRepository;
         this.userRepository = userRepository;
+        this.membershipSyncService = membershipSyncService;
     }
 
     @Transactional
     public void approve(Long verificationId, Long reviewerId, String reason) {
         EligibilityVerification verification = getVerification(verificationId);
         User reviewer = getAuthorizedReviewer(reviewerId);
-        verification.approve(
-                reviewer,
-                VerificationMethod.MANUAL_REVIEW,
-                requireReason(reason));
+        verification.approve(reviewer, VerificationMethod.MANUAL_REVIEW, requireReason(reason));
         verificationRepository.save(verification);
+        membershipSyncService.syncVerifiedUser(
+                verification.getUser().getId(),
+                verification.getPromotionMember().getPromotion().getId());
     }
 
     @Transactional
@@ -40,6 +43,9 @@ public class EligibilityManualReviewService {
         User reviewer = getAuthorizedReviewer(reviewerId);
         verification.reject(reviewer, requireReason(reason));
         verificationRepository.save(verification);
+        membershipSyncService.revokeForPromotion(
+                verification.getUser().getId(),
+                verification.getPromotionMember().getPromotion().getId());
     }
 
     @Transactional
@@ -48,18 +54,19 @@ public class EligibilityManualReviewService {
         User reviewer = getAuthorizedReviewer(reviewerId);
         verification.revoke(reviewer, requireReason(reason));
         verificationRepository.save(verification);
+        membershipSyncService.revokeForPromotion(
+                verification.getUser().getId(),
+                verification.getPromotionMember().getPromotion().getId());
     }
 
     private EligibilityVerification getVerification(Long verificationId) {
         return verificationRepository.findById(verificationId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "La verificación indicada no existe."));
+                .orElseThrow(() -> new IllegalArgumentException("La verificación indicada no existe."));
     }
 
     private User getAuthorizedReviewer(Long reviewerId) {
         User reviewer = userRepository.findById(reviewerId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "El usuario revisor no existe."));
+                .orElseThrow(() -> new IllegalArgumentException("El usuario revisor no existe."));
         if (reviewer.getRole().getName() != RoleName.ADMINISTRATOR) {
             throw new IllegalArgumentException(
                     "Solo un administrador autorizado puede revisar elegibilidad manualmente.");
@@ -69,13 +76,11 @@ public class EligibilityManualReviewService {
 
     private String requireReason(String reason) {
         if (reason == null || reason.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Debe registrar una justificación para la revisión manual.");
+            throw new IllegalArgumentException("Debe registrar una justificación para la revisión manual.");
         }
         String normalized = reason.trim();
         if (normalized.length() > 500) {
-            throw new IllegalArgumentException(
-                    "La justificación no puede superar 500 caracteres.");
+            throw new IllegalArgumentException("La justificación no puede superar 500 caracteres.");
         }
         return normalized;
     }
