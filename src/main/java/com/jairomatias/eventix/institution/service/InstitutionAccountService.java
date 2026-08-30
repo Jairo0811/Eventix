@@ -15,7 +15,6 @@ import com.jairomatias.eventix.institution.dto.InstitutionMembershipView;
 import com.jairomatias.eventix.institution.dto.InstitutionRegistrationForm;
 import com.jairomatias.eventix.institution.entity.InstitutionMembership;
 import com.jairomatias.eventix.institution.entity.InstitutionMembershipRole;
-import com.jairomatias.eventix.institution.entity.InstitutionMembershipStatus;
 import com.jairomatias.eventix.institution.repository.InstitutionMembershipRepository;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
