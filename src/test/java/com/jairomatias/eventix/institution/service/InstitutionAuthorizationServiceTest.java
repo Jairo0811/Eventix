@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.jairomatias.eventix.eligibility.entity.SchoolInstitution;
 import com.jairomatias.eventix.institution.entity.InstitutionMembership;
 import com.jairomatias.eventix.institution.entity.InstitutionMembershipRole;
+import com.jairomatias.eventix.institution.entity.InstitutionMembershipStatus;
 import com.jairomatias.eventix.institution.repository.InstitutionMembershipRepository;
 import com.jairomatias.eventix.role.entity.Role;
 import com.jairomatias.eventix.role.entity.RoleName;
@@ -62,8 +63,7 @@ class InstitutionAuthorizationServiceTest {
         when(userRepository.findById(5L)).thenReturn(Optional.of(user(RoleName.USER)));
         when(membershipRepository.findByInstitution_IdAndUser_Id(20L, 5L))
                 .thenReturn(Optional.of(membership));
-        when(membership.isActive()).thenReturn(true);
-        when(membership.getStatus()).thenReturn(com.jairomatias.eventix.institution.entity.InstitutionMembershipStatus.ACTIVE);
+        when(membership.getStatus()).thenReturn(InstitutionMembershipStatus.ACTIVE);
         when(membership.getRole()).thenReturn(InstitutionMembershipRole.OWNER);
 
         assertThatThrownBy(() -> service.requireOperationalRole(
