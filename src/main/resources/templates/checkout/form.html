@@ -21,6 +21,85 @@
         </div>
     </div>
 
+    <section class="content-card mb-4 border border-success-subtle"
+             th:if="${schoolAlumniBenefit != null}"
+             aria-labelledby="alumni-benefit-title">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+            <div class="d-flex align-items-start gap-3">
+                <span class="fs-3 text-success"><i class="bi bi-mortarboard-fill" aria-hidden="true"></i></span>
+                <div>
+                    <span class="text-success small fw-bold text-uppercase">Beneficio especial</span>
+                    <h2 class="h5 fw-bold mb-1" id="alumni-benefit-title">Descuento exclusivo para egresados</h2>
+                    <p class="text-secondary mb-0">
+                        Aplica únicamente a egresados del centro y promoción indicados. La elegibilidad se valida contra el padrón autorizado.
+                    </p>
+                </div>
+            </div>
+            <span class="badge rounded-pill text-bg-success px-3 py-2"
+                  th:if="${schoolAlumniBenefit.discountType.name() == 'PERCENTAGE_DISCOUNT'}"
+                  th:text="|${#numbers.formatDecimal(schoolAlumniBenefit.discountValue, 1, 2)}% de descuento|">
+                Descuento
+            </span>
+            <span class="badge rounded-pill text-bg-success px-3 py-2"
+                  th:if="${schoolAlumniBenefit.discountType.name() == 'FIXED_DISCOUNT'}"
+                  th:text="|RD$ ${#numbers.formatDecimal(schoolAlumniBenefit.discountValue, 1, 2)} de descuento|">
+                Descuento
+            </span>
+        </div>
+
+        <div class="row g-3 align-items-center">
+            <div class="col-lg-5">
+                <div class="border rounded-3 p-3 bg-body-tertiary h-100">
+                    <small class="text-secondary d-block">Centro</small>
+                    <strong th:text="${schoolAlumniBenefit.institutionName}">Institución</strong>
+                    <small class="text-secondary d-block mt-2">Promoción autorizada</small>
+                    <strong th:text="${schoolAlumniBenefit.promotionLabel()}">Promoción</strong>
+                </div>
+            </div>
+
+            <div class="col-lg-7" th:if="${schoolAlumniBenefit.verified}">
+                <div class="alert alert-success mb-0" role="status">
+                    <i class="bi bi-patch-check-fill me-2" aria-hidden="true"></i>
+                    <strong>Egresado verificado.</strong>
+                    El descuento se calculará automáticamente en el servidor al confirmar tu compra.
+                </div>
+            </div>
+
+            <div class="col-lg-7" th:unless="${schoolAlumniBenefit.verified}">
+                <form th:action="@{/my/checkout/events/{id}/school-alumni-benefit/verify(id=${checkout.eventId})}"
+                      method="post"
+                      class="row g-2 align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label" for="alumni-national-id">Cédula</label>
+                        <input class="form-control"
+                               id="alumni-national-id"
+                               name="nationalId"
+                               type="text"
+                               maxlength="20"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               required
+                               placeholder="000-0000000-0"
+                               aria-describedby="alumni-national-id-help">
+                        <div class="form-text" id="alumni-national-id-help">
+                            Eventix usa la cédula solo para resolver el nombre oficial y comprobarlo contra el padrón. No se guarda en texto plano.
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-grid">
+                        <button class="btn btn-outline-success" type="submit">
+                            <i class="bi bi-person-check me-1" aria-hidden="true"></i>
+                            Verificar y aplicar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <p class="small text-secondary mt-3 mb-0">
+            El beneficio de egresados no se combina con cupones promocionales en esta versión.
+        </p>
+    </section>
+
     <form th:action="@{/my/checkout/events/{id}(id=${checkout.eventId})}"
           th:object="${checkoutForm}"
           method="post"
@@ -101,9 +180,17 @@
                                    type="text"
                                    maxlength="40"
                                    th:field="*{couponCode}"
+                                   th:disabled="${schoolAlumniBenefit != null and schoolAlumniBenefit.verified}"
                                    placeholder="Código promocional"
                                    aria-describedby="coupon-help">
-                            <div class="form-text" id="coupon-help">Si tienes un cupón, Eventix validará su vigencia y condiciones antes de cobrar.</div>
+                            <div class="form-text" id="coupon-help"
+                                 th:if="${schoolAlumniBenefit == null or !schoolAlumniBenefit.verified}">
+                                Si tienes un cupón, Eventix validará su vigencia y condiciones antes de cobrar.
+                            </div>
+                            <div class="form-text text-success" id="coupon-alumni-help"
+                                 th:if="${schoolAlumniBenefit != null and schoolAlumniBenefit.verified}">
+                                El cupón está deshabilitado porque ya tienes un beneficio monetario de egresado verificado.
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -197,7 +284,7 @@
 
                     <div class="alert alert-light border mt-4 mb-4 small" role="note">
                         <i class="bi bi-shield-check text-success me-2" aria-hidden="true"></i>
-                        Eventix valida nuevamente precio, disponibilidad y cupos en el servidor antes de confirmar la operación.
+                        Eventix valida nuevamente precio, disponibilidad, elegibilidad y cupos en el servidor antes de confirmar la operación.
                     </div>
 
                     <div class="alert alert-info small" role="note">
@@ -231,6 +318,10 @@
             </div>
         </div>
     </form>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
 </main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
 </body>
 </html>

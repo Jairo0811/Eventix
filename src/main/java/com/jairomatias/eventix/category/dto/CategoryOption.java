@@ -1,4 +1,9 @@
 package com.jairomatias.eventix.category.dto;
 
-public record CategoryOption(Long id, String name) {
+import com.jairomatias.eventix.category.entity.EventCategorySystemKey;
+
+public record CategoryOption(
+        Long id,
+        String name,
+        EventCategorySystemKey systemKey) {
 }
