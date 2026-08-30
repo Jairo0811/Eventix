@@ -5,6 +5,23 @@ Todos los cambios relevantes de Eventix se documentan en este archivo.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 
+## [1.3.4] - 2026-08-29
+
+### Añadido
+
+- Categoría activa `Promoción escolar` para clasificar graduaciones, reencuentros
+  y actividades de una promoción o generación escolar.
+- Migración Flyway V26 para incorporar esa categoría de forma idempotente.
+
+### Cambiado
+
+- El Home elimina las referencias residuales al antiguo selector de temas y
+  conserva una única identidad visual híbrida.
+- Las cuatro tarjetas de “Plataforma integral” adoptan superficies oscuras/teal
+  con acentos verdes para mantener coherencia con la identidad visual.
+- La prueba de categorías valida explícitamente las cinco categorías actuales
+  por nombre, incluyendo `Promoción escolar`.
+
 ## [1.3.3] - 2026-08-29
 
 ### Añadido
@@ -182,6 +199,7 @@ el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 - Integraciones preparadas para AZUL, Apple Pay, Google Pay, Apple Wallet y
   Google Wallet mediante configuración externa segura.
 
+[1.3.4]: https://github.com/Jairo0811/Eventix/compare/v1.3.3...v1.3.4
 [1.3.3]: https://github.com/Jairo0811/Eventix/compare/v1.3.2...v1.3.3
 [1.3.2]: https://github.com/Jairo0811/Eventix/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/Jairo0811/Eventix/compare/v1.3.0...v1.3.1
