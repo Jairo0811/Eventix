@@ -89,10 +89,7 @@ public class SchoolAlumniBenefitService {
 
         groupRepository.findByEvent_IdAndSystemKey(eventId, GROUP_KEY)
                 .filter(EligibilityGroup::isActive)
-                .ifPresent(group -> {
-                    group.deactivate();
-                    groupRepository.save(group);
-                });
+                .ifPresent(this::deactivateManagedGroupAndBenefit);
     }
 
     @Transactional
@@ -110,10 +107,7 @@ public class SchoolAlumniBenefitService {
                 .findByEvent_IdAndSystemKey(eventId, GROUP_KEY);
 
         if (!enabled) {
-            managedGroup.ifPresent(group -> {
-                group.deactivate();
-                groupRepository.save(group);
-            });
+            managedGroup.ifPresent(this::deactivateManagedGroupAndBenefit);
             return;
         }
 
@@ -299,7 +293,7 @@ public class SchoolAlumniBenefitService {
             return current;
         }
 
-        current.deactivate();
+        deactivateManagedGroupAndBenefit(current);
         current.releaseSystemKey();
         groupRepository.saveAndFlush(current);
         return new EligibilityGroup(
@@ -309,6 +303,16 @@ public class SchoolAlumniBenefitService {
                 null,
                 promotion,
                 GROUP_KEY);
+    }
+
+    private void deactivateManagedGroupAndBenefit(EligibilityGroup group) {
+        group.deactivate();
+        benefitRepository.findByGroup_IdAndSystemKey(group.getId(), BENEFIT_KEY)
+                .ifPresent(benefit -> {
+                    benefit.deactivate();
+                    benefitRepository.save(benefit);
+                });
+        groupRepository.save(group);
     }
 
     private void validateDiscount(
