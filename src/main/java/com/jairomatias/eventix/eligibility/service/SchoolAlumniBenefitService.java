@@ -73,6 +73,29 @@ public class SchoolAlumniBenefitService {
     }
 
     @Transactional
+    public void reconcileAfterEventUpdate(
+            Long eventId,
+            String authenticatedLogin) {
+        Event event = findEvent(eventId);
+        authorizeManagement(event, findUser(authenticatedLogin));
+
+        boolean benefitStillAllowed =
+                event.getCategory().getSystemKey()
+                        == EventCategorySystemKey.SCHOOL_PROMOTION
+                && !event.isFreeEvent();
+        if (benefitStillAllowed) {
+            return;
+        }
+
+        groupRepository.findByEvent_IdAndSystemKey(eventId, GROUP_KEY)
+                .filter(EligibilityGroup::isActive)
+                .ifPresent(group -> {
+                    group.deactivate();
+                    groupRepository.save(group);
+                });
+    }
+
+    @Transactional
     public void configure(
             Long eventId,
             boolean enabled,
@@ -173,7 +196,9 @@ public class SchoolAlumniBenefitService {
             Long eventId,
             String authenticatedLogin) {
         Event event = findEvent(eventId);
-        if (event.getCategory().getSystemKey() != EventCategorySystemKey.SCHOOL_PROMOTION) {
+        if (event.getCategory().getSystemKey()
+                != EventCategorySystemKey.SCHOOL_PROMOTION
+                || event.isFreeEvent()) {
             return Optional.empty();
         }
 
@@ -203,7 +228,8 @@ public class SchoolAlumniBenefitService {
         boolean verified = membershipRepository
                 .findByGroup_IdAndUser_Id(group.getId(), customer.getId())
                 .map(membership -> membership.isActive()
-                        && membership.getStatus() == EligibilityMembershipStatus.VERIFIED)
+                        && membership.getStatus()
+                                == EligibilityMembershipStatus.VERIFIED)
                 .orElse(false);
 
         return Optional.of(new SchoolAlumniCheckoutView(
@@ -223,6 +249,10 @@ public class SchoolAlumniBenefitService {
             String nationalId) {
         Event event = findEvent(eventId);
         requireSchoolPromotionCategory(event);
+        if (event.isFreeEvent()) {
+            throw new BusinessRuleException(
+                    "Los eventos gratuitos no requieren descuento de egresados.");
+        }
         User customer = findUser(authenticatedLogin);
 
         EligibilityGroup group = groupRepository
@@ -236,7 +266,8 @@ public class SchoolAlumniBenefitService {
         }
         benefitRepository.findByGroup_IdAndSystemKey(group.getId(), BENEFIT_KEY)
                 .filter(EligibilityBenefit::isActive)
-                .filter(benefit -> isSupportedDiscount(benefit.getBenefitType()))
+                .filter(benefit -> isSupportedDiscount(
+                        benefit.getBenefitType()))
                 .orElseThrow(() -> new BusinessRuleException(
                         "Este evento no tiene un descuento monetario de egresados activo."));
 
@@ -287,7 +318,8 @@ public class SchoolAlumniBenefitService {
             throw new BusinessRuleException(
                     "El descuento de egresados debe ser porcentual o de monto fijo.");
         }
-        if (discountValue == null || discountValue.compareTo(BigDecimal.ZERO) <= 0) {
+        if (discountValue == null
+                || discountValue.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessRuleException(
                     "El valor del descuento para egresados debe ser mayor que cero.");
         }
@@ -325,7 +357,9 @@ public class SchoolAlumniBenefitService {
     }
 
     private User findUser(String login) {
-        return userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(login, login)
+        return userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(
+                        login,
+                        login)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No se encontró el usuario autenticado."));
     }
@@ -342,13 +376,15 @@ public class SchoolAlumniBenefitService {
     }
 
     private void requireSchoolPromotionCategory(Event event) {
-        if (event.getCategory().getSystemKey() != EventCategorySystemKey.SCHOOL_PROMOTION) {
+        if (event.getCategory().getSystemKey()
+                != EventCategorySystemKey.SCHOOL_PROMOTION) {
             throw new BusinessRuleException(
                     "El descuento de egresados solo puede configurarse en eventos de Promoción escolar.");
         }
     }
 
     private String managedGroupName(SchoolPromotion promotion) {
-        return "Egresados · " + promotion.getName() + " " + promotion.getGraduationYear();
+        return "Egresados · " + promotion.getName() + " "
+                + promotion.getGraduationYear();
     }
 }
