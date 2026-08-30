@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Solicitudes institucionales')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('institution-requests')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+    <div class="mb-4"><h1 class="page-title mb-1">Solicitudes de centros educativos</h1><p class="text-muted mb-0">La aprobación habilita operaciones institucionales. Valida el centro por canales autorizados antes de aprobarlo.</p></div>
+    <section class="content-card">
+        <div class="alert alert-light border" th:if="${#lists.isEmpty(requests)}">No hay solicitudes pendientes.</div>
+        <div class="table-responsive" th:unless="${#lists.isEmpty(requests)}"><table class="table align-middle"><thead><tr><th>Centro</th><th>OWNER</th><th>Estado</th><th>Decisión</th></tr></thead><tbody>
+            <tr th:each="request : ${requests}">
+                <td><strong th:text="${request.institutionName}"></strong><div class="small text-muted" th:text="${request.institutionCode}"></div></td>
+                <td><span th:text="${request.role.displayName}"></span></td>
+                <td><span class="badge text-bg-warning" th:text="${request.institutionStatus.displayName}"></span></td>
+                <td><div class="d-flex gap-2">
+                    <form th:action="@{/institutions/admin/{id}/approve(id=${request.institutionId})}" method="post"><button class="btn btn-sm btn-success" type="submit">Aprobar</button></form>
+                    <form th:action="@{/institutions/admin/{id}/reject(id=${request.institutionId})}" method="post"><button class="btn btn-sm btn-outline-danger" type="submit">Rechazar</button></form>
+                </div></td>
+            </tr>
+        </tbody></table></div>
+    </section>
+</main>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

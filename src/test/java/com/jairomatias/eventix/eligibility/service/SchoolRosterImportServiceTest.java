@@ -1,6 +1,9 @@
 package com.jairomatias.eventix.eligibility.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -15,12 +18,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.jairomatias.eventix.eligibility.entity.SchoolInstitution;
+import com.jairomatias.eventix.eligibility.entity.SchoolPromotion;
 import com.jairomatias.eventix.eligibility.repository.PromotionMemberRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolPromotionRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolRosterImportRepository;
-import com.jairomatias.eventix.eligibility.entity.SchoolPromotion;
-import com.jairomatias.eventix.role.entity.Role;
-import com.jairomatias.eventix.role.entity.RoleName;
+import com.jairomatias.eventix.institution.entity.InstitutionMembershipRole;
+import com.jairomatias.eventix.institution.service.InstitutionAuthorizationService;
+import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.repository.UserRepository;
 
@@ -37,6 +42,8 @@ class SchoolRosterImportServiceTest {
     private SchoolRosterImportRepository rosterImportRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private InstitutionAuthorizationService authorizationService;
 
     private SchoolRosterImportService service;
 
@@ -48,21 +55,30 @@ class SchoolRosterImportServiceTest {
                 promotionMemberRepository,
                 schoolPromotionRepository,
                 rosterImportRepository,
-                userRepository);
+                userRepository,
+                authorizationService);
     }
 
     @Test
-    void rejectsRosterImportFromNonAdministrator() {
+    void rejectsRosterImportWithoutInstitutionPermission() {
         SchoolPromotion promotion = mock(SchoolPromotion.class);
-        User organizer = user(RoleName.ORGANIZER);
+        SchoolInstitution institution = mock(SchoolInstitution.class);
+        User actor = mock(User.class);
         byte[] content = validContent();
 
+        when(promotion.getInstitution()).thenReturn(institution);
         when(schoolPromotionRepository.findById(10L)).thenReturn(Optional.of(promotion));
-        when(userRepository.findById(20L)).thenReturn(Optional.of(organizer));
+        when(userRepository.findById(20L)).thenReturn(Optional.of(actor));
+        doThrow(new BusinessRuleException("Sin permiso institucional."))
+                .when(authorizationService)
+                .requireOperationalRole(
+                        eq(institution),
+                        eq(20L),
+                        any(InstitutionMembershipRole[].class));
 
         assertThatThrownBy(() -> service.importCsv(10L, 20L, "Padron oficial", content))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Solo un administrador");
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Sin permiso");
 
         verify(csvRosterParser, never()).parse(content);
     }
@@ -70,26 +86,18 @@ class SchoolRosterImportServiceTest {
     @Test
     void rejectsRosterImportForInactivePromotion() {
         SchoolPromotion promotion = mock(SchoolPromotion.class);
-        User administrator = user(RoleName.ADMINISTRATOR);
+        User actor = mock(User.class);
         byte[] content = validContent();
 
         when(schoolPromotionRepository.findById(10L)).thenReturn(Optional.of(promotion));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(administrator));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(actor));
         when(promotion.isActive()).thenReturn(false);
 
         assertThatThrownBy(() -> service.importCsv(10L, 1L, "Padron oficial", content))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("deben estar activas");
+                .hasMessageContaining("promoción debe estar activa");
 
         verify(csvRosterParser, never()).parse(content);
-    }
-
-    private User user(RoleName roleName) {
-        User user = mock(User.class);
-        Role role = mock(Role.class);
-        when(user.getRole()).thenReturn(role);
-        when(role.getName()).thenReturn(roleName);
-        return user;
     }
 
     private byte[] validContent() {

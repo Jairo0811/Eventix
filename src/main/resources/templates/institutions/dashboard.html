@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Portal institucional')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('institutions')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <a class="small text-decoration-none" th:href="@{/institutions}"><i class="bi bi-arrow-left me-1"></i>Mis centros</a>
+            <h1 class="page-title mb-1 mt-2" th:text="${institution.name}"></h1>
+            <p class="text-muted mb-0"><span th:text="${institution.code}"></span> · <span th:text="${institution.currentRole.displayName}"></span></p>
+        </div>
+        <span class="badge fs-6" th:classappend="${institution.status.name() == 'ACTIVE'} ? ' text-bg-success' : (${institution.status.name() == 'PENDING_VERIFICATION'} ? ' text-bg-warning' : ' text-bg-secondary')" th:text="${institution.status.displayName}"></span>
+    </div>
+
+    <div class="alert alert-warning" th:if="${institution.status.name() == 'PENDING_VERIFICATION'}">
+        <strong>Verificación pendiente.</strong> Puedes consultar la cuenta, pero Eventix no habilitará promociones, padrones ni gestión de equipo hasta aprobar el centro.
+    </div>
+    <div class="alert alert-danger" th:if="${institution.status.name() == 'REJECTED' || institution.status.name() == 'SUSPENDED'}">
+        La operación institucional está deshabilitada. Contacta al equipo de Eventix para revisar el estado del centro.
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4"><section class="content-card h-100"><div class="d-flex gap-3"><i class="bi bi-mortarboard-fill fs-3"></i><div><h2 class="h6 mb-1">Promociones</h2><p class="text-muted small mb-0">Crea y administra generaciones del centro.</p></div></div></section></div>
+        <div class="col-md-4"><section class="content-card h-100"><div class="d-flex gap-3"><i class="bi bi-card-checklist fs-3"></i><div><h2 class="h6 mb-1">Padrones</h2><p class="text-muted small mb-0">Importa nombres y referencias institucionales, nunca cédulas.</p></div></div></section></div>
+        <div class="col-md-4"><section class="content-card h-100"><div class="d-flex gap-3"><i class="bi bi-people-fill fs-3"></i><div><h2 class="h6 mb-1">Equipo</h2><p class="text-muted small mb-0">Permisos scoped únicamente dentro de este centro.</p></div></div></section></div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-5" th:if="${institution.canManageEvents}">
+            <section class="content-card h-100">
+                <h2 class="h5 mb-3">Nueva promoción</h2>
+                <form th:action="@{/institutions/{id}/promotions(id=${institution.institutionId})}" method="post" class="row g-3">
+                    <div class="col-8"><label for="promotion-name" class="form-label">Nombre</label><input id="promotion-name" class="form-control" name="name" maxlength="120" placeholder="Promoción / generación" th:disabled="${!institution.operational}" required></div>
+                    <div class="col-4"><label for="graduation-year" class="form-label">Año</label><input id="graduation-year" class="form-control" type="number" name="graduationYear" min="1900" max="2200" th:value="${promotionForm.graduationYear}" th:disabled="${!institution.operational}" required></div>
+                    <div class="col-12"><button class="btn btn-primary" type="submit" th:disabled="${!institution.operational}">Crear promoción</button></div>
+                </form>
+            </section>
+        </div>
+        <div th:class="${institution.canManageEvents} ? 'col-xl-7' : 'col-12'">
+            <section class="content-card h-100">
+                <h2 class="h5 mb-3">Promociones del centro</h2>
+                <div class="alert alert-light border" th:if="${#lists.isEmpty(promotions)}">No hay promociones registradas.</div>
+                <div class="table-responsive" th:unless="${#lists.isEmpty(promotions)}">
+                    <table class="table align-middle">
+                        <thead><tr><th>Promoción</th><th>Estado</th><th th:if="${institution.canManageRoster}">Importar padrón</th></tr></thead>
+                        <tbody>
+                        <tr th:each="promotion : ${promotions}">
+                            <td><strong th:text="${promotion.name}"></strong><div class="small text-muted" th:text="${promotion.graduationYear}"></div></td>
+                            <td><span class="badge" th:classappend="${promotion.active} ? ' text-bg-success' : ' text-bg-secondary'" th:text="${promotion.active ? 'Activa' : 'Inactiva'}"></span></td>
+                            <td th:if="${institution.canManageRoster}">
+                                <form th:action="@{/institutions/{institutionId}/promotions/{promotionId}/roster(institutionId=${institution.institutionId},promotionId=${promotion.id})}" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-2">
+                                    <input class="form-control form-control-sm" type="file" name="file" accept=".csv,text/csv" th:disabled="${!institution.operational || !promotion.active}" required>
+                                    <input class="form-control form-control-sm" name="sourceName" maxlength="240" placeholder="Fuente / acta" th:disabled="${!institution.operational || !promotion.active}">
+                                    <button class="btn btn-sm btn-outline-primary" type="submit" th:disabled="${!institution.operational || !promotion.active}">Importar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <section class="content-card">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3"><div><h2 class="h5 mb-1">Equipo institucional</h2><p class="text-muted small mb-0">Los permisos de estas personas solo aplican dentro de este centro.</p></div></div>
+        <div class="row g-4">
+            <div class="col-xl-8">
+                <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Usuario</th><th>Rol</th><th>Estado</th><th th:if="${institution.canManageTeam}">Acciones</th></tr></thead><tbody>
+                    <tr th:each="member : ${members}">
+                        <td><strong th:text="${member.fullName}"></strong><div class="small text-muted" th:text="${member.email}"></div></td>
+                        <td th:text="${member.role.displayName}"></td>
+                        <td><span class="badge" th:classappend="${member.status.name() == 'ACTIVE'} ? ' text-bg-success' : ' text-bg-secondary'" th:text="${member.status.displayName}"></span></td>
+                        <td th:if="${institution.canManageTeam}">
+                            <div th:if="${member.role.name() != 'OWNER'}" class="d-flex flex-wrap gap-2">
+                                <form th:action="@{/institutions/{institutionId}/members/{membershipId}/role(institutionId=${institution.institutionId},membershipId=${member.membershipId})}" method="post" class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" name="role" th:disabled="${!institution.operational}"><option th:each="role : ${roles}" th:value="${role}" th:text="${role.displayName}" th:selected="${role == member.role}"></option></select>
+                                    <button class="btn btn-sm btn-outline-primary" type="submit" th:disabled="${!institution.operational}">Guardar</button>
+                                </form>
+                                <form th:action="@{/institutions/{institutionId}/members/{membershipId}/status(institutionId=${institution.institutionId},membershipId=${member.membershipId})}" method="post">
+                                    <input type="hidden" name="active" th:value="${member.status.name() != 'ACTIVE'}">
+                                    <button class="btn btn-sm" th:classappend="${member.status.name() == 'ACTIVE'} ? ' btn-outline-danger' : ' btn-outline-success'" type="submit" th:disabled="${!institution.operational}" th:text="${member.status.name() == 'ACTIVE' ? 'Suspender' : 'Reactivar'}"></button>
+                                </form>
+                            </div>
+                            <span th:if="${member.role.name() == 'OWNER'}" class="small text-muted">Propietario protegido</span>
+                        </td>
+                    </tr>
+                </tbody></table></div>
+            </div>
+            <div class="col-xl-4" th:if="${institution.canManageTeam}">
+                <form th:action="@{/institutions/{id}/members(id=${institution.institutionId})}" th:object="${memberForm}" method="post" class="row g-3">
+                    <div class="col-12"><label for="member-email" class="form-label">Agregar usuario Eventix</label><input id="member-email" class="form-control" type="email" th:field="*{email}" placeholder="usuario@correo.com" th:disabled="${!institution.operational}" required></div>
+                    <div class="col-12"><label for="member-role" class="form-label">Rol institucional</label><select id="member-role" class="form-select" th:field="*{role}" th:disabled="${!institution.operational}" required><option th:each="role : ${roles}" th:value="${role}" th:text="${role.displayName}"></option></select></div>
+                    <div class="col-12 d-grid"><button class="btn btn-primary" type="submit" th:disabled="${!institution.operational}">Agregar al equipo</button></div>
+                </form>
+            </div>
+        </div>
+    </section>
+</main>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>
