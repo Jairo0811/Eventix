@@ -8,9 +8,9 @@
   <img src="https://img.shields.io/badge/ITLA-2017--C2-0057B8?style=for-the-badge" alt="ITLA 2017-C2">
 </p>
 
-**Plataforma web modular para gestión integral de eventos, reservaciones, ventas, pagos, ticketing digital, elegibilidad, beneficios y control de acceso.**
+**Plataforma web modular para gestión integral de eventos, reservaciones, ventas, ticketing digital, elegibilidad, promociones escolares, cuentas institucionales y control de acceso.**
 
-[![Estado](https://img.shields.io/badge/Estado-v1.3.2%20estable-2563EB?style=for-the-badge)](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.2)
+[![Estado](https://img.shields.io/badge/Release-v1.3.4%20estable-2563EB?style=for-the-badge)](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.4)
 [![Eventix CI](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml/badge.svg)](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -19,9 +19,11 @@
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 
-> **Estado actual:** **Eventix v1.3.2** es la release funcional estable. Fue validada por CI con Maven, SQL Server, Docker Compose, readiness, controles de seguridad, Trivy y SBOM. Los pagos comerciales reales y payouts automáticos permanecen planificados para v1.4.0.
+> **Release estable publicada:** **Eventix v1.3.4**. Incluye la identidad visual híbrida unificada y la categoría `Promoción escolar`, además de las correcciones del flujo de identidad escolar incorporadas en v1.3.3.
 >
-> **Descargas verificadas:** [release v1.3.2](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.2) · [eventix.jar](https://github.com/Jairo0811/Eventix/releases/download/v1.3.2/eventix.jar) · [SBOM SPDX](https://github.com/Jairo0811/Eventix/releases/download/v1.3.2/eventix-sbom.spdx.json)
+> **Estado de `main`:** contiene trabajo posterior a v1.3.4, incluyendo cuentas organizacionales para centros educativos con membresías y permisos scoped. El `pom.xml` continúa en `1.3.4` hasta completar la alineación formal de la próxima release.
+>
+> **Descargas verificadas:** [release v1.3.4](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.4) · [eventix.jar](https://github.com/Jairo0811/Eventix/releases/download/v1.3.4/eventix.jar) · [SBOM SPDX](https://github.com/Jairo0811/Eventix/releases/download/v1.3.4/eventix-sbom.spdx.json)
 
 </div>
 
@@ -39,7 +41,7 @@ Forma parte de una secuencia académica de tres proyectos desarrollados posterio
 | 2 | SOF-012 | Estructuras de Datos | [**Aerolinea**](https://github.com/Jairo0811/Aerolinea) | 2018-C1 | Estructuras de datos, relaciones y rutas |
 | 3 | SOF-011 | Programación WEB | [**ITLA Crush**](https://github.com/Jairo0811/ITLAcrushReact) | 2018-C2 | Desarrollo web, JavaScript, React y Firebase |
 
-La versión moderna de Eventix conserva esa identidad académica, pero ha sido reconstruida con criterios de arquitectura, seguridad, accesibilidad, pruebas, observabilidad y despliegue propios de una aplicación profesional.
+La versión moderna conserva esa identidad académica, pero ha sido reconstruida con arquitectura modular, seguridad, accesibilidad, pruebas automatizadas, observabilidad y despliegue reproducible.
 
 ---
 
@@ -57,9 +59,12 @@ Incluye:
 - liquidaciones y métricas para organizadores;
 - notificaciones internas y transaccionales;
 - Eligibility & Benefits para audiencias controladas;
-- promociones escolares con padrón autorizado y verificación de identidad.
+- promociones escolares con padrón autorizado;
+- verificación escolar por identidad oficial;
+- cuentas organizacionales para centros educativos;
+- membresías y permisos institucionales aislados por centro.
 
-La solución utiliza un **monolito modular por dominio**, con reglas críticas ejecutadas en backend y persistencia versionada mediante Flyway.
+La solución utiliza un **monolito modular por dominio**, con reglas críticas ejecutadas en backend y esquema versionado mediante Flyway.
 
 ---
 
@@ -71,8 +76,9 @@ src/main/java/com/jairomatias/eventix/
 ├── category/           # Categorías
 ├── checkout/           # Checkout del comprador
 ├── commerce/           # Casos comerciales compartidos
-├── eligibility/        # Elegibilidad, promociones y beneficios
+├── eligibility/        # Elegibilidad, promociones, padrones y beneficios
 ├── event/              # Eventos
+├── institution/        # Cuentas y RBAC de centros educativos
 ├── notification/       # Notificaciones
 ├── payment/            # Contratos y adaptadores de pago
 ├── promotion/          # Cupones
@@ -89,80 +95,180 @@ src/main/java/com/jairomatias/eventix/
 
 - Clean Code, SOLID, DRY y KISS;
 - separación de responsabilidades;
-- autorización por rol y propiedad;
+- autorización por rol, propiedad y tenant institucional;
 - transacciones para operaciones críticas;
-- migraciones incrementales;
+- migraciones incrementales y compatibles con SQL Server;
 - pruebas automatizadas e integración continua;
-- secretos externos al repositorio.
+- secretos externos al repositorio;
+- fail-closed en integraciones sensibles no configuradas.
 
 ---
 
-## 🆕 v1.3.2 — Promociones escolares de extremo a extremo
+## 🏫 Promociones escolares e identidad
 
-v1.3.2 completa la experiencia escolar que había quedado disponible principalmente a nivel de dominio/backend en v1.3.0.
+### Padrón institucional sin cédulas
 
-### 🏫 Administración escolar
-
-- instituciones educativas y promociones;
-- activación/desactivación controlada;
-- importación de padrón CSV;
-- checksum y prevención de reimportaciones duplicadas;
-- plantilla CSV descargable;
-- historial de importaciones;
-- consulta del padrón sin exponer la cédula completa;
-- revisión manual administrativa con aprobación, rechazo y revocación justificadas.
-
-El CSV utiliza el encabezado exacto:
+El padrón escolar **no contiene cédulas**. El CSV autorizado utiliza exactamente:
 
 ```csv
-full_name,student_code,national_id,source_reference
+full_name,student_code,source_reference
 ```
 
-### 🪪 Verificación del usuario
+Cada miembro puede incluir:
 
-Los usuarios `USER` disponen del flujo **Mi promoción escolar**. La verificación compara la identidad contra el padrón autorizado y usa **HMAC-SHA-256** para generar la clave de búsqueda.
+- nombre completo;
+- código estudiantil opcional;
+- referencia institucional opcional;
+- estado activo/inactivo.
 
-- coincidencia de cédula + nombre → `VERIFIED`;
-- cédula encontrada con discrepancia de nombre → `MANUAL_REVIEW`;
-- identidad no encontrada → sin elegibilidad;
-- la cédula completa no se persiste como clave de consulta ni debe aparecer en logs o respuestas HTTP.
+La cédula del usuario nunca se incorpora al padrón.
+
+### Verificación por identidad oficial
+
+El flujo vigente es:
 
 ```text
-EVENTIX_ELIGIBILITY_HMAC_SECRET=<secreto-fuerte-y-estable>
+Cédula digitada por el usuario
+        ↓
+CitizenIdentityProvider
+        ↓
+Nombre legal/oficial
+        ↓
+Normalización determinística
+        ↓
+Padrón de la promoción seleccionada
+        ↓
+Resultado de elegibilidad
 ```
 
-### 🎫 Integración con Eligibility & Benefits
+Reglas:
 
-La verificación escolar ya está conectada directamente con el modelo genérico utilizado por el checkout:
+- 1 coincidencia exacta normalizada → `VERIFIED`;
+- 0 coincidencias en el padrón → `NOT_FOUND`;
+- 2 o más coincidencias idénticas → `MANUAL_REVIEW`;
+- identidad inexistente en el proveedor → `IDENTITY_NOT_FOUND`;
+- proveedor no disponible → `IDENTITY_PROVIDER_UNAVAILABLE`.
+
+El nombre del perfil de Eventix **no decide la elegibilidad**.
+
+La normalización usa mayúsculas, eliminación determinística de diacríticos y colapso de espacios. No se utiliza fuzzy matching para aprobar automáticamente.
+
+### Privacidad
+
+- la cédula completa no se almacena en el padrón;
+- no debe registrarse en logs;
+- los intentos de verificación pueden auditarse mediante HMAC y últimos cuatro dígitos;
+- el nombre oficial no se duplica innecesariamente cuando el miembro del padrón ya representa la coincidencia verificada;
+- en producción, la verificación debe utilizar un proveedor de identidad autorizado;
+- si no existe un proveedor autorizado configurado, el flujo falla de forma cerrada.
+
+En desarrollo puede configurarse un fixture local con identidades ficticias:
 
 ```text
-Padrón escolar
-      ↓
-Verificación de identidad
-      ↓
-VERIFIED
-      ↓
-eligibility_memberships
-      ↓
-Grupo PROMOTION_MEMBER
-      ↓
-Beneficios / acceso
-      ↓
-Checkout
+EVENTIX_IDENTITY_DEV_RECORDS=00100000001=Ana Perez Gomez
 ```
 
-Los grupos `PROMOTION_MEMBER` pueden asociarse a una promoción concreta. Una verificación aprobada sincroniza la membresía correspondiente; rechazo o revocación retiran las membresías derivadas.
+Nunca deben usarse datos reales en ese fixture.
 
-Los beneficios soportados incluyen:
+### Resultado visible
 
-- descuentos porcentuales;
-- descuentos fijos;
-- entrada gratuita;
-- límites de compra;
-- tipos de entrada exclusivos;
-- acceso a eventos `PRIVATE` o `CONTROLLED_ACCESS`.
+Las verificaciones del usuario muestran la promoción, el **nombre verificado**, el estado y el detalle de la decisión.
 
-Los grupos desactivados no conceden acceso ni beneficios.
+---
+
+## 🏢 Cuentas de centros educativos
+
+`main` incorpora cuentas organizacionales sin crear nuevos roles globales de plataforma.
+
+Un centro educativo se modela como una organización y sus usuarios se relacionan mediante `InstitutionMembership`.
+
+### Estados del centro
+
+```text
+PENDING_VERIFICATION
+ACTIVE
+REJECTED
+SUSPENDED
+```
+
+Flujo básico:
+
+```text
+Usuario autenticado
+      ↓
+Registrar centro educativo
+      ↓
+SchoolInstitution = PENDING_VERIFICATION
+      ↓
+InstitutionMembership = OWNER
+      ↓
+Revisión administrativa Eventix
+      ↓
+ACTIVE
+      ↓
+Operaciones institucionales habilitadas
+```
+
+### Roles institucionales scoped
+
+Estos permisos existen **dentro de una institución concreta** y no sustituyen los roles globales de Eventix:
+
+| Rol institucional | Responsabilidad |
+|---|---|
+| `OWNER` | Propietario de la cuenta institucional y control del equipo |
+| `ADMIN` | Administración operativa del centro |
+| `EVENT_MANAGER` | Gestión institucional relacionada con promociones/eventos |
+| `ROSTER_MANAGER` | Gestión e importación de padrones autorizados |
+| `FINANCE` | Rol reservado para operaciones financieras institucionales |
+
+Los cinco roles globales continúan siendo:
+
+```text
+ADMINISTRATOR
+OPERATOR
+ORGANIZER
+ACCESS_STAFF
+USER
+```
+
+### Aislamiento y autorización
+
+La autorización institucional valida en backend:
+
+```text
+usuario pertenece a la institución
+AND membership está activa
+AND institución está operativa
+AND rol scoped posee el permiso requerido
+```
+
+Un miembro de una institución no puede acceder ni modificar datos de otra institución manipulando la URL.
+
+El `OWNER` no puede degradarse ni suspenderse desde la gestión ordinaria de miembros.
+
+### Operaciones institucionales disponibles
+
+- registro autenticado de centros;
+- revisión administrativa de solicitudes;
+- portal institucional;
+- gestión de miembros usando cuentas Eventix existentes;
+- creación y consulta de promociones del centro según permisos;
+- importación de padrones por usuarios autorizados;
+- protección cross-tenant.
+
+---
+
+## 🎨 Identidad visual
+
+Eventix utiliza una única identidad visual híbrida:
+
+- sidebar y navegación oscuras;
+- contenido principal, formularios y tablas claros;
+- acentos verdes/teal de Eventix;
+- sin selector claro/oscuro/sistema;
+- sin preferencias de tema almacenadas en localStorage.
+
+La categoría activa **`Promoción escolar`** se incorpora mediante Flyway V26.
 
 ---
 
@@ -175,11 +281,12 @@ Los grupos desactivados no conceden acceso ni beneficios.
 - BCrypt;
 - recuperación y cambio obligatorio de contraseña temporal;
 - CSRF;
-- RBAC y autorización por propiedad;
-- roles `ADMINISTRATOR`, `OPERATOR`, `ORGANIZER`, `ACCESS_STAFF` y `USER`;
+- RBAC global y RBAC institucional scoped;
+- autorización por propiedad y tenant;
 - rate limiting;
 - CSP, HSTS y Permissions Policy;
-- Correlation ID y manejo diferenciado de errores.
+- Correlation ID y manejo diferenciado de errores;
+- logout POST con CSRF.
 
 ### 📅 Eventos
 
@@ -190,7 +297,8 @@ Los grupos desactivados no conceden acceso ni beneficios.
 - tipos de entrada;
 - portadas y Google Maps;
 - búsqueda, filtros y paginación;
-- acceso `PUBLIC`, `PRIVATE` y `CONTROLLED_ACCESS`.
+- acceso `PUBLIC`, `PRIVATE` y `CONTROLLED_ACCESS`;
+- categoría `Promoción escolar`.
 
 ### 🎟️ Reservaciones, checkout y ventas
 
@@ -201,6 +309,18 @@ Los grupos desactivados no conceden acceso ni beneficios.
 - beneficios monetarios de elegibilidad calculados en backend;
 - reembolsos completos y parciales por boleta;
 - comprobantes PDF.
+
+### 🎓 Eligibility & Benefits
+
+- grupos de elegibilidad;
+- membresías verificadas;
+- beneficios porcentuales y fijos;
+- entrada gratuita;
+- límites de compra;
+- tipos de entrada exclusivos;
+- acceso privado/controlado;
+- integración con promociones escolares;
+- revisión manual para casos ambiguos.
 
 ### 📱 Ticketing y acceso
 
@@ -222,7 +342,7 @@ Los grupos desactivados no conceden acceso ni beneficios.
 
 ### 💳 Pagos
 
-El dominio de pagos usa contratos desacoplados y Strategy. En v1.3.2 **no existe todavía un gateway comercial productivo**; los proveedores comerciales reales, webhooks y payouts corresponden a v1.4.0.
+El dominio de pagos usa contratos desacoplados y Strategy. La release estable actual **no incluye todavía un gateway comercial productivo**. Los proveedores reales, webhooks, reconciliación y payouts corresponden al siguiente ciclo mayor de pagos.
 
 ---
 
@@ -248,21 +368,26 @@ El dominio de pagos usa contratos desacoplados y Strategy. En v1.3.2 **no existe
 
 ---
 
-## 🗄️ Base de datos
+## 🗄️ Base de datos y migraciones
 
-SQL Server 2022 es la base principal y el esquema se administra mediante Flyway:
+SQL Server 2022 es la base principal y el esquema se administra mediante:
 
 ```text
 src/main/resources/db/migration/
 ```
 
-La versión estable v1.3.2 llega hasta:
+La rama `main` llega actualmente hasta **Flyway V27**.
 
-```text
-V24__link_school_promotions_to_eligibility_groups.sql
-```
+Migraciones recientes relevantes:
 
-V24 enlaza `eligibility_groups.school_promotion_id` con `school_promotions`, permitiendo que una promoción verificada participe directamente en las reglas de acceso y beneficios del checkout.
+| Migración | Propósito |
+|---|---|
+| V24 | Vincula promociones escolares con grupos de elegibilidad |
+| V25 | Elimina campos de cédula de `promotion_members` |
+| V26 | Agrega la categoría `Promoción escolar` |
+| V27 | Agrega estado institucional y `institution_memberships` |
+
+Las migraciones se aplican incrementalmente; no debe borrarse una base persistente para actualizar Eventix salvo que se trate explícitamente de un entorno descartable.
 
 ---
 
@@ -288,7 +413,13 @@ mvn clean verify
 Configura las variables del `.env` y ejecuta:
 
 ```bash
-docker compose up --build
+docker compose up --build -d
+```
+
+Estado de servicios:
+
+```bash
+docker compose ps
 ```
 
 Para detener sin eliminar los datos:
@@ -325,6 +456,8 @@ Obtén la IPv4 con `ipconfig` y, si Windows lo solicita, habilita Java únicamen
 
 Los secretos no deben persistirse en Git.
 
+Entre las variables de configuración utilizadas por el proyecto se encuentran:
+
 ```text
 DB_USERNAME
 DB_PASSWORD
@@ -334,7 +467,9 @@ EVENTIX_ELIGIBILITY_HMAC_SECRET
 GOOGLE_MAPS_EMBED_API_KEY
 ```
 
-`EVENTIX_ELIGIBILITY_HMAC_SECRET` debe contener al menos 32 bytes y mantenerse estable. Rotarlo sin un procedimiento controlado invalida las claves HMAC usadas para consultar padrones previamente importados.
+En desarrollo, `EVENTIX_IDENTITY_DEV_RECORDS` puede contener únicamente identidades ficticias para probar el adaptador local.
+
+Las credenciales de un futuro proveedor real de identidad o pagos deberán inyectarse mediante variables de entorno o un gestor de secretos; nunca mediante código fuente, fixtures o archivos versionados.
 
 ---
 
@@ -352,7 +487,7 @@ El pipeline principal verifica:
 8. SBOM;
 9. Dependency Review en Pull Requests.
 
-La publicación estable reutiliza los artefactos del CI exitoso y adjunta `eventix.jar` y `eventix-sbom.spdx.json` a la GitHub Release.
+Los cambios de cuentas institucionales fueron validados con el mismo pipeline antes de integrarse a `main`, incluyendo pruebas de aislamiento cross-tenant y migración V27.
 
 ---
 
@@ -368,16 +503,32 @@ Consulta [`docs/accessibility-nortic-b2.md`](docs/accessibility-nortic-b2.md).
 
 ## 📈 Roadmap
 
-### v1.3.2 — ✅ Estable
+### v1.3.4 — ✅ Release estable publicada
 
-- [x] administración de instituciones/promociones;
-- [x] importación e historial de padrones CSV;
-- [x] verificación escolar de autoservicio;
-- [x] revisión manual;
-- [x] puente `school_promotions` → `eligibility_memberships`;
-- [x] beneficios escolares aplicados por checkout;
-- [x] Flyway V24;
-- [x] release con JAR y SBOM verificados.
+- [x] verificación escolar basada en nombre oficial y padrón sin cédulas;
+- [x] Flyway V25;
+- [x] identidad visual híbrida única;
+- [x] categoría `Promoción escolar`;
+- [x] Flyway V26;
+- [x] JAR y SBOM publicados.
+
+### Post-v1.3.4 en `main` — ✅ Integrado
+
+- [x] nombre verificado visible en resultados escolares;
+- [x] correcciones de logout/scripts en promociones escolares;
+- [x] cuentas organizacionales para centros educativos;
+- [x] `OWNER`, `ADMIN`, `EVENT_MANAGER`, `ROSTER_MANAGER`, `FINANCE` scoped por institución;
+- [x] aprobación administrativa de centros;
+- [x] gestión de equipo institucional;
+- [x] aislamiento cross-tenant;
+- [x] Flyway V27.
+
+### Próximo bloque escolar
+
+- descuento especial para egresados desde checkout;
+- selección del padrón/promoción asociado al evento;
+- verificación de cédula desde la compra;
+- aplicación server-side del beneficio únicamente a egresados verificados.
 
 ### v1.4.0 — Pagos productivos
 
@@ -410,11 +561,14 @@ Consulta [`docs/accessibility-nortic-b2.md`](docs/accessibility-nortic-b2.md).
 | Ticketing QR/PDF | ✅ Implementado |
 | Control de acceso | ✅ Implementado |
 | Liquidaciones y reporting | ✅ Implementados |
-| Elegibilidad escolar E2E | ✅ Implementada |
-| Elegibilidad genérica | ✅ Implementada |
-| Relaciones familiares | ✅ Implementadas |
-| Beneficios monetarios | ✅ Implementados |
-| Centro de notificaciones | ✅ Implementado |
+| Verificación escolar por identidad | ✅ Implementada |
+| Padrón escolar sin cédulas | ✅ Implementado |
+| Nombre verificado visible | ✅ Implementado |
+| Cuentas institucionales | ✅ Integradas en `main` |
+| RBAC institucional scoped | ✅ Integrado |
+| Aislamiento cross-tenant | ✅ Integrado |
+| Beneficio de egresado en checkout | 🟡 Próximo bloque |
+| Proveedor de identidad productivo | 🟡 Requiere fuente autorizada |
 | Gateway real de producción | 🔵 v1.4.0 |
 | Payouts automáticos | 🔵 v1.4.0 |
 | QA manual de accesibilidad | 🟡 Pendiente de cierre |
@@ -433,7 +587,7 @@ main
                     └── merge
 ```
 
-No deben fusionarse cambios que rompan migraciones, pruebas, seguridad o compatibilidad con datos existentes.
+No deben fusionarse cambios que rompan migraciones, pruebas, seguridad, aislamiento de datos o compatibilidad con bases existentes.
 
 ---
 
