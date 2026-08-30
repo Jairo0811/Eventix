@@ -126,13 +126,13 @@ public class SchoolAlumniBenefitService {
                 null,
                 promotion);
         group.activate();
-        group = groupRepository.saveAndFlush(group);
-        membershipSyncService.syncGroup(group.getId());
+        EligibilityGroup persistedGroup = groupRepository.saveAndFlush(group);
+        membershipSyncService.syncGroup(persistedGroup.getId());
 
         EligibilityBenefit benefit = benefitRepository
-                .findByGroup_IdAndSystemKey(group.getId(), BENEFIT_KEY)
+                .findByGroup_IdAndSystemKey(persistedGroup.getId(), BENEFIT_KEY)
                 .orElseGet(() -> new EligibilityBenefit(
-                        group,
+                        persistedGroup,
                         discountType,
                         discountValue,
                         null,
