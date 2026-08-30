@@ -1,6 +1,7 @@
 package com.jairomatias.eventix.security;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -34,5 +35,18 @@ class UserAuthorizationIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("users/list"));
     }
-}
 
+    @Test
+    @WithMockUser(username = "admin@eventix.local", roles = "ADMINISTRATOR")
+    void administratorCanEnterAuthenticatedSelfServiceNamespace() throws Exception {
+        mockMvc.perform(get("/my/security-probe"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void anonymousUserCannotEnterSelfServiceNamespace() throws Exception {
+        mockMvc.perform(get("/my/security-probe"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+    }
+}
