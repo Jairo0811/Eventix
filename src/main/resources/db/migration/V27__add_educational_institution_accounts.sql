@@ -5,19 +5,26 @@
    ================================================================ */
 
 ALTER TABLE school_institutions
-    ADD status NVARCHAR(30) NULL;
+    ADD status NVARCHAR(30) NOT NULL
+        CONSTRAINT DF_school_institutions_status DEFAULT N'ACTIVE';
 
-UPDATE school_institutions
-SET status = CASE WHEN active = 1 THEN N'ACTIVE' ELSE N'SUSPENDED' END
-WHERE status IS NULL;
+EXEC sp_executesql N'
+    UPDATE school_institutions
+    SET status = N''SUSPENDED''
+    WHERE active = 0;
+';
 
-ALTER TABLE school_institutions
-    ALTER COLUMN status NVARCHAR(30) NOT NULL;
-
-ALTER TABLE school_institutions
-    ADD CONSTRAINT CK_school_institutions_status CHECK (
-        status IN ('PENDING_VERIFICATION', 'ACTIVE', 'REJECTED', 'SUSPENDED')
-    );
+EXEC sp_executesql N'
+    ALTER TABLE school_institutions
+        ADD CONSTRAINT CK_school_institutions_status CHECK (
+            status IN (
+                N''PENDING_VERIFICATION'',
+                N''ACTIVE'',
+                N''REJECTED'',
+                N''SUSPENDED''
+            )
+        );
+';
 
 CREATE TABLE institution_memberships
 (
