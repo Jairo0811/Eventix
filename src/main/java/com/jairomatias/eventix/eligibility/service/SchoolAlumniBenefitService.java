@@ -66,6 +66,12 @@ public class SchoolAlumniBenefitService {
         this.schoolEligibilityService = schoolEligibilityService;
     }
 
+    @Transactional(readOnly = true)
+    public boolean isSchoolPromotionEvent(Long eventId) {
+        return findEvent(eventId).getCategory().getSystemKey()
+                == EventCategorySystemKey.SCHOOL_PROMOTION;
+    }
+
     @Transactional
     public void configure(
             Long eventId,
