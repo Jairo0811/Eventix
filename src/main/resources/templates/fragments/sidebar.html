@@ -33,6 +33,9 @@
         <a class="nav-link" sec:authorize="hasRole('USER')" th:classappend="${activePage == 'my-school-eligibility'} ? ' active'" th:attr="aria-current=${activePage == 'my-school-eligibility'} ? 'page' : null" th:href="@{/my/eligibility/school}">
             <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>Verificar promoción
         </a>
+        <a class="nav-link" th:classappend="${activePage == 'institutions'} ? ' active'" th:attr="aria-current=${activePage == 'institutions'} ? 'page' : null" th:href="@{/institutions}">
+            <i class="bi bi-building-fill-gear" aria-hidden="true"></i>Centro educativo
+        </a>
         <a class="nav-link" th:classappend="${activePage == 'profile'} ? ' active'" th:attr="aria-current=${activePage == 'profile'} ? 'page' : null" th:href="@{/profile}">
             <i class="bi bi-person-circle" aria-hidden="true"></i>Mi perfil
         </a>
@@ -84,6 +87,9 @@
         </a>
         <a class="nav-link" sec:authorize="hasRole('ADMINISTRATOR')" th:classappend="${activePage == 'school-promotions'} ? ' active'" th:attr="aria-current=${activePage == 'school-promotions'} ? 'page' : null" th:href="@{/school-promotions}">
             <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>Promociones escolares
+        </a>
+        <a class="nav-link" sec:authorize="hasRole('ADMINISTRATOR')" th:classappend="${activePage == 'institution-requests'} ? ' active'" th:attr="aria-current=${activePage == 'institution-requests'} ? 'page' : null" th:href="@{/institutions/admin/requests}">
+            <i class="bi bi-building-check" aria-hidden="true"></i>Solicitudes de centros
         </a>
         <a class="nav-link" sec:authorize="hasRole('ADMINISTRATOR')" th:classappend="${activePage == 'coupons'} ? ' active'" th:attr="aria-current=${activePage == 'coupons'} ? 'page' : null" th:href="@{/promotions/coupons}">
             <i class="bi bi-percent" aria-hidden="true"></i>Cupones
