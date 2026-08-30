@@ -3,6 +3,8 @@ package com.jairomatias.eventix.checkout.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -141,33 +143,11 @@ class CustomerCheckoutServiceTest {
 
     @Test
     void completesFreeEligibilityPurchaseWithoutCallingGateway() {
-        prepareCustomer();
-        when(customer.getEmail()).thenReturn(CUSTOMER_LOGIN);
-        preparePublishedEvent();
-        prepareTicketType();
-        when(eventRepository.findDetailedByIdForUpdate(10L))
-                .thenReturn(Optional.of(event));
-        when(ticketTypeRepository.findDetailedByIdForUpdate(31L))
-                .thenReturn(Optional.of(ticketType));
-        when(reservationRepository.sumOccupiedSeats(any(), any()))
-                .thenReturn(0L);
-        when(saleItemRepository.sumAllocatedQuantity(31L)).thenReturn(0L);
-        when(reservationRepository.existsActiveDuplicate(
-                any(), any(), any(), any())).thenReturn(false);
-        when(reservationReferenceGenerator.generate())
-                .thenReturn("RSV-ABCDEFGH2345");
-        when(reservationRepository.existsByReferenceCode("RSV-ABCDEFGH2345"))
-                .thenReturn(false);
-        when(transactionReferenceGenerator.generateSaleReference())
-                .thenReturn("SAL-ABCDEFGH2345");
-        when(saleRepository.existsByReferenceCode("SAL-ABCDEFGH2345"))
-                .thenReturn(false);
+        preparePurchaseBase();
         when(transactionReferenceGenerator.generatePaymentReference())
                 .thenReturn("PAY-ABCDEFGH2345");
         when(paymentRepository.existsByTransactionReference("PAY-ABCDEFGH2345"))
                 .thenReturn(false);
-        when(reservationProperties.getHoldDuration())
-                .thenReturn(Duration.ofMinutes(15));
         when(eligibilityService.resolveMonetaryDiscount(
                 event,
                 customer,
@@ -192,8 +172,34 @@ class CustomerCheckoutServiceTest {
 
         assertThat(saleId).isEqualTo(55L);
         verifyNoInteractions(gatewayRegistry);
-        org.mockito.Mockito.verify(paymentRepository)
-                .save(any(PaymentTransaction.class));
+        verify(paymentRepository).save(any(PaymentTransaction.class));
+    }
+
+    @Test
+    void rejectsCouponWhenAutomaticEligibilityDiscountApplies() {
+        preparePurchaseBase();
+        when(eligibilityService.resolveMonetaryDiscount(
+                event,
+                customer,
+                31L,
+                new BigDecimal("1000.00")))
+                .thenReturn(Optional.of(new EligibilityDiscountDecision(
+                        92L,
+                        EligibilityBenefitType.PERCENTAGE_DISCOUNT,
+                        new BigDecimal("15.00"),
+                        new BigDecimal("150.00"))));
+        CustomerCheckoutForm form = validForm(2);
+        form.setCouponCode("ALUMNI15");
+
+        assertThatThrownBy(() -> service.purchase(
+                10L,
+                form,
+                CUSTOMER_LOGIN))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("no se combinan con cupones");
+
+        verify(saleRepository, never()).save(any(Sale.class));
+        verifyNoInteractions(promotionService, gatewayRegistry);
     }
 
     @Test
@@ -208,6 +214,32 @@ class CustomerCheckoutServiceTest {
                 .hasMessageContaining("entre 1 y 10");
 
         verifyNoInteractions(userRepository, eventRepository, saleRepository);
+    }
+
+    private void preparePurchaseBase() {
+        prepareCustomer();
+        when(customer.getEmail()).thenReturn(CUSTOMER_LOGIN);
+        preparePublishedEvent();
+        prepareTicketType();
+        when(eventRepository.findDetailedByIdForUpdate(10L))
+                .thenReturn(Optional.of(event));
+        when(ticketTypeRepository.findDetailedByIdForUpdate(31L))
+                .thenReturn(Optional.of(ticketType));
+        when(reservationRepository.sumOccupiedSeats(any(), any()))
+                .thenReturn(0L);
+        when(saleItemRepository.sumAllocatedQuantity(31L)).thenReturn(0L);
+        when(reservationRepository.existsActiveDuplicate(
+                any(), any(), any(), any())).thenReturn(false);
+        when(reservationReferenceGenerator.generate())
+                .thenReturn("RSV-ABCDEFGH2345");
+        when(reservationRepository.existsByReferenceCode("RSV-ABCDEFGH2345"))
+                .thenReturn(false);
+        when(transactionReferenceGenerator.generateSaleReference())
+                .thenReturn("SAL-ABCDEFGH2345");
+        when(saleRepository.existsByReferenceCode("SAL-ABCDEFGH2345"))
+                .thenReturn(false);
+        when(reservationProperties.getHoldDuration())
+                .thenReturn(Duration.ofMinutes(15));
     }
 
     private void prepareCustomer() {
