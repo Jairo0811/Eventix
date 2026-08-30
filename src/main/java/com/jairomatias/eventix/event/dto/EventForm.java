@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.jairomatias.eventix.eligibility.entity.EligibilityBenefitType;
 import com.jairomatias.eventix.event.entity.EventStatus;
 
 import jakarta.validation.constraints.DecimalMin;
@@ -91,6 +92,23 @@ public class EventForm {
             fraction = 2,
             message = "El precio admite hasta 10 enteros y 2 decimales.")
     private BigDecimal basePrice = BigDecimal.ZERO;
+
+    @NotNull
+    private Boolean schoolAlumniBenefitEnabled = false;
+
+    private Long schoolPromotionId;
+
+    private EligibilityBenefitType schoolAlumniDiscountType =
+            EligibilityBenefitType.PERCENTAGE_DISCOUNT;
+
+    @DecimalMin(
+            value = "0.01",
+            message = "El descuento para egresados debe ser mayor que cero.")
+    @Digits(
+            integer = 10,
+            fraction = 2,
+            message = "El descuento para egresados admite hasta 10 enteros y 2 decimales.")
+    private BigDecimal schoolAlumniDiscountValue;
 
     public String getTitle() {
         return title;
@@ -210,5 +228,37 @@ public class EventForm {
 
     public void setBasePrice(BigDecimal basePrice) {
         this.basePrice = basePrice;
+    }
+
+    public Boolean getSchoolAlumniBenefitEnabled() {
+        return schoolAlumniBenefitEnabled;
+    }
+
+    public void setSchoolAlumniBenefitEnabled(Boolean schoolAlumniBenefitEnabled) {
+        this.schoolAlumniBenefitEnabled = schoolAlumniBenefitEnabled;
+    }
+
+    public Long getSchoolPromotionId() {
+        return schoolPromotionId;
+    }
+
+    public void setSchoolPromotionId(Long schoolPromotionId) {
+        this.schoolPromotionId = schoolPromotionId;
+    }
+
+    public EligibilityBenefitType getSchoolAlumniDiscountType() {
+        return schoolAlumniDiscountType;
+    }
+
+    public void setSchoolAlumniDiscountType(EligibilityBenefitType schoolAlumniDiscountType) {
+        this.schoolAlumniDiscountType = schoolAlumniDiscountType;
+    }
+
+    public BigDecimal getSchoolAlumniDiscountValue() {
+        return schoolAlumniDiscountValue;
+    }
+
+    public void setSchoolAlumniDiscountValue(BigDecimal schoolAlumniDiscountValue) {
+        this.schoolAlumniDiscountValue = schoolAlumniDiscountValue;
     }
 }
