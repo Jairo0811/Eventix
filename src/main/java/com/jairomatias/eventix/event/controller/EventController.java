@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.jairomatias.eventix.category.service.EventCategoryService;
+import com.jairomatias.eventix.eligibility.service.SchoolPromotionManagementService;
 import com.jairomatias.eventix.event.dto.EventDetailsView;
 import com.jairomatias.eventix.event.dto.EventForm;
 import com.jairomatias.eventix.event.dto.EventListItem;
@@ -38,16 +39,19 @@ public class EventController {
     private final EventManagementFacade eventManagementFacade;
     private final EventCategoryService categoryService;
     private final ReservationService reservationService;
+    private final SchoolPromotionManagementService schoolPromotionManagementService;
 
     public EventController(
             EventService eventService,
             EventManagementFacade eventManagementFacade,
             EventCategoryService categoryService,
-            ReservationService reservationService) {
+            ReservationService reservationService,
+            SchoolPromotionManagementService schoolPromotionManagementService) {
         this.eventService = eventService;
         this.eventManagementFacade = eventManagementFacade;
         this.categoryService = categoryService;
         this.reservationService = reservationService;
+        this.schoolPromotionManagementService = schoolPromotionManagementService;
     }
 
     @ModelAttribute("statuses")
@@ -184,11 +188,14 @@ public class EventController {
             Model model) {
 
         if (!model.containsAttribute("eventForm")) {
-            model.addAttribute(
-                    "eventForm",
-                    eventService.getUpdateForm(
-                            id,
-                            authentication.getName()));
+            EventForm form = eventService.getUpdateForm(
+                    id,
+                    authentication.getName());
+            eventManagementFacade.enrichSchoolAlumniBenefitForm(
+                    id,
+                    form,
+                    authentication.getName());
+            model.addAttribute("eventForm", form);
         }
         prepareFormModel(model, authentication, "edit", id);
         return "events/form";
@@ -269,6 +276,9 @@ public class EventController {
         model.addAttribute(
                 "categories",
                 categoryService.findActiveOptions());
+        model.addAttribute(
+                "schoolPromotions",
+                schoolPromotionManagementService.listActivePromotions());
         model.addAttribute(
                 "organizers",
                 eventService.findEligibleOrganizers(
