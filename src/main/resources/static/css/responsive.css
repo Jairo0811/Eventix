@@ -134,6 +134,27 @@ canvas {
     .dashboard-section-heading {
         align-items: flex-start;
     }
+
+    .home-hero {
+        padding-bottom: 4.5rem;
+        padding-top: 4.5rem;
+    }
+
+    .home-hero .row {
+        --bs-gutter-y: 3rem;
+    }
+
+    .home-section {
+        padding: 4.5rem 0;
+    }
+
+    .home-section-heading {
+        margin-bottom: 2.5rem;
+    }
+
+    .home-cta-section {
+        padding-bottom: 4rem;
+    }
 }
 
 @media (max-width: 767.98px) {
@@ -188,6 +209,16 @@ canvas {
 
     .form-text {
         line-height: 1.45;
+    }
+
+    .content-card > .table,
+    .dashboard-panel > .table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+        width: 100%;
     }
 
     .dashboard-hero {
@@ -319,6 +350,79 @@ canvas {
     .scanner-video {
         max-height: 55vh;
     }
+
+    /* Public home */
+    .home-nav {
+        min-height: 68px;
+    }
+
+    .home-hero {
+        padding: 3.75rem 0;
+    }
+
+    .home-hero h1 {
+        font-size: clamp(2.45rem, 12vw, 4rem);
+        line-height: 1.02;
+    }
+
+    .home-hero-copy {
+        font-size: 1rem;
+        line-height: 1.65;
+        margin-top: 1.25rem;
+    }
+
+    .home-hero .col-lg-7 > .d-flex.flex-wrap {
+        display: grid !important;
+        grid-template-columns: 1fr;
+    }
+
+    .home-hero .col-lg-7 > .d-flex.flex-wrap .btn {
+        width: 100%;
+    }
+
+    .home-trust-row {
+        display: grid;
+        gap: .7rem;
+        margin-top: 1.75rem;
+    }
+
+    .home-console {
+        border-radius: 1.25rem;
+        box-shadow: 0 22px 55px rgb(0 0 0 / 22%);
+    }
+
+    .home-section,
+    .home-discovery-section {
+        padding-bottom: 3.75rem;
+        padding-top: 3.75rem;
+    }
+
+    .home-section-heading {
+        margin-bottom: 2rem;
+    }
+
+    .home-section-heading h2,
+    .home-cta-card h2 {
+        font-size: clamp(1.9rem, 9vw, 2.7rem);
+    }
+
+    .home-workflow article {
+        align-items: flex-start;
+    }
+
+    .home-cta-card {
+        border-radius: 1.2rem;
+        padding: 1.6rem;
+    }
+
+    .home-cta-card .btn {
+        width: 100%;
+    }
+
+    .home-footer .row.py-5 {
+        padding-bottom: 2rem !important;
+        padding-top: 2.5rem !important;
+    }
 }
 
 @media (max-width: 575.98px) {
@@ -443,12 +547,72 @@ canvas {
     .dropdown-menu {
         font-size: .92rem;
     }
+
+    .auth-panel {
+        padding: 2rem 1.25rem;
+    }
+
+    .auth-form h1 {
+        font-size: 1.7rem;
+    }
+
+    .home-nav {
+        gap: .75rem;
+        min-height: 64px;
+    }
+
+    .home-brand {
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
+    .home-brand img {
+        width: 102px;
+    }
+
+    .home-nav .btn {
+        font-size: .84rem;
+        min-height: 40px;
+        padding-left: .8rem;
+        padding-right: .8rem;
+        white-space: nowrap;
+    }
+
+    .home-eyebrow {
+        align-items: flex-start;
+        font-size: .74rem;
+        line-height: 1.45;
+    }
+
+    .home-live-dot {
+        flex: 0 0 auto;
+        margin-top: .28rem;
+    }
+
+    .home-console-body {
+        padding: 1rem;
+    }
+
+    .home-console-title strong {
+        font-size: 1.2rem;
+    }
+
+    .home-cta-card {
+        padding: 1.35rem;
+    }
+
+    .home-footer-bottom {
+        gap: .4rem;
+        padding-bottom: 1.25rem;
+        padding-top: 1.25rem;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .event-card,
     .dashboard-quick-action,
-    .app-sidebar {
+    .app-sidebar,
+    .home-footer-links a {
         transition: none !important;
     }
 }
