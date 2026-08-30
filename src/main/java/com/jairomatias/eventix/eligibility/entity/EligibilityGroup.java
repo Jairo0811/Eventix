@@ -34,6 +34,10 @@ public class EligibilityGroup extends AuditableEntity {
     @JoinColumn(name = "school_promotion_id")
     private SchoolPromotion schoolPromotion;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "system_key", length = 40)
+    private EligibilityGroupSystemKey systemKey;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -45,7 +49,7 @@ public class EligibilityGroup extends AuditableEntity {
             String name,
             EligibilityGroupType groupType,
             Integer maxRelatedPeople) {
-        this(event, name, groupType, maxRelatedPeople, null);
+        this(event, name, groupType, maxRelatedPeople, null, null);
     }
 
     public EligibilityGroup(
@@ -54,7 +58,18 @@ public class EligibilityGroup extends AuditableEntity {
             EligibilityGroupType groupType,
             Integer maxRelatedPeople,
             SchoolPromotion schoolPromotion) {
+        this(event, name, groupType, maxRelatedPeople, schoolPromotion, null);
+    }
+
+    public EligibilityGroup(
+            Event event,
+            String name,
+            EligibilityGroupType groupType,
+            Integer maxRelatedPeople,
+            SchoolPromotion schoolPromotion,
+            EligibilityGroupSystemKey systemKey) {
         this.event = event;
+        this.systemKey = systemKey;
         update(name, groupType, maxRelatedPeople, schoolPromotion);
     }
 
@@ -90,6 +105,10 @@ public class EligibilityGroup extends AuditableEntity {
         this.active = false;
     }
 
+    public void releaseSystemKey() {
+        this.systemKey = null;
+    }
+
     public Event getEvent() {
         return event;
     }
@@ -108,6 +127,10 @@ public class EligibilityGroup extends AuditableEntity {
 
     public SchoolPromotion getSchoolPromotion() {
         return schoolPromotion;
+    }
+
+    public EligibilityGroupSystemKey getSystemKey() {
+        return systemKey;
     }
 
     public boolean isActive() {
