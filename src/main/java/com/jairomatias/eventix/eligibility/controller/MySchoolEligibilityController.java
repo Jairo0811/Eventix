@@ -48,7 +48,7 @@ public class MySchoolEligibilityController {
                     principal(authentication).getId(), promotionId, nationalId);
             switch (result.status()) {
                 case "VERIFIED" -> redirectAttributes.addFlashAttribute(
-                        "successMessage", "Promoción verificada correctamente.");
+                        "successMessage", "Promoción verificada correctamente para " + result.memberName() + ".");
                 case "MANUAL_REVIEW" -> redirectAttributes.addFlashAttribute(
                         "warningMessage", "La coincidencia requiere revisión manual.");
                 case "NOT_FOUND" -> redirectAttributes.addFlashAttribute(
