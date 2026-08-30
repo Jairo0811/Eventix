@@ -64,7 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").hasRole("ADMINISTRATOR")
                         .requestMatchers("/api/wallet/apple/**").permitAll()
                         .requestMatchers("/profile/**").authenticated()
-                        .requestMatchers("/my/**").hasRole("USER")
+                        .requestMatchers("/my/**").authenticated()
                         .requestMatchers("/dashboard")
                         .hasAnyRole("ADMINISTRATOR", "ORGANIZER", "OPERATOR", "ACCESS_STAFF")
                         .requestMatchers("/users/**").hasRole("ADMINISTRATOR")
