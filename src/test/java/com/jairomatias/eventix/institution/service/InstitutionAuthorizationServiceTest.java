@@ -41,8 +41,9 @@ class InstitutionAuthorizationServiceTest {
     @Test
     void crossTenantUserCannotAccessAnotherInstitution() {
         SchoolInstitution institution = mock(SchoolInstitution.class);
+        User actor = user(RoleName.USER);
         when(institution.getId()).thenReturn(99L);
-        when(userRepository.findById(7L)).thenReturn(Optional.of(user(RoleName.USER)));
+        when(userRepository.findById(7L)).thenReturn(Optional.of(actor));
         when(membershipRepository.findByInstitution_IdAndUser_Id(99L, 7L))
                 .thenReturn(Optional.empty());
 
@@ -58,9 +59,10 @@ class InstitutionAuthorizationServiceTest {
     void pendingInstitutionCannotExecuteOperationalActions() {
         SchoolInstitution institution = mock(SchoolInstitution.class);
         InstitutionMembership membership = mock(InstitutionMembership.class);
+        User actor = user(RoleName.USER);
         when(institution.getId()).thenReturn(20L);
         when(institution.isOperational()).thenReturn(false);
-        when(userRepository.findById(5L)).thenReturn(Optional.of(user(RoleName.USER)));
+        when(userRepository.findById(5L)).thenReturn(Optional.of(actor));
         when(membershipRepository.findByInstitution_IdAndUser_Id(20L, 5L))
                 .thenReturn(Optional.of(membership));
         when(membership.getStatus()).thenReturn(InstitutionMembershipStatus.ACTIVE);
