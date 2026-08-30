@@ -55,6 +55,7 @@ public class EligibilityBenefitManagementService {
     public Long create(Long groupId, EligibilityBenefitForm form, Long actorId) {
         EligibilityGroup group = getGroupForUpdate(groupId);
         authorize(actorId, group.getEvent());
+        requireUserManaged(group);
         if (!group.isActive()) {
             throw new BusinessRuleException("No puedes agregar beneficios a un grupo inactivo.");
         }
@@ -77,6 +78,10 @@ public class EligibilityBenefitManagementService {
         EligibilityBenefit benefit = benefitRepository.findById(benefitId)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró el beneficio."));
         authorize(actorId, benefit.getGroup().getEvent());
+        if (benefit.getSystemKey() != null || benefit.getGroup().getSystemKey() != null) {
+            throw new BusinessRuleException(
+                    "Este beneficio es administrado automáticamente desde la configuración del evento.");
+        }
         if (active) {
             benefit.activate();
         } else {
@@ -93,6 +98,13 @@ public class EligibilityBenefitManagementService {
     private EligibilityGroup getGroupForUpdate(Long groupId) {
         return groupRepository.findDetailedByIdForUpdate(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró el grupo de elegibilidad."));
+    }
+
+    private void requireUserManaged(EligibilityGroup group) {
+        if (group.getSystemKey() != null) {
+            throw new BusinessRuleException(
+                    "Este grupo es administrado automáticamente desde la configuración del evento.");
+        }
     }
 
     private TicketType resolveTicketType(Long eventId, Long ticketTypeId) {
