@@ -18,4 +18,7 @@
         <div class="table-responsive" th:unless="${#lists.isEmpty(members)}"><table class="table align-middle"><thead><tr><th>Nombre</th><th>Código</th><th>Fuente</th><th>Estado</th></tr></thead><tbody><tr th:each="member : ${members}"><td th:text="${member.fullName}"></td><td th:text="${member.studentCode != null ? member.studentCode : '—'}"></td><td th:text="${member.sourceReference != null ? member.sourceReference : '—'}"></td><td><span class="badge" th:classappend="${member.active} ? ' text-bg-success' : ' text-bg-secondary'" th:text="${member.active ? 'Activo' : 'Inactivo'}"></span></td></tr></tbody></table></div>
     </section>
     <section class="content-card"><h2 class="h5 mb-3">Historial de importaciones</h2><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Fuente</th><th>Importado por</th><th>Fecha</th><th>Total</th><th>Aceptados</th><th>Rechazados</th></tr></thead><tbody><tr th:each="item : ${imports}"><td th:text="${item.sourceName}"></td><td th:text="${item.importedBy}"></td><td th:text="${#temporals.format(item.importedAt, 'dd/MM/yyyy HH:mm')}"></td><td th:text="${item.totalRows}"></td><td class="text-success" th:text="${item.acceptedRows}"></td><td class="text-danger" th:text="${item.rejectedRows}"></td></tr></tbody></table></div></section>
-</main></body></html>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
