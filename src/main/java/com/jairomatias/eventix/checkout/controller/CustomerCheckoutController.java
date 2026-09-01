@@ -83,6 +83,7 @@ public class CustomerCheckoutController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
+            clearWalletData(form);
             prepareModel(eventId, authentication, model);
             return "checkout/form";
         }
@@ -96,11 +97,19 @@ public class CustomerCheckoutController {
                     "Compra aprobada. Tus boletas ya están disponibles.");
             return "redirect:/my/tickets";
         } catch (BusinessRuleException exception) {
+            clearWalletData(form);
             bindingResult.reject(
                     "checkout.purchase",
                     exception.getMessage());
             prepareModel(eventId, authentication, model);
             return "checkout/form";
+        }
+    }
+
+    private void clearWalletData(CustomerCheckoutForm form) {
+        form.setWalletToken(null);
+        if (form.getProvider() != null && form.getProvider().isDigitalWallet()) {
+            form.setProvider(PaymentProvider.CARDNET);
         }
     }
 
