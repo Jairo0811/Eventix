@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -13,11 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jairomatias.eventix.checkout.dto.CustomerCheckoutForm;
 import com.jairomatias.eventix.checkout.dto.CustomerCheckoutPage;
+import com.jairomatias.eventix.checkout.dto.CustomerCheckoutQuote;
+import com.jairomatias.eventix.checkout.dto.CustomerCheckoutQuoteRequest;
 import com.jairomatias.eventix.checkout.dto.CustomerTicketOption;
 import com.jairomatias.eventix.eligibility.service.EventEligibilityService;
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.repository.EventRepository;
+import com.jairomatias.eventix.payment.entity.PaymentProvider;
 import com.jairomatias.eventix.payment.entity.PaymentStatus;
 import com.jairomatias.eventix.payment.entity.PaymentTransaction;
 import com.jairomatias.eventix.payment.entity.PaymentTransactionType;
@@ -49,6 +53,14 @@ import com.jairomatias.eventix.user.repository.UserRepository;
 public class CustomerCheckoutService {
 
     private static final int MAX_REFERENCE_ATTEMPTS = 5;
+    private static final Set<PaymentProvider> CUSTOMER_PAYMENT_PROVIDERS = Set.of(
+            PaymentProvider.CARDNET,
+            PaymentProvider.AZUL,
+            PaymentProvider.QIK,
+            PaymentProvider.STRIPE,
+            PaymentProvider.PAYPAL,
+            PaymentProvider.BANK_TRANSFER,
+            PaymentProvider.GOOGLE_PAY);
 
     private final EventRepository eventRepository;
     private final TicketTypeRepository ticketTypeRepository;
@@ -96,15 +108,20 @@ public class CustomerCheckoutService {
         this.promotionService = promotionService;
         this.eligibilityService = eligibilityService;
         this.eventPublisher = eventPublisher;
-        this.currency = currency == null ? "DOP" : currency.trim().toUpperCase(Locale.ROOT);
+        this.currency = currency == null
+                ? "DOP"
+                : currency.trim().toUpperCase(Locale.ROOT);
     }
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('USER')")
-    public CustomerCheckoutPage getCheckout(Long eventId, String authenticatedLogin) {
+    public CustomerCheckoutPage getCheckout(
+            Long eventId,
+            String authenticatedLogin) {
         User customer = findCustomer(authenticatedLogin);
         Event event = eventRepository.findDetailedById(eventId)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el evento solicitado."));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró el evento solicitado."));
         LocalDateTime checkedAt = now();
         ensurePurchasable(event, checkedAt);
         eligibilityService.assertEventAccess(event, customer);
@@ -113,23 +130,35 @@ public class CustomerCheckoutService {
                 .findAllByEvent_IdAndActiveTrueOrderByNameAsc(eventId)
                 .stream()
                 .filter(ticketType -> eligibilityService.isTicketVisible(
-                        event, customer, ticketType.getId()))
+                        event,
+                        customer,
+                        ticketType.getId()))
                 .map(ticketType -> new CustomerTicketOption(
                         ticketType.getId(),
                         ticketType.getName(),
                         ticketType.getCategory().getDisplayName(),
                         ticketType.getPrice(),
-                        Math.max(ticketType.getCapacity()
-                                - Math.toIntExact(saleItemRepository.sumAllocatedQuantity(ticketType.getId())), 0)))
+                        Math.max(
+                                ticketType.getCapacity()
+                                        - Math.toIntExact(
+                                                saleItemRepository
+                                                        .sumAllocatedQuantity(
+                                                                ticketType.getId())),
+                                0)))
                 .filter(option -> option.availableQuantity() > 0)
                 .toList();
 
         if (ticketTypes.isEmpty()) {
-            throw new BusinessRuleException("Este evento no tiene entradas disponibles en este momento.");
+            throw new BusinessRuleException(
+                    "Este evento no tiene entradas disponibles en este momento.");
         }
         return new CustomerCheckoutPage(
-                event.getId(), event.getTitle(), event.getVenue(), event.getStartAt(),
-                event.getCoverImageUrl(), ticketTypes);
+                event.getId(),
+                event.getTitle(),
+                event.getVenue(),
+                event.getStartAt(),
+                event.getCoverImageUrl(),
+                ticketTypes);
     }
 
     @Transactional(readOnly = true)
@@ -144,47 +173,129 @@ public class CustomerCheckoutService {
         return form;
     }
 
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('USER')")
+    public CustomerCheckoutQuote quote(
+            Long eventId,
+            CustomerCheckoutQuoteRequest request,
+            String authenticatedLogin) {
+        if (request == null || request.ticketTypeId() == null) {
+            throw new BusinessRuleException("Selecciona un tipo de entrada.");
+        }
+        ensureQuantity(request.quantity());
+
+        User customer = findCustomer(authenticatedLogin);
+        LocalDateTime quotedAt = now();
+        Event event = eventRepository.findDetailedById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró el evento solicitado."));
+        ensurePurchasable(event, quotedAt);
+        eligibilityService.assertEventAccess(event, customer);
+
+        TicketType ticketType = ticketTypeRepository
+                .findDetailedById(request.ticketTypeId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró el tipo de entrada."));
+        ensureTicketAvailable(
+                eventId,
+                event,
+                customer,
+                ticketType,
+                request.quantity(),
+                quotedAt);
+
+        Reservation quoteReservation = new Reservation(
+                "QUOTE",
+                event,
+                customer.getFirstName(),
+                customer.getLastName(),
+                customer.getEmail().trim().toLowerCase(Locale.ROOT),
+                customer.getPhone() == null ? "" : customer.getPhone(),
+                request.quantity(),
+                quotedAt.plus(reservationProperties.getHoldDuration()),
+                customer);
+        Sale quoteSale = new Sale(
+                "QUOTE",
+                quoteReservation,
+                currency,
+                customer);
+        quoteSale.addItem(ticketType, request.quantity());
+        applyAutomaticEligibilityDiscount(
+                event,
+                customer,
+                ticketType,
+                request.couponCode(),
+                quoteSale);
+
+        BigDecimal couponDiscount = promotionService.quoteDiscount(
+                request.couponCode(),
+                quoteSale,
+                quotedAt);
+        BigDecimal total = quoteSale.getTotal()
+                .subtract(couponDiscount)
+                .max(BigDecimal.ZERO);
+        BigDecimal discount = quoteSale.getSubtotal().subtract(total);
+        return new CustomerCheckoutQuote(
+                quoteSale.getSubtotal(),
+                discount,
+                total,
+                currency);
+    }
+
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public Long purchase(Long eventId, CustomerCheckoutForm form, String authenticatedLogin) {
-        if (form == null || form.getTicketTypeId() == null || form.getProvider() == null) {
+    public Long purchase(
+            Long eventId,
+            CustomerCheckoutForm form,
+            String authenticatedLogin) {
+        if (form == null
+                || form.getTicketTypeId() == null
+                || form.getProvider() == null) {
             throw new BusinessRuleException("Completa los datos de compra.");
         }
-        if (form.getQuantity() < 1 || form.getQuantity() > 10) {
-            throw new BusinessRuleException("Puedes comprar entre 1 y 10 entradas por operación.");
-        }
-        if (isBlank(form.getFirstName()) || isBlank(form.getLastName()) || isBlank(form.getPhone())) {
+        ensureQuantity(form.getQuantity());
+        ensureCustomerProvider(form.getProvider());
+        if (isBlank(form.getFirstName())
+                || isBlank(form.getLastName())
+                || isBlank(form.getPhone())) {
             throw new BusinessRuleException("Completa los datos del asistente.");
+        }
+        if (form.getProvider().isDigitalWallet()
+                && isBlank(form.getWalletToken())) {
+            throw new BusinessRuleException(
+                    "Google Pay no devolvió un token de pago válido.");
         }
 
         User customer = findCustomer(authenticatedLogin);
-        LocalDateTime now = now();
+        LocalDateTime currentTime = now();
         Event event = eventRepository.findDetailedByIdForUpdate(eventId)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el evento solicitado."));
-        ensurePurchasable(event, now);
-        reservationRepository.expirePendingForEvent(eventId, now);
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró el evento solicitado."));
+        ensurePurchasable(event, currentTime);
+        reservationRepository.expirePendingForEvent(eventId, currentTime);
 
-        TicketType ticketType = ticketTypeRepository.findDetailedByIdForUpdate(form.getTicketTypeId())
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el tipo de entrada."));
-        if (!ticketType.getEvent().getId().equals(eventId) || !ticketType.isActive()) {
-            throw new BusinessRuleException("El tipo de entrada seleccionado no está disponible para este evento.");
-        }
-        eligibilityService.assertPurchaseAllowed(
-                event, customer, ticketType.getId(), form.getQuantity());
+        TicketType ticketType = ticketTypeRepository
+                .findDetailedByIdForUpdate(form.getTicketTypeId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró el tipo de entrada."));
+        ensureTicketAvailable(
+                eventId,
+                event,
+                customer,
+                ticketType,
+                form.getQuantity(),
+                currentTime);
 
-        long occupiedSeats = reservationRepository.sumOccupiedSeats(eventId, now);
-        if (form.getQuantity() > event.getCapacity() - occupiedSeats) {
-            throw new BusinessRuleException("No hay cupos suficientes para completar la compra.");
-        }
-
-        long allocated = saleItemRepository.sumAllocatedQuantity(ticketType.getId());
-        if (form.getQuantity() > ticketType.getCapacity() - allocated) {
-            throw new BusinessRuleException("No hay suficientes entradas disponibles en la categoría seleccionada.");
-        }
-
-        String buyerEmail = customer.getEmail().trim().toLowerCase(Locale.ROOT);
-        if (reservationRepository.existsActiveDuplicate(eventId, buyerEmail, now, null)) {
-            throw new BusinessRuleException("Ya tienes una compra o reservación activa para este evento.");
+        String buyerEmail = customer.getEmail()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+        if (reservationRepository.existsActiveDuplicate(
+                eventId,
+                buyerEmail,
+                currentTime,
+                null)) {
+            throw new BusinessRuleException(
+                    "Ya tienes una compra o reservación activa para este evento.");
         }
 
         Reservation reservation = new Reservation(
@@ -195,37 +306,34 @@ public class CustomerCheckoutService {
                 buyerEmail,
                 form.getPhone().trim(),
                 form.getQuantity(),
-                now.plus(reservationProperties.getHoldDuration()),
+                currentTime.plus(reservationProperties.getHoldDuration()),
                 customer);
-        reservation.confirm(now);
+        reservation.confirm(currentTime);
         reservationRepository.save(reservation);
-        eventPublisher.publishEvent(new ReservationConfirmedEvent(reservation.getId()));
+        eventPublisher.publishEvent(new ReservationConfirmedEvent(
+                reservation.getId()));
 
-        Sale sale = new Sale(nextSaleReference(), reservation, currency, customer);
+        Sale sale = new Sale(
+                nextSaleReference(),
+                reservation,
+                currency,
+                customer);
         sale.addItem(ticketType, form.getQuantity());
-        eligibilityService.resolveMonetaryDiscount(
-                        event,
-                        customer,
-                        ticketType.getId(),
-                        sale.getSubtotal())
-                .ifPresent(decision -> {
-                    if (!isBlank(form.getCouponCode())) {
-                        throw new BusinessRuleException(
-                                "Los beneficios monetarios de elegibilidad no se combinan con cupones todavía. "
-                                        + "Retira el cupón para usar el beneficio automático.");
-                    }
-                    sale.applyEligibilityDiscount(
-                            decision.benefitId(),
-                            decision.benefitType(),
-                            decision.configuredValue(),
-                            decision.discountAmount());
-                });
+        applyAutomaticEligibilityDiscount(
+                event,
+                customer,
+                ticketType,
+                form.getCouponCode(),
+                sale);
 
         Sale savedSale = saleRepository.save(sale);
-        promotionService.reserveForSale(form.getCouponCode(), savedSale, now);
+        promotionService.reserveForSale(
+                form.getCouponCode(),
+                savedSale,
+                currentTime);
 
         if (savedSale.getTotal().compareTo(BigDecimal.ZERO) == 0) {
-            completeFreeSale(savedSale, customer, now);
+            completeFreeSale(savedSale, customer, currentTime);
             return savedSale.getId();
         }
 
@@ -235,8 +343,14 @@ public class CustomerCheckoutService {
                 PaymentTransactionType.CHARGE,
                 savedSale.getTotal(),
                 savedSale.getCurrency(),
-                SimulationOutcome.APPROVE);
-        PaymentResult result = gatewayRegistry.resolve(form.getProvider()).process(command);
+                SimulationOutcome.APPROVE,
+                form.getProvider().isDigitalWallet()
+                        ? form.getWalletToken()
+                        : null,
+                null);
+        PaymentResult result = gatewayRegistry
+                .resolve(form.getProvider())
+                .process(command);
         LocalDateTime processedAt = now();
         paymentRepository.save(new PaymentTransaction(
                 savedSale,
@@ -252,7 +366,8 @@ public class CustomerCheckoutService {
                 customer));
 
         if (result.status() != PaymentStatus.APPROVED) {
-            throw new BusinessRuleException("El pago no fue aprobado. Intenta nuevamente.");
+            throw new BusinessRuleException(
+                    "El pago no fue aprobado. Intenta nuevamente.");
         }
         savedSale.markPaid(processedAt);
         promotionService.consumeForSale(savedSale.getId(), processedAt);
@@ -260,12 +375,88 @@ public class CustomerCheckoutService {
         return savedSale.getId();
     }
 
-    private void completeFreeSale(Sale sale, User customer, LocalDateTime processedAt) {
+    private void ensureTicketAvailable(
+            Long eventId,
+            Event event,
+            User customer,
+            TicketType ticketType,
+            int quantity,
+            LocalDateTime at) {
+        if (!ticketType.getEvent().getId().equals(eventId)
+                || !ticketType.isActive()) {
+            throw new BusinessRuleException(
+                    "El tipo de entrada seleccionado no está disponible para este evento.");
+        }
+        eligibilityService.assertPurchaseAllowed(
+                event,
+                customer,
+                ticketType.getId(),
+                quantity);
+
+        long occupiedSeats = reservationRepository.sumOccupiedSeats(
+                eventId,
+                at);
+        if (quantity > event.getCapacity() - occupiedSeats) {
+            throw new BusinessRuleException(
+                    "No hay cupos suficientes para completar la compra.");
+        }
+
+        long allocated = saleItemRepository.sumAllocatedQuantity(
+                ticketType.getId());
+        if (quantity > ticketType.getCapacity() - allocated) {
+            throw new BusinessRuleException(
+                    "No hay suficientes entradas disponibles en la categoría seleccionada.");
+        }
+    }
+
+    private void applyAutomaticEligibilityDiscount(
+            Event event,
+            User customer,
+            TicketType ticketType,
+            String couponCode,
+            Sale sale) {
+        eligibilityService.resolveMonetaryDiscount(
+                        event,
+                        customer,
+                        ticketType.getId(),
+                        sale.getSubtotal())
+                .ifPresent(decision -> {
+                    if (!isBlank(couponCode)) {
+                        throw new BusinessRuleException(
+                                "Los beneficios monetarios de elegibilidad no se combinan con cupones todavía. "
+                                        + "Retira el cupón para usar el beneficio automático.");
+                    }
+                    sale.applyEligibilityDiscount(
+                            decision.benefitId(),
+                            decision.benefitType(),
+                            decision.configuredValue(),
+                            decision.discountAmount());
+                });
+    }
+
+    private void ensureQuantity(int quantity) {
+        if (quantity < 1 || quantity > 10) {
+            throw new BusinessRuleException(
+                    "Puedes comprar entre 1 y 10 entradas por operación.");
+        }
+    }
+
+    private void ensureCustomerProvider(PaymentProvider provider) {
+        if (!CUSTOMER_PAYMENT_PROVIDERS.contains(provider)) {
+            throw new BusinessRuleException(
+                    "El método de pago seleccionado no está disponible en el checkout.");
+        }
+    }
+
+    private void completeFreeSale(
+            Sale sale,
+            User customer,
+            LocalDateTime processedAt) {
         sale.markPaid(processedAt);
         paymentRepository.save(new PaymentTransaction(
                 sale,
                 nextPaymentReference(),
-                com.jairomatias.eventix.payment.entity.PaymentProvider.BANK_TRANSFER,
+                PaymentProvider.BANK_TRANSFER,
                 PaymentTransactionType.CHARGE,
                 PaymentStatus.APPROVED,
                 BigDecimal.ZERO,
@@ -279,47 +470,72 @@ public class CustomerCheckoutService {
     }
 
     private User findCustomer(String login) {
-        User user = userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(login, login)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el usuario autenticado."));
+        User user = userRepository
+                .findByEmailIgnoreCaseOrUsernameIgnoreCase(login, login)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró el usuario autenticado."));
         if (user.getRole().getName() != RoleName.USER) {
-            throw new BusinessRuleException("Este checkout está disponible únicamente para compradores.");
+            throw new BusinessRuleException(
+                    "Este checkout está disponible únicamente para compradores.");
         }
         return user;
     }
 
-    private void ensurePurchasable(Event event, LocalDateTime now) {
+    private void ensurePurchasable(Event event, LocalDateTime currentTime) {
         if (event.getStatus() != EventStatus.PUBLISHED) {
-            throw new BusinessRuleException("El evento todavía no está disponible para compra.");
+            throw new BusinessRuleException(
+                    "El evento todavía no está disponible para compra.");
         }
-        if (!event.getStartAt().isAfter(now)) {
-            throw new BusinessRuleException("El evento ya inició o finalizó.");
+        if (!event.getStartAt().isAfter(currentTime)) {
+            throw new BusinessRuleException(
+                    "El evento ya inició o finalizó.");
         }
     }
 
     private String nextReservationReference() {
-        for (int i = 0; i < MAX_REFERENCE_ATTEMPTS; i++) {
+        for (int attempt = 0;
+                attempt < MAX_REFERENCE_ATTEMPTS;
+                attempt++) {
             String value = reservationReferenceGenerator.generate();
-            if (!reservationRepository.existsByReferenceCode(value)) return value;
+            if (!reservationRepository.existsByReferenceCode(value)) {
+                return value;
+            }
         }
-        throw new BusinessRuleException("No fue posible generar la referencia de reservación.");
+        throw new BusinessRuleException(
+                "No fue posible generar la referencia de reservación.");
     }
 
     private String nextSaleReference() {
-        for (int i = 0; i < MAX_REFERENCE_ATTEMPTS; i++) {
+        for (int attempt = 0;
+                attempt < MAX_REFERENCE_ATTEMPTS;
+                attempt++) {
             String value = transactionReferenceGenerator.generateSaleReference();
-            if (!saleRepository.existsByReferenceCode(value)) return value;
+            if (!saleRepository.existsByReferenceCode(value)) {
+                return value;
+            }
         }
-        throw new BusinessRuleException("No fue posible generar la referencia de venta.");
+        throw new BusinessRuleException(
+                "No fue posible generar la referencia de venta.");
     }
 
     private String nextPaymentReference() {
-        for (int i = 0; i < MAX_REFERENCE_ATTEMPTS; i++) {
+        for (int attempt = 0;
+                attempt < MAX_REFERENCE_ATTEMPTS;
+                attempt++) {
             String value = transactionReferenceGenerator.generatePaymentReference();
-            if (!paymentRepository.existsByTransactionReference(value)) return value;
+            if (!paymentRepository.existsByTransactionReference(value)) {
+                return value;
+            }
         }
-        throw new BusinessRuleException("No fue posible generar la referencia de pago.");
+        throw new BusinessRuleException(
+                "No fue posible generar una referencia de pago única.");
     }
 
-    private LocalDateTime now() { return LocalDateTime.now(); }
-    private boolean isBlank(String value) { return value == null || value.isBlank(); }
+    private LocalDateTime now() {
+        return LocalDateTime.now();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
 }
