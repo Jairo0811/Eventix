@@ -19,11 +19,21 @@ server:
   port: ${PORT:10000}
   forward-headers-strategy: framework
 
+management:
+  health:
+    mail:
+      enabled: false
+
 app:
   base-url: ${RENDER_EXTERNAL_URL:https://eventix.onrender.com}
 
 eventix:
   security:
     allow-default-bootstrap-administrator: false
+  notifications:
+    email:
+      enabled: false
+    reminders:
+      enabled: false
   ticketing:
     allow-ephemeral-signing-key: true
