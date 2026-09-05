@@ -164,6 +164,7 @@ eventix:
       merchant-display-name: ${AZUL_MERCHANT_DISPLAY_NAME:Eventix}
       initiative-context: ${AZUL_APPLE_INITIATIVE_CONTEXT:}
       google-merchant-id: ${AZUL_GOOGLE_MERCHANT_ID:}
+      google-pay-merchant-id: ${GOOGLE_PAY_MERCHANT_ID:}
       apple-domain-association: ${AZUL_APPLE_DOMAIN_ASSOCIATION:}
 
   ticketing:

@@ -49,8 +49,11 @@ public class WalletPaymentController {
                 authentication.getName());
         return new WalletClientConfig(
                 properties.isReady(),
+                properties.isGooglePayReady(),
                 properties.getEnvironment().name(),
                 properties.googleGatewayMerchantId(),
+                properties.googlePayMerchantId(),
+                properties.getMerchantDisplayName(),
                 properties.appleMerchantIdentifier(),
                 properties.getInitiativeContext() != null
                         && !properties.getInitiativeContext().isBlank(),
@@ -101,8 +104,11 @@ public class WalletPaymentController {
 
     public record WalletClientConfig(
             boolean enabled,
+            boolean googlePayEnabled,
             String environment,
             String googleGatewayMerchantId,
+            String googleMerchantId,
+            String merchantDisplayName,
             String appleMerchantIdentifier,
             boolean applePayEnabled,
             String currency,

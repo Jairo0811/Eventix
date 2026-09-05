@@ -17,6 +17,7 @@ public class AzulWalletProperties {
     private String merchantDisplayName = "Eventix";
     private String initiativeContext;
     private String googleMerchantId;
+    private String googlePayMerchantId;
     private String appleDomainAssociation;
 
     public boolean isReady() {
@@ -24,6 +25,13 @@ public class AzulWalletProperties {
                 && StringUtils.hasText(store)
                 && StringUtils.hasText(auth1)
                 && StringUtils.hasText(auth2);
+    }
+
+    public boolean isGooglePayReady() {
+        return isReady()
+                && StringUtils.hasText(googleGatewayMerchantId())
+                && (environment == Environment.TEST
+                        || StringUtils.hasText(googlePayMerchantId));
     }
 
     public String soapEndpoint() {
@@ -34,6 +42,10 @@ public class AzulWalletProperties {
 
     public String googleGatewayMerchantId() {
         return StringUtils.hasText(googleMerchantId) ? googleMerchantId : store;
+    }
+
+    public String googlePayMerchantId() {
+        return googlePayMerchantId;
     }
 
     public String appleMerchantIdentifier() {
@@ -112,6 +124,14 @@ public class AzulWalletProperties {
 
     public void setGoogleMerchantId(String googleMerchantId) {
         this.googleMerchantId = googleMerchantId;
+    }
+
+    public String getGooglePayMerchantId() {
+        return googlePayMerchantId;
+    }
+
+    public void setGooglePayMerchantId(String googlePayMerchantId) {
+        this.googlePayMerchantId = googlePayMerchantId;
     }
 
     public String getAppleDomainAssociation() {
