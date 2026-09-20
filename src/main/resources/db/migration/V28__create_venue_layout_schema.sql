@@ -109,10 +109,12 @@ ALTER TABLE events
     ADD CONSTRAINT FK_events_venue
         FOREIGN KEY (venue_id) REFERENCES venues(id);
 
+EXEC(N'
 ALTER TABLE events
     ADD CONSTRAINT CK_events_seating_mode CHECK (
-        seating_mode IN ('GENERAL_ADMISSION', 'RESERVED_SEATING', 'MIXED')
+        seating_mode IN (''GENERAL_ADMISSION'', ''RESERVED_SEATING'', ''MIXED'')
     );
+');
 
 CREATE INDEX IX_venues_active_name
     ON venues(active, name);
