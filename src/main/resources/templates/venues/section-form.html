@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Nueva sección')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('venues')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+<main class="app-main">
+    <a class="text-decoration-none small" th:href="@{/venues/{id}/layout(id=\${venueId})}"><i class="bi bi-arrow-left me-1"></i>Volver al layout</a>
+    <h1 class="page-title mt-2">Nueva sección</h1>
+    <section class="content-card mx-auto mt-4" style="max-width:760px;">
+        <form th:action="@{/venues/{id}/layout/sections(id=\${venueId})}" th:object="\${sectionForm}" method="post" novalidate>
+            <div class="row g-4">
+                <div class="col-md-4"><label class="form-label" for="code">Código</label><input class="form-control" th:errorclass="is-invalid" id="code" th:field="*{code}" maxlength="40"><div class="invalid-feedback" th:errors="*{code}"></div></div>
+                <div class="col-md-8"><label class="form-label" for="name">Nombre</label><input class="form-control" th:errorclass="is-invalid" id="name" th:field="*{name}" maxlength="120"><div class="invalid-feedback" th:errors="*{name}"></div></div>
+                <div class="col-md-6"><label class="form-label" for="sectionType">Tipo</label><select class="form-select" id="sectionType" th:field="*{sectionType}"><option th:each="type : \${sectionTypes}" th:value="\${type}" th:text="\${type}"></option></select></div>
+                <div class="col-md-3"><label class="form-label" for="capacity">Capacidad</label><input class="form-control" id="capacity" th:field="*{capacity}" type="number" min="1"><div class="invalid-feedback" th:errors="*{capacity}"></div></div>
+                <div class="col-md-3"><label class="form-label" for="sortOrder">Orden</label><input class="form-control" id="sortOrder" th:field="*{sortOrder}" type="number" min="0"><div class="invalid-feedback" th:errors="*{sortOrder}"></div></div>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-4"><a class="btn btn-light" th:href="@{/venues/{id}/layout(id=\${venueId})}">Cancelar</a><button class="btn btn-primary" type="submit">Guardar sección</button></div>
+        </form>
+    </section>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
