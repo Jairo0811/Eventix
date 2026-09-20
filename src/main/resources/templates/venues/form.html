@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Recinto')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('venues')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+<main class="app-main">
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small" th:href="@{/venues}"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver a recintos</a>
+            <h1 class="page-title mt-2" th:text="\${formMode == 'create' ? 'Crear recinto' : 'Editar recinto'}">Recinto</h1>
+            <p class="page-subtitle">Define la ubicación base. Las secciones, filas y asientos se administrarán sobre este recinto.</p>
+        </div>
+    </div>
+    <section class="content-card mx-auto" style="max-width: 820px;">
+        <form th:action="\${formMode == 'create'} ? @{/venues} : @{/venues/{id}(id=\${venueId})}" th:object="\${venueForm}" method="post" novalidate>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label class="form-label fw-semibold" for="name">Nombre</label>
+                    <input class="form-control" th:errorclass="is-invalid" id="name" th:field="*{name}" type="text" maxlength="160" placeholder="Ej. Arena Eventix">
+                    <div class="invalid-feedback" th:errors="*{name}"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold" for="address">Dirección</label>
+                    <input class="form-control" th:errorclass="is-invalid" id="address" th:field="*{address}" type="text" maxlength="300">
+                    <div class="invalid-feedback" th:errors="*{address}"></div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label fw-semibold" for="city">Ciudad</label>
+                    <input class="form-control" th:errorclass="is-invalid" id="city" th:field="*{city}" type="text" maxlength="120">
+                    <div class="invalid-feedback" th:errors="*{city}"></div>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-semibold" for="countryCode">País</label>
+                    <input class="form-control text-uppercase" th:errorclass="is-invalid" id="countryCode" th:field="*{countryCode}" type="text" maxlength="2">
+                    <div class="invalid-feedback" th:errors="*{countryCode}"></div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label fw-semibold" for="timeZone">Zona horaria</label>
+                    <input class="form-control" th:errorclass="is-invalid" id="timeZone" th:field="*{timeZone}" type="text" maxlength="80">
+                    <div class="form-text">Formato IANA, por ejemplo America/Santo_Domingo.</div>
+                    <div class="invalid-feedback" th:errors="*{timeZone}"></div>
+                </div>
+                <div class="col-12" th:if="\${formMode == 'edit'}">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" id="active" th:field="*{active}" type="checkbox">
+                        <label class="form-check-label fw-semibold" for="active">Recinto activo</label>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a class="btn btn-light" th:href="@{/venues}">Cancelar</a>
+                <button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-2" aria-hidden="true"></i>Guardar recinto</button>
+            </div>
+        </form>
+    </section>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>
