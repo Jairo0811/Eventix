@@ -77,9 +77,10 @@ public class EventVenueConfigurationController {
     @PostMapping("/inventory")
     public String initializeInventory(
             @PathVariable Long eventId,
+            Authentication authentication,
             RedirectAttributes redirectAttributes) {
         try {
-            int created = inventoryService.initializeInventory(eventId);
+            int created = inventoryService.initializeInventory(eventId, authentication.getName());
             redirectAttributes.addFlashAttribute(
                     "successMessage",
                     "Inventario inicializado con " + created + " asientos.");
