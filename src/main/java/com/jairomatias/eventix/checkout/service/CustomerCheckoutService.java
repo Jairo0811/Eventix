@@ -134,7 +134,7 @@ public class CustomerCheckoutService {
         }
         return new CustomerCheckoutPage(
                 event.getId(), event.getTitle(), event.getVenue(), event.getStartAt(),
-                event.getCoverImageUrl(), event.getSeatingMode(), ticketTypes);
+                event.getCoverImageUrl(), effectiveSeatingMode(event), ticketTypes);
     }
 
     @Transactional(readOnly = true)
@@ -166,7 +166,7 @@ public class CustomerCheckoutService {
         ensurePurchasable(event, now);
 
         int purchaseQuantity = form.getQuantity();
-        if (event.getSeatingMode() != EventSeatingMode.GENERAL_ADMISSION) {
+        if (requiresSeatHold(event)) {
             purchaseQuantity = seatInventoryService.validateActiveHold(
                     eventId,
                     form.getHoldToken());
@@ -239,7 +239,7 @@ public class CustomerCheckoutService {
 
         if (savedSale.getTotal().compareTo(BigDecimal.ZERO) == 0) {
             completeFreeSale(savedSale, customer, now);
-            if (event.getSeatingMode() != EventSeatingMode.GENERAL_ADMISSION) {
+            if (requiresSeatHold(event)) {
                 seatInventoryService.confirmSale(eventId, form.getHoldToken(), savedSale.getId());
             }
             return savedSale.getId();
@@ -272,7 +272,7 @@ public class CustomerCheckoutService {
         }
         savedSale.markPaid(processedAt);
         promotionService.consumeForSale(savedSale.getId(), processedAt);
-        if (event.getSeatingMode() != EventSeatingMode.GENERAL_ADMISSION) {
+        if (requiresSeatHold(event)) {
             seatInventoryService.confirmSale(eventId, form.getHoldToken(), savedSale.getId());
         }
         eventPublisher.publishEvent(new SalePaidEvent(savedSale.getId()));
@@ -337,6 +337,16 @@ public class CustomerCheckoutService {
             if (!paymentRepository.existsByTransactionReference(value)) return value;
         }
         throw new BusinessRuleException("No fue posible generar la referencia de pago.");
+    }
+
+    private EventSeatingMode effectiveSeatingMode(Event event) {
+        return event.getSeatingMode() == null
+                ? EventSeatingMode.GENERAL_ADMISSION
+                : event.getSeatingMode();
+    }
+
+    private boolean requiresSeatHold(Event event) {
+        return effectiveSeatingMode(event) != EventSeatingMode.GENERAL_ADMISSION;
     }
 
     private LocalDateTime now() { return LocalDateTime.now(); }
