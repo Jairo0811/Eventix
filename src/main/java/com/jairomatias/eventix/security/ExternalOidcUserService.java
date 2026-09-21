@@ -17,6 +17,7 @@ import com.jairomatias.eventix.role.entity.Role;
 import com.jairomatias.eventix.role.entity.RoleName;
 import com.jairomatias.eventix.role.repository.RoleRepository;
 import com.jairomatias.eventix.user.entity.User;
+import com.jairomatias.eventix.user.entity.UserStatus;
 import com.jairomatias.eventix.user.repository.UserRepository;
 
 @Service
@@ -64,6 +65,9 @@ public class ExternalOidcUserService
 
         if (!user.getEmail().equalsIgnoreCase(email)) {
             throw authenticationError("external_identity_email_mismatch");
+        }
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw authenticationError("external_account_not_active");
         }
 
         return new ExternalUserPrincipal(user, oidcUser);
