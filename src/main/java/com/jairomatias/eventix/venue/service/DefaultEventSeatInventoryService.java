@@ -130,7 +130,7 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
 
     @Override
     @Transactional
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('USER')")
     public SeatHoldResult holdSeats(Long eventId, Collection<Long> seatIds) {
         if (seatIds == null || seatIds.isEmpty()) {
             throw new BusinessRuleException("Selecciona al menos un asiento.");
@@ -169,7 +169,7 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
 
     @Override
     @Transactional
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('USER')")
     public void releaseHold(Long eventId, String holdToken) {
         if (holdToken == null || holdToken.isBlank()) {
             return;
@@ -187,7 +187,7 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
 
     @Override
     @Transactional
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('USER')")
     public void confirmSale(Long eventId, String holdToken, Long saleId) {
         if (holdToken == null || holdToken.isBlank()) {
             throw new BusinessRuleException("El hold de asientos es obligatorio.");
