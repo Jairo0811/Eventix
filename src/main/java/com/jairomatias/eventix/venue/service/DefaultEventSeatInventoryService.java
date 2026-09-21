@@ -169,6 +169,39 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     @Override
     @Transactional
     @PreAuthorize("hasRole('USER')")
+    public int validateActiveHold(Long eventId, String holdToken) {
+        if (holdToken == null || holdToken.isBlank()) {
+            throw new BusinessRuleException(
+                    "Selecciona y retén tus asientos antes de continuar.");
+        }
+
+        LocalDateTime now = now();
+        List<EventSeatInventory> held = inventoryRepository
+                .findHeldByTokenForUpdate(eventId, holdToken);
+
+        if (held.isEmpty()) {
+            throw new BusinessRuleException(
+                    "La retención de asientos no existe o ya fue liberada.");
+        }
+
+        for (EventSeatInventory item : held) {
+            if (item.isHeldAndExpired(now)) {
+                throw new BusinessRuleException(
+                        "La retención de asientos expiró. Selecciona tus asientos nuevamente.");
+            }
+            if (item.getStatus() != EventSeatStatus.HELD
+                    || !holdToken.equals(item.getHoldToken())) {
+                throw new BusinessRuleException(
+                        "La retención de asientos ya no es válida.");
+            }
+        }
+
+        return held.size();
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
     public void releaseHold(Long eventId, String holdToken) {
         if (holdToken == null || holdToken.isBlank()) {
             return;
