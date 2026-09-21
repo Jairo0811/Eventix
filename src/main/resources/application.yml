@@ -189,6 +189,6 @@ eventix:
       certificate-p12: ${APPLE_WALLET_CERTIFICATE_P12:}
       certificate-password: ${APPLE_WALLET_CERTIFICATE_PASSWORD:}
       wwdr-certificate: ${APPLE_WALLET_WWDR_CERTIFICATE:}
-      web-service-url: ${APPLE_WALLET_WEB_SERVICE_URL:${app.base-url}/api/wallet/apple/v1}
+      web-service-url: ${APPLE_WALLET_WEB_SERVICE_URL:${app.base-url}/api/wallet/apple}
       apns-enabled: ${APPLE_WALLET_APNS_ENABLED:false}
-      apns-production: ${APPLE_WALLET_APNS_PRODUCTION:false}
+      apns-production: ${APPLE_WALLET_APNS_PRODUCTION:true}

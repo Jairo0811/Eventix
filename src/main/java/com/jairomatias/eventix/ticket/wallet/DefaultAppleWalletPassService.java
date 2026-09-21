@@ -199,8 +199,7 @@ public class DefaultAppleWalletPassService
                 "voided",
                 ticket.getStatus() == TicketStatus.CANCELLED
                         || ticket.getStatus() == TicketStatus.EXPIRED);
-        pass.put("webServiceURL", stripTrailingSlash(
-                config.getWebServiceUrl()));
+        pass.put("webServiceURL", webServiceBaseUrl(config.getWebServiceUrl()));
         pass.put("authenticationToken", ticket.getAntiFraudCode());
         pass.put("barcode", barcode(ticket));
         pass.put("barcodes", List.of(barcode(ticket)));
@@ -444,10 +443,12 @@ public class DefaultAppleWalletPassService
                 .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
-    private String stripTrailingSlash(String value) {
+    static String webServiceBaseUrl(String value) {
         String normalized = value.trim();
-        return normalized.endsWith("/")
-                ? normalized.substring(0, normalized.length() - 1)
+        normalized = normalized.replaceAll("/+$", "");
+        // Accept the previous configuration while Wallet appends /v1 itself.
+        return normalized.endsWith("/v1")
+                ? normalized.substring(0, normalized.length() - 3)
                 : normalized;
     }
 

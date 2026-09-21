@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Signature;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.time.LocalDateTime;
@@ -60,8 +62,18 @@ class DefaultGoogleWalletPassServiceTest {
         String jwt = saveUrl.substring(saveUrl.lastIndexOf('/') + 1);
         String[] parts = jwt.split("\\.");
         assertThat(parts).hasSize(3);
+        Signature verifier = Signature.getInstance("SHA256withRSA");
+        verifier.initVerify(keyPair.getPublic());
+        verifier.update((parts[0] + "." + parts[1]).getBytes(StandardCharsets.US_ASCII));
+        assertThat(verifier.verify(Base64.getUrlDecoder().decode(parts[2]))).isTrue();
         JsonNode claims = objectMapper.readTree(
                 Base64.getUrlDecoder().decode(parts[1]));
+        JsonNode pass = claims.path("payload").path("eventTicketObjects").get(0);
+        assertThat(pass.path("seatInfo").path("seat").path("defaultValue")
+                .path("value").asText()).isEqualTo("A-12");
+        assertThat(pass.path("barcode").path("value").asText())
+                .isEqualTo("EVX1.TKT-ABC.AF-ABC.signature");
+        assertThat(pass.path("ticketHolderName").asText()).isEqualTo("María Pérez");
         assertThat(claims.path("aud").asText()).isEqualTo("google");
         assertThat(claims.path("payload")
                 .path("eventTicketClasses").get(0)
@@ -88,6 +100,7 @@ class DefaultGoogleWalletPassServiceTest {
         when(ticket.getAttendeeName()).thenReturn("María Pérez");
         when(ticket.getTicketTypeName()).thenReturn("VIP");
         when(ticket.getZone()).thenReturn("VIP");
+        when(ticket.getSeat()).thenReturn("A-12");
         when(ticket.getStatus()).thenReturn(TicketStatus.ACTIVE);
         return ticket;
     }

@@ -603,3 +603,7 @@ GitHub: [@Jairo0811](https://github.com/Jairo0811)
 ## 📄 Licencia
 
 Consulta [`LICENSE`](LICENSE).
+
+### Pases Google Wallet y Apple Wallet
+
+Configuración, credenciales y pruebas en dispositivos: [guía de ticketing digital](docs/phase-5-digital-ticketing.md#activación-y-verificación-en-dispositivos).

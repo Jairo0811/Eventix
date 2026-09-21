@@ -111,7 +111,7 @@ APPLE_WALLET_TEAM_IDENTIFIER=<team id>
 APPLE_WALLET_CERTIFICATE_P12=<P12 en Base64>
 APPLE_WALLET_CERTIFICATE_PASSWORD=<secreto>
 APPLE_WALLET_WWDR_CERTIFICATE=<certificado WWDR PEM o Base64>
-APPLE_WALLET_WEB_SERVICE_URL=https://eventix.example.com/api/wallet/apple/v1
+APPLE_WALLET_WEB_SERVICE_URL=https://eventix.example.com/api/wallet/apple
 APPLE_WALLET_APNS_ENABLED=true
 APPLE_WALLET_APNS_PRODUCTION=true
 ```
@@ -137,3 +137,39 @@ curl --fail http://localhost:8080/login
 ```
 
 La suite cubre firma y manipulación, emisión idempotente, primer acceso, duplicados, QR/PDF, autorización web y la migración real sobre SQL Server 2022 con Testcontainers.
+
+### Activación y verificación en dispositivos
+
+La integración de pases no requiere habilitar Google Pay ni Apple Pay. En Google,
+configura el emisor, habilita Wallet API, concede acceso al service account en la
+consola del emisor y registra las cuentas de prueba mientras el emisor esté en modo
+demo. El acceso general requiere la aprobación de publicación del emisor.
+
+En Apple, crea el Pass Type ID y su certificado de firma; exporta la clave privada
+con el certificado como PKCS#12 y configura el WWDR correspondiente. Publica el
+servicio con HTTPS. `APPLE_WALLET_WEB_SERVICE_URL` termina en `/api/wallet/apple`,
+sin `/v1`: Wallet añade la versión. Las configuraciones antiguas con `/v1` se
+normalizan y la ruta antigua duplicada se mantiene para actualizar pases ya emitidos.
+APNs usa producción por defecto para pases, incluso durante pruebas de Wallet.
+
+Verificación antes de activar en producción:
+
+1. Compra una boleta y abre su detalle con el usuario propietario.
+2. Guarda el pase en Google Wallet con una cuenta de prueba autorizada y verifica
+   evento, horario dominicano, QR, titular y zona/asiento cuando estén asignados.
+3. Abre el `.pkpass` en un iPhone real; verifica los mismos datos y el registro del
+   dispositivo en el servidor. El simulador no permite validar las notificaciones.
+4. Cancela la boleta o cambia fecha/lugar del evento y comprueba la actualización
+   en ambos dispositivos y el rechazo del QR cancelado en control de acceso.
+5. Comprueba que otro comprador no puede descargar el pase ni obtener su enlace.
+
+El servicio Apple devuelve 204 cuando no hay cambios y admite Last-Modified /
+If-Modified-Since (304), después de autenticar el pase. Las descargas privadas y
+redirecciones al JWT de Google usan `Cache-Control: no-store`.
+Las pruebas automatizadas verifican la firma RSA del JWT y el archivo PKPass
+(manifiesto SHA-1, firma CMS separada, QR y asiento) con claves efímeras de prueba.
+No sustituyen la aceptación con certificados reales, aprobación del emisor y APNs.
+La sincronización actual es de mejor esfuerzo; no tiene cola persistente de reintentos.
+
+Referencias: [emisión web de Google](https://developers.google.com/wallet/tickets/events/web)
+y [actualizaciones de Apple](https://developer.apple.com/library/archive/documentation/UserExperience/Conceptual/PassKit_PG/Updating.html).
