@@ -20,12 +20,18 @@
                 <strong th:text="|${#lists.size(heldSeatIds)} asiento(s) retenido(s)|">Asientos retenidos</strong>
                 <div class="small text-secondary mt-1" th:text="|Expira: ${#temporals.format(holdExpiresAt, 'dd/MM/yyyy HH:mm:ss')}|">Expira</div>
             </div>
-            <form th:action="@{/my/checkout/events/{id}/seats/release(id=${eventId})}" method="post">
-                <input type="hidden" name="holdToken" th:value="${holdToken}">
-                <button class="btn btn-outline-danger" type="submit">
-                    <i class="bi bi-x-circle me-2" aria-hidden="true"></i>Liberar asientos
-                </button>
-            </form>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-success"
+                   th:href="@{/my/checkout/events/{id}(id=${eventId},holdToken=${holdToken})}">
+                    <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>Continuar al checkout
+                </a>
+                <form th:action="@{/my/checkout/events/{id}/seats/release(id=${eventId})}" method="post">
+                    <input type="hidden" name="holdToken" th:value="${holdToken}">
+                    <button class="btn btn-outline-danger" type="submit">
+                        <i class="bi bi-x-circle me-2" aria-hidden="true"></i>Liberar asientos
+                    </button>
+                </form>
+            </div>
         </div>
     </section>
     <form th:action="@{/my/checkout/events/{id}/seats(id=${eventId})}" th:object="${seatSelectionForm}" method="post">
