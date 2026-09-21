@@ -8,7 +8,7 @@ import com.jairomatias.eventix.venue.dto.SeatHoldResult;
 
 public interface EventSeatInventoryService {
 
-    int initializeInventory(Long eventId);
+    int initializeInventory(Long eventId, String authenticatedLogin);
 
     List<EventSeatView> getInventory(Long eventId);
 
