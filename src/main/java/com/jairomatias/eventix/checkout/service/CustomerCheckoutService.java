@@ -155,6 +155,9 @@ public class CustomerCheckoutService {
         if (form == null || form.getTicketTypeId() == null || form.getProvider() == null) {
             throw new BusinessRuleException("Completa los datos de compra.");
         }
+        if (form.getQuantity() < 1 || form.getQuantity() > 10) {
+            throw new BusinessRuleException("Puedes comprar entre 1 y 10 entradas por operación.");
+        }
         if (isBlank(form.getFirstName()) || isBlank(form.getLastName()) || isBlank(form.getPhone())) {
             throw new BusinessRuleException("Completa los datos del asistente.");
         }
