@@ -19,6 +19,9 @@ import com.jairomatias.eventix.sale.entity.Sale;
 import com.jairomatias.eventix.sale.repository.SaleRepository;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
+import com.jairomatias.eventix.role.entity.RoleName;
+import com.jairomatias.eventix.user.entity.User;
+import com.jairomatias.eventix.user.repository.UserRepository;
 import com.jairomatias.eventix.venue.dto.EventSeatView;
 import com.jairomatias.eventix.venue.dto.SeatHoldResult;
 import com.jairomatias.eventix.venue.entity.EventSeatInventory;
@@ -36,18 +39,21 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     private final VenueSeatRepository seatRepository;
     private final EventSeatInventoryRepository inventoryRepository;
     private final SaleRepository saleRepository;
+    private final UserRepository userRepository;
     private final Clock clock;
 
     public DefaultEventSeatInventoryService(
             EventRepository eventRepository,
             VenueSeatRepository seatRepository,
             EventSeatInventoryRepository inventoryRepository,
-            SaleRepository saleRepository) {
+            SaleRepository saleRepository,
+            UserRepository userRepository) {
         this(
                 eventRepository,
                 seatRepository,
                 inventoryRepository,
                 saleRepository,
+                userRepository,
                 Clock.systemDefaultZone());
     }
 
@@ -56,21 +62,24 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
             VenueSeatRepository seatRepository,
             EventSeatInventoryRepository inventoryRepository,
             SaleRepository saleRepository,
+            UserRepository userRepository,
             Clock clock) {
         this.eventRepository = eventRepository;
         this.seatRepository = seatRepository;
         this.inventoryRepository = inventoryRepository;
         this.saleRepository = saleRepository;
+        this.userRepository = userRepository;
         this.clock = clock;
     }
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMINISTRATOR')")
-    public int initializeInventory(Long eventId) {
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'ORGANIZER')")
+    public int initializeInventory(Long eventId, String authenticatedLogin) {
         Event event = eventRepository.findDetailedByIdForUpdate(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No se encontró el evento solicitado."));
+        ensureCanManage(event, findActor(authenticatedLogin));
 
         if (event.getVenueDefinition() == null) {
             throw new BusinessRuleException(
@@ -221,6 +230,25 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     @Transactional
     public int releaseExpiredHolds() {
         return inventoryRepository.releaseExpiredHolds(now());
+    }
+
+    private User findActor(String login) {
+        return userRepository
+                .findByEmailIgnoreCaseOrUsernameIgnoreCase(login, login)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró el usuario autenticado."));
+    }
+
+    private void ensureCanManage(Event event, User actor) {
+        if (actor.getRole().getName() == RoleName.ADMINISTRATOR) {
+            return;
+        }
+        if (actor.getRole().getName() == RoleName.ORGANIZER
+                && event.getOrganizer().getId().equals(actor.getId())) {
+            return;
+        }
+        throw new BusinessRuleException(
+                "No tienes permiso para administrar el inventario de este evento.");
     }
 
     private void ensureEventExists(Long eventId) {
