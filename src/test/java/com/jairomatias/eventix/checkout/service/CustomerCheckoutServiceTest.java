@@ -48,6 +48,7 @@ import com.jairomatias.eventix.sale.service.TransactionReferenceGenerator;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.repository.UserRepository;
+import com.jairomatias.eventix.venue.service.EventSeatInventoryService;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerCheckoutServiceTest {
@@ -68,6 +69,7 @@ class CustomerCheckoutServiceTest {
     @Mock private PromotionService promotionService;
     @Mock private EventEligibilityService eligibilityService;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private EventSeatInventoryService seatInventoryService;
     @Mock private User customer;
     @Mock private Role customerRole;
     @Mock private Event event;
@@ -92,6 +94,7 @@ class CustomerCheckoutServiceTest {
                 promotionService,
                 eligibilityService,
                 eventPublisher,
+                seatInventoryService,
                 "DOP");
     }
 
