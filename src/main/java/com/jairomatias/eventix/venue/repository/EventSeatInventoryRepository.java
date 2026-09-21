@@ -59,6 +59,14 @@ public interface EventSeatInventoryRepository
 
     long countByEvent_IdAndStatus(Long eventId, EventSeatStatus status);
 
+    @EntityGraph(attributePaths = {
+            "seat",
+            "seat.row",
+            "seat.row.section"
+    })
+    List<EventSeatInventory> findAllBySale_IdOrderBySeat_Row_Section_SortOrderAscSeat_Row_SortOrderAscSeat_SeatNumberAsc(
+            Long saleId);
+
     @Modifying(flushAutomatically = true)
     @Query("""
             UPDATE EventSeatInventory i
