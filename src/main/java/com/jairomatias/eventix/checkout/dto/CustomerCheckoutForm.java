@@ -41,6 +41,9 @@ public class CustomerCheckoutForm {
     @NotNull(message = "Selecciona el método de pago.")
     private PaymentProvider provider = PaymentProvider.CARDNET;
 
+    @Size(max = 20000, message = "El token de la billetera digital no es válido.")
+    private String walletToken;
+
     public Long getTicketTypeId() { return ticketTypeId; }
     public void setTicketTypeId(Long ticketTypeId) { this.ticketTypeId = ticketTypeId; }
     public int getQuantity() { return quantity; }
@@ -57,4 +60,6 @@ public class CustomerCheckoutForm {
     public void setCouponCode(String couponCode) { this.couponCode = couponCode; }
     public PaymentProvider getProvider() { return provider; }
     public void setProvider(PaymentProvider provider) { this.provider = provider; }
+    public String getWalletToken() { return walletToken; }
+    public void setWalletToken(String walletToken) { this.walletToken = walletToken; }
 }
