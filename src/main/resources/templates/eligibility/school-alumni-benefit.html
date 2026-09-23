@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Beneficio para egresados')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('events')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small" th:href="@{/events/{id}(id=${event.id})}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver al evento
+            </a>
+            <h1 class="page-title mt-2 mb-1">Beneficio para egresados</h1>
+            <p class="text-muted mb-0" th:text="${event.title}">Evento</p>
+        </div>
+        <span class="badge rounded-pill text-bg-success px-3 py-2">
+            <i class="bi bi-mortarboard-fill me-1" aria-hidden="true"></i>
+            Promoción escolar
+        </span>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-xl-7">
+            <section class="content-card">
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <span class="fs-3 text-success"><i class="bi bi-person-check-fill" aria-hidden="true"></i></span>
+                    <div>
+                        <h2 class="h5 mb-1">Descuento exclusivo para egresados</h2>
+                        <p class="text-secondary mb-0">
+                            Los compradores podrán solicitar este beneficio desde el checkout. Eventix validará su identidad y buscará el nombre oficial en el padrón seleccionado antes de aplicar el descuento.
+                        </p>
+                    </div>
+                </div>
+
+                <form th:action="@{/events/{id}/school-alumni-benefit(id=${event.id})}"
+                      th:object="${alumniBenefitForm}"
+                      method="post"
+                      class="row g-3">
+                    <div class="col-12" th:if="${#fields.hasGlobalErrors()}">
+                        <div class="alert alert-danger mb-0" role="alert">
+                            <div th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check form-switch p-3 border rounded-3 bg-body-tertiary">
+                            <input class="form-check-input ms-0 me-3"
+                                   type="checkbox"
+                                   role="switch"
+                                   id="alumni-benefit-enabled"
+                                   th:field="*{enabled}">
+                            <label class="form-check-label fw-semibold" for="alumni-benefit-enabled">
+                                Ofrecer descuento especial para egresados
+                            </label>
+                            <div class="small text-secondary mt-1">
+                                Si se desactiva, cualquier comprador podrá seguir adquiriendo entradas al precio normal.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label" for="school-promotion">Promoción / padrón autorizado</label>
+                        <select class="form-select"
+                                id="school-promotion"
+                                th:field="*{schoolPromotionId}">
+                            <option value="">Selecciona una promoción</option>
+                            <option th:each="promotion : ${schoolPromotions}"
+                                    th:value="${promotion.id}"
+                                    th:text="|${promotion.institutionName} · ${promotion.name} ${promotion.graduationYear}|">
+                                Promoción
+                            </option>
+                        </select>
+                        <div class="form-text">
+                            El padrón contiene nombres autorizados; no almacena cédulas.
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="discount-type">Tipo de descuento</label>
+                        <select class="form-select" id="discount-type" th:field="*{discountType}">
+                            <option value="PERCENTAGE_DISCOUNT">Porcentaje (%)</option>
+                            <option value="FIXED_DISCOUNT">Monto fijo (RD$)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="discount-value">Valor del descuento</label>
+                        <input class="form-control"
+                               id="discount-value"
+                               type="number"
+                               min="0.01"
+                               step="0.01"
+                               th:field="*{discountValue}"
+                               placeholder="Ej.: 15.00">
+                        <div class="invalid-feedback d-block"
+                             th:if="${#fields.hasErrors('discountValue')}"
+                             th:errors="*{discountValue}"></div>
+                    </div>
+
+                    <div class="col-12 d-flex flex-wrap gap-2 mt-4">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-check2-circle me-2" aria-hidden="true"></i>
+                            Guardar beneficio
+                        </button>
+                        <a class="btn btn-light" th:href="@{/events/{id}(id=${event.id})}">Cancelar</a>
+                    </div>
+                </form>
+            </section>
+        </div>
+
+        <div class="col-xl-5">
+            <aside class="content-card h-100">
+                <h2 class="h5 mb-3">Cómo funciona para el comprador</h2>
+                <ol class="ps-3 text-secondary d-grid gap-3 mb-4">
+                    <li>Ve que existe un descuento exclusivo para egresados del centro.</li>
+                    <li>Introduce su cédula únicamente para solicitar la verificación.</li>
+                    <li>La fuente de identidad autorizada devuelve el nombre oficial.</li>
+                    <li>Eventix compara ese nombre con el padrón de la promoción.</li>
+                    <li>Si existe una coincidencia exacta, el descuento se aplica automáticamente a la compra.</li>
+                </ol>
+                <div class="alert alert-light border mb-0">
+                    <i class="bi bi-shield-lock-fill text-success me-2" aria-hidden="true"></i>
+                    <strong>Privacidad:</strong> Eventix no guarda la cédula en texto plano ni la incorpora al padrón escolar.
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

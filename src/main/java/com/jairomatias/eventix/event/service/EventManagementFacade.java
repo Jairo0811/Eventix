@@ -4,6 +4,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jairomatias.eventix.eligibility.service.SchoolAlumniBenefitService;
 import com.jairomatias.eventix.event.dto.EventForm;
 
 @Service
@@ -12,14 +13,17 @@ public class EventManagementFacade {
     private final EventService eventService;
     private final EventLocationService eventLocationService;
     private final EventCoverImageStorage coverImageStorage;
+    private final SchoolAlumniBenefitService schoolAlumniBenefitService;
 
     public EventManagementFacade(
             EventService eventService,
             EventLocationService eventLocationService,
-            EventCoverImageStorage coverImageStorage) {
+            EventCoverImageStorage coverImageStorage,
+            SchoolAlumniBenefitService schoolAlumniBenefitService) {
         this.eventService = eventService;
         this.eventLocationService = eventLocationService;
         this.coverImageStorage = coverImageStorage;
+        this.schoolAlumniBenefitService = schoolAlumniBenefitService;
     }
 
     @Transactional
@@ -59,6 +63,9 @@ public class EventManagementFacade {
             eventLocationService.updateGoogleMapsUrl(
                     eventId,
                     form.getGoogleMapsUrl());
+            schoolAlumniBenefitService.reconcileAfterEventUpdate(
+                    eventId,
+                    authenticatedLogin);
             if (uploadedCover != null) {
                 coverImageStorage.deleteManaged(previousCover);
             }
