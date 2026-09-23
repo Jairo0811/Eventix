@@ -131,6 +131,14 @@ eventix:
       wallet-requests-per-minute: ${EVENTIX_WALLET_RATE_LIMIT:120}
       mutation-requests-per-minute: ${EVENTIX_MUTATION_RATE_LIMIT:180}
       maximum-tracked-clients: ${EVENTIX_RATE_LIMIT_MAX_CLIENTS:10000}
+    social:
+      enabled: ${EVENTIX_SOCIAL_LOGIN_ENABLED:false}
+      google:
+        client-id: ${EVENTIX_GOOGLE_CLIENT_ID:}
+        client-secret: ${EVENTIX_GOOGLE_CLIENT_SECRET:}
+      apple:
+        client-id: ${EVENTIX_APPLE_CLIENT_ID:}
+        client-secret: ${EVENTIX_APPLE_CLIENT_SECRET:}
 
   notifications:
     email:
