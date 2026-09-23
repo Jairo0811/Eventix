@@ -146,6 +146,56 @@ a:hover {
     min-height: 50px;
 }
 
+.social-login {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.social-login-divider {
+    align-items: center;
+    color: var(--bs-secondary-color);
+    display: flex;
+    font-size: 0.85rem;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.social-login-divider::before,
+.social-login-divider::after {
+    background: var(--bs-border-color);
+    content: "";
+    flex: 1;
+    height: 1px;
+}
+
+.social-login-button {
+    align-items: center;
+    border: 1px solid var(--bs-border-color);
+    display: flex;
+    font-weight: 650;
+    gap: 0.65rem;
+    justify-content: center;
+    min-height: 48px;
+}
+
+.social-login-google {
+    background: #fff;
+    color: #1f2937;
+}
+
+.social-login-google:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.social-login-apple,
+.social-login-apple:hover {
+    background: #000;
+    border-color: #000;
+    color: #fff;
+}
+
 .app-sidebar {
     background: var(--eventix-sidebar);
     bottom: 0;
