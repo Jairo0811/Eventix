@@ -2,11 +2,13 @@ package com.jairomatias.eventix.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
@@ -20,18 +22,24 @@ public class SecurityConfig {
     private final ForcePasswordChangeFilter forcePasswordChangeFilter;
     private final AuditAuthenticationFailureHandler authenticationFailureHandler;
     private final AuditLogoutSuccessHandler logoutSuccessHandler;
+    private final ExternalOidcUserService externalOidcUserService;
+    private final ObjectProvider<ClientRegistrationRepository> registrations;
 
     public SecurityConfig(
             DatabaseUserDetailsService userDetailsService,
             LoginSuccessHandler loginSuccessHandler,
             ForcePasswordChangeFilter forcePasswordChangeFilter,
             AuditAuthenticationFailureHandler authenticationFailureHandler,
-            AuditLogoutSuccessHandler logoutSuccessHandler) {
+            AuditLogoutSuccessHandler logoutSuccessHandler,
+            ExternalOidcUserService externalOidcUserService,
+            ObjectProvider<ClientRegistrationRepository> registrations) {
         this.userDetailsService = userDetailsService;
         this.loginSuccessHandler = loginSuccessHandler;
         this.forcePasswordChangeFilter = forcePasswordChangeFilter;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
+        this.externalOidcUserService = externalOidcUserService;
+        this.registrations = registrations;
     }
 
     @Bean
@@ -56,6 +64,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/", "/login", "/login/forgot-password", "/login/reset-password",
+                                "/oauth2/**", "/login/oauth2/**",
                                 "/css/**", "/js/**", "/images/**", "/error/**",
                                 "/events/media/**",
                                 "/.well-known/apple-developer-merchantid-domain-association",
@@ -147,6 +156,15 @@ public class SecurityConfig {
                                 .preload(true)
                                 .maxAgeInSeconds(31536000)))
                 .addFilterAfter(forcePasswordChangeFilter, UsernamePasswordAuthenticationFilter.class);
+
+        if (registrations.getIfAvailable() != null) {
+            http.oauth2Login(oauth -> oauth
+                    .loginPage("/login")
+                    .userInfoEndpoint(userInfo -> userInfo
+                            .oidcUserService(externalOidcUserService))
+                    .successHandler(loginSuccessHandler)
+                    .failureHandler(authenticationFailureHandler));
+        }
         return http.build();
     }
 }
