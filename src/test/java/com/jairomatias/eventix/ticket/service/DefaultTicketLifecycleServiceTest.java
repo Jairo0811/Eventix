@@ -29,6 +29,7 @@ import com.jairomatias.eventix.ticket.entity.DigitalTicket;
 import com.jairomatias.eventix.ticket.repository.DigitalTicketRepository;
 import com.jairomatias.eventix.ticket.security.SignedTicketPayload;
 import com.jairomatias.eventix.ticket.security.TicketCryptographyService;
+import com.jairomatias.eventix.venue.repository.EventSeatInventoryRepository;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultTicketLifecycleServiceTest {
@@ -38,6 +39,7 @@ class DefaultTicketLifecycleServiceTest {
     @Mock private TicketCodeGenerator codeGenerator;
     @Mock private TicketCryptographyService cryptographyService;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private EventSeatInventoryRepository seatInventoryRepository;
     @Mock private Sale sale;
     @Mock private SaleItem saleItem;
     @Mock private Event event;
@@ -55,6 +57,7 @@ class DefaultTicketLifecycleServiceTest {
                 codeGenerator,
                 cryptographyService,
                 eventPublisher,
+                seatInventoryRepository,
                 clock);
     }
 

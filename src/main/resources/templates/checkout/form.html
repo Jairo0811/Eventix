@@ -26,6 +26,7 @@
           method="post"
           aria-labelledby="checkout-title"
           aria-describedby="checkout-instructions">
+        <input type="hidden" th:field="*{holdToken}">
         <div class="row g-4">
             <div class="col-lg-7">
                 <section class="content-card mb-4" aria-labelledby="ticket-selection-title">
@@ -73,8 +74,27 @@
                          th:if="${#fields.hasErrors('ticketTypeId')}"
                          th:errors="*{ticketTypeId}"></div>
 
+                    <div class="alert alert-info mt-3"
+                         th:if="${checkout.seatingMode.name() != 'GENERAL_ADMISSION'}">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                                <strong>Asientos reservados</strong>
+                                <div class="small"
+                                     th:text="${checkoutForm.holdToken != null and !#strings.isEmpty(checkoutForm.holdToken)
+                                               ? 'La cantidad se calculará desde tus asientos retenidos.'
+                                               : 'Debes seleccionar y retener tus asientos antes de comprar.'}">
+                                    Selección requerida
+                                </div>
+                            </div>
+                            <a class="btn btn-sm btn-outline-primary"
+                               th:href="@{/my/checkout/events/{id}/seats(id=${checkout.eventId})}">
+                                Seleccionar asientos
+                            </a>
+                        </div>
+                    </div>
+
                     <div class="row g-3 mt-2">
-                        <div class="col-md-4">
+                        <div class="col-md-4" th:if="${checkout.seatingMode.name() == 'GENERAL_ADMISSION'}">
                             <label class="form-label" for="quantity">Cantidad</label>
                             <input class="form-control"
                                    id="quantity"
@@ -92,6 +112,9 @@
                                  th:if="${#fields.hasErrors('quantity')}"
                                  th:errors="*{quantity}"></div>
                         </div>
+                        <input th:if="${checkout.seatingMode.name() != 'GENERAL_ADMISSION'}"
+                               type="hidden"
+                               th:field="*{quantity}">
                         <div class="col-md-8">
                             <label class="form-label" for="couponCode">
                                 Cupón <span class="text-secondary fw-normal">(opcional)</span>

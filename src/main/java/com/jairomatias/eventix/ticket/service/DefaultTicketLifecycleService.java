@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jairomatias.eventix.event.entity.EventSeatingMode;
 import com.jairomatias.eventix.sale.entity.Sale;
 import com.jairomatias.eventix.sale.entity.SaleItem;
 import com.jairomatias.eventix.sale.entity.SaleStatus;
@@ -24,6 +25,8 @@ import com.jairomatias.eventix.ticket.repository.DigitalTicketRepository;
 import com.jairomatias.eventix.ticket.security.SignedTicketPayload;
 import com.jairomatias.eventix.ticket.security.TicketCryptographyService;
 import com.jairomatias.eventix.ticket.security.TicketSigningPayload;
+import com.jairomatias.eventix.venue.entity.EventSeatInventory;
+import com.jairomatias.eventix.venue.repository.EventSeatInventoryRepository;
 
 @Service
 public class DefaultTicketLifecycleService
@@ -36,6 +39,7 @@ public class DefaultTicketLifecycleService
     private final TicketCodeGenerator codeGenerator;
     private final TicketCryptographyService cryptographyService;
     private final ApplicationEventPublisher eventPublisher;
+    private final EventSeatInventoryRepository seatInventoryRepository;
     private final Clock clock;
 
     @Autowired
@@ -44,13 +48,15 @@ public class DefaultTicketLifecycleService
             DigitalTicketRepository ticketRepository,
             TicketCodeGenerator codeGenerator,
             TicketCryptographyService cryptographyService,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            EventSeatInventoryRepository seatInventoryRepository) {
         this(
                 saleRepository,
                 ticketRepository,
                 codeGenerator,
                 cryptographyService,
                 eventPublisher,
+                seatInventoryRepository,
                 Clock.systemDefaultZone());
     }
 
@@ -60,12 +66,14 @@ public class DefaultTicketLifecycleService
             TicketCodeGenerator codeGenerator,
             TicketCryptographyService cryptographyService,
             ApplicationEventPublisher eventPublisher,
+            EventSeatInventoryRepository seatInventoryRepository,
             Clock clock) {
         this.saleRepository = saleRepository;
         this.ticketRepository = ticketRepository;
         this.codeGenerator = codeGenerator;
         this.cryptographyService = cryptographyService;
         this.eventPublisher = eventPublisher;
+        this.seatInventoryRepository = seatInventoryRepository;
         this.clock = clock;
     }
 
@@ -83,6 +91,21 @@ public class DefaultTicketLifecycleService
         }
 
         LocalDateTime issuedAt = LocalDateTime.now(clock).withNano(0);
+        List<EventSeatInventory> soldSeats = sale.getEvent().getSeatingMode() == EventSeatingMode.GENERAL_ADMISSION
+                || sale.getEvent().getSeatingMode() == null
+                ? List.of()
+                : seatInventoryRepository
+                        .findAllBySale_IdOrderBySeat_Row_Section_SortOrderAscSeat_Row_SortOrderAscSeat_SeatNumberAsc(
+                                saleId);
+
+        int expectedTickets = sale.getItems().stream()
+                .mapToInt(SaleItem::getQuantity)
+                .sum();
+        if (!soldSeats.isEmpty() && soldSeats.size() != expectedTickets) {
+            throw new BusinessRuleException(
+                    "La cantidad de asientos vendidos no coincide con las boletas a emitir.");
+        }
+
         List<DigitalTicket> tickets = new ArrayList<>();
         int sequence = 1;
         for (SaleItem item : sale.getItems()) {
@@ -99,7 +122,7 @@ public class DefaultTicketLifecycleService
                         issuedAt,
                         antiFraudCode);
                 SignedTicketPayload signed = cryptographyService.sign(payload);
-                tickets.add(new DigitalTicket(
+                DigitalTicket ticket = new DigitalTicket(
                         uniqueCode,
                         sale,
                         item,
@@ -108,7 +131,16 @@ public class DefaultTicketLifecycleService
                         signed.payloadHash(),
                         signed.signature(),
                         signed.keyId(),
-                        issuedAt));
+                        issuedAt);
+
+                if (!soldSeats.isEmpty()) {
+                    EventSeatInventory soldSeat = soldSeats.get(sequence - 1);
+                    ticket.assignSeat(
+                            soldSeat.getSeat().getRow().getSection().getName(),
+                            soldSeat.getSeat().getLabel());
+                }
+
+                tickets.add(ticket);
                 sequence++;
             }
         }

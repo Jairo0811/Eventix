@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Asientos del evento')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('events')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <div>
+            <a class="text-decoration-none small" th:href="@{/events/{id}(id=${eventId})}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver al evento
+            </a>
+            <h1 class="page-title mt-2">Recinto y asientos</h1>
+            <p class="page-subtitle">Vincula el evento a un recinto estructurado y administra su inventario de asientos.</p>
+        </div>
+    </div>
+    <section class="content-card mb-4">
+        <h2 class="h5 fw-bold mb-3">Configuración del evento</h2>
+        <form th:action="@{/events/{id}/seating(id=${eventId})}" th:object="${seatingForm}" method="post" novalidate>
+            <div class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+                <p class="mb-0" th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="seatingMode">Modo de asientos</label>
+                    <select class="form-select" id="seatingMode" th:field="*{seatingMode}">
+                        <option th:each="mode : ${seatingModes}" th:value="${mode}" th:text="${mode}">GENERAL_ADMISSION</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="venueId">Recinto estructurado</label>
+                    <select class="form-select" id="venueId" th:field="*{venueId}">
+                        <option value="">Sin recinto estructurado</option>
+                        <option th:each="venue : ${venues}" th:value="${venue.id}" th:text="|${venue.name} · ${venue.city}, ${venue.countryCode}|">Recinto</option>
+                    </select>
+                    <div class="form-text">Obligatorio para RESERVED_SEATING y MIXED.</div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle me-2" aria-hidden="true"></i>Guardar configuración</button>
+            </div>
+        </form>
+    </section>
+    <section class="content-card">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+            <div>
+                <h2 class="h5 fw-bold mb-1">Inventario de asientos</h2>
+                <p class="text-secondary mb-0">Los asientos se copian desde el layout del recinto y evolucionan de forma independiente por evento.</p>
+            </div>
+            <form th:if="${#lists.isEmpty(inventory)}" th:action="@{/events/{id}/seating/inventory(id=${eventId})}" method="post">
+                <button class="btn btn-outline-primary" type="submit"><i class="bi bi-grid-3x3-gap-fill me-2" aria-hidden="true"></i>Inicializar inventario</button>
+            </form>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(inventory)}">
+            <i class="bi bi-ticket-detailed fs-1 d-block mb-3" aria-hidden="true"></i>
+            <h3 class="h6 text-dark">Todavía no hay inventario</h3>
+            <p class="mb-0">Configura un recinto con asientos reservados y crea el inventario para este evento.</p>
+        </div>
+        <div class="table-responsive" th:unless="${#lists.isEmpty(inventory)}">
+            <table class="table align-middle">
+                <thead><tr><th scope="col">Sección</th><th scope="col">Fila</th><th scope="col">Asiento</th><th scope="col">Estado</th><th scope="col">Hold hasta</th></tr></thead>
+                <tbody>
+                <tr th:each="seat : ${inventory}">
+                    <td><strong th:text="${seat.sectionName}">VIP</strong><span class="small text-secondary ms-1" th:text="|(${seat.sectionCode})|">(VIP)</span></td>
+                    <td th:text="${seat.rowCode}">A</td>
+                    <td><span th:text="${seat.label}">A-12</span><span class="badge text-bg-light ms-2" th:if="${seat.accessible}">Accesible</span></td>
+                    <td><span class="badge rounded-pill" th:classappend="${seat.status.name() == 'AVAILABLE' ? ' text-bg-success' : (seat.status.name() == 'HELD' ? ' text-bg-warning' : (seat.status.name() == 'SOLD' ? ' text-bg-secondary' : ' text-bg-dark'))}" th:text="${seat.status}">AVAILABLE</span></td>
+                    <td th:text="${seat.holdExpiresAt != null ? #temporals.format(seat.holdExpiresAt, 'dd/MM/yyyy HH:mm:ss') : '—'}">—</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+</body>
+</html>

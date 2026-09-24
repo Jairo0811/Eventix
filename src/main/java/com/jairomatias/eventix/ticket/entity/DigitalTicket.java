@@ -114,6 +114,11 @@ public class DigitalTicket extends AuditableEntity {
         this.passUpdatedAt = issuedAt;
     }
 
+    public void assignSeat(String zone, String seat) {
+        this.zone = zone;
+        this.seat = seat;
+    }
+
     public void markUsed(LocalDateTime at) {
         status = TicketStatus.USED;
         usedAt = at;

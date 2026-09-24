@@ -27,6 +27,7 @@ import com.jairomatias.eventix.eligibility.entity.EligibilityBenefitType;
 import com.jairomatias.eventix.eligibility.service.EventEligibilityService;
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.event.entity.EventStatus;
+import com.jairomatias.eventix.event.entity.EventSeatingMode;
 import com.jairomatias.eventix.event.repository.EventRepository;
 import com.jairomatias.eventix.payment.entity.PaymentProvider;
 import com.jairomatias.eventix.payment.entity.PaymentTransaction;
@@ -48,6 +49,7 @@ import com.jairomatias.eventix.sale.service.TransactionReferenceGenerator;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.repository.UserRepository;
+import com.jairomatias.eventix.venue.service.EventSeatInventoryService;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerCheckoutServiceTest {
@@ -68,6 +70,7 @@ class CustomerCheckoutServiceTest {
     @Mock private PromotionService promotionService;
     @Mock private EventEligibilityService eligibilityService;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private EventSeatInventoryService seatInventoryService;
     @Mock private User customer;
     @Mock private Role customerRole;
     @Mock private Event event;
@@ -92,6 +95,7 @@ class CustomerCheckoutServiceTest {
                 promotionService,
                 eligibilityService,
                 eventPublisher,
+                seatInventoryService,
                 "DOP");
     }
 
@@ -194,6 +198,71 @@ class CustomerCheckoutServiceTest {
         verifyNoInteractions(gatewayRegistry);
         org.mockito.Mockito.verify(paymentRepository)
                 .save(any(PaymentTransaction.class));
+    }
+
+
+    @Test
+    void reservedSeatingDerivesQuantityFromHoldAndMarksSeatsSold() {
+        prepareCustomer();
+        when(customer.getEmail()).thenReturn(CUSTOMER_LOGIN);
+        preparePublishedEvent();
+        when(event.getSeatingMode()).thenReturn(EventSeatingMode.RESERVED_SEATING);
+        prepareTicketType();
+        when(eventRepository.findDetailedByIdForUpdate(10L))
+                .thenReturn(Optional.of(event));
+        when(ticketTypeRepository.findDetailedByIdForUpdate(31L))
+                .thenReturn(Optional.of(ticketType));
+        when(seatInventoryService.validateActiveHold(10L, "hold-abc"))
+                .thenReturn(2);
+        when(reservationRepository.sumOccupiedSeats(any(), any()))
+                .thenReturn(0L);
+        when(saleItemRepository.sumAllocatedQuantity(31L)).thenReturn(0L);
+        when(reservationRepository.existsActiveDuplicate(
+                any(), any(), any(), any())).thenReturn(false);
+        when(reservationReferenceGenerator.generate())
+                .thenReturn("RSV-HOLDTEST2345");
+        when(reservationRepository.existsByReferenceCode("RSV-HOLDTEST2345"))
+                .thenReturn(false);
+        when(transactionReferenceGenerator.generateSaleReference())
+                .thenReturn("SAL-HOLDTEST2345");
+        when(saleRepository.existsByReferenceCode("SAL-HOLDTEST2345"))
+                .thenReturn(false);
+        when(transactionReferenceGenerator.generatePaymentReference())
+                .thenReturn("PAY-HOLDTEST2345");
+        when(paymentRepository.existsByTransactionReference("PAY-HOLDTEST2345"))
+                .thenReturn(false);
+        when(reservationProperties.getHoldDuration())
+                .thenReturn(Duration.ofMinutes(15));
+        when(eligibilityService.resolveMonetaryDiscount(
+                event,
+                customer,
+                31L,
+                new BigDecimal("1000.00")))
+                .thenReturn(Optional.of(new EligibilityDiscountDecision(
+                        99L,
+                        EligibilityBenefitType.FREE_ENTRY,
+                        BigDecimal.ZERO,
+                        new BigDecimal("1000.00"))));
+        when(saleRepository.save(any(Sale.class)))
+                .thenAnswer(invocation -> {
+                    Sale sale = invocation.getArgument(0);
+                    ReflectionTestUtils.setField(sale, "id", 77L);
+                    return sale;
+                });
+
+        CustomerCheckoutForm form = validForm(1);
+        form.setHoldToken("hold-abc");
+
+        Long saleId = service.purchase(10L, form, CUSTOMER_LOGIN);
+
+        assertThat(saleId).isEqualTo(77L);
+        org.mockito.Mockito.verify(seatInventoryService)
+                .validateActiveHold(10L, "hold-abc");
+        org.mockito.Mockito.verify(seatInventoryService)
+                .confirmSale(10L, "hold-abc", 77L);
+        org.mockito.Mockito.verify(reservationRepository)
+                .save(org.mockito.ArgumentMatchers.argThat(
+                        reservation -> reservation.getQuantity() == 2));
     }
 
     @Test

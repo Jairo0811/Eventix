@@ -80,6 +80,7 @@ public class SecurityConfig {
                         .hasAnyRole("ADMINISTRATOR", "ORGANIZER", "OPERATOR", "ACCESS_STAFF")
                         .requestMatchers("/users/**").hasRole("ADMINISTRATOR")
                         .requestMatchers("/categories/**").hasRole("ADMINISTRATOR")
+                        .requestMatchers("/venues/**").hasRole("ADMINISTRATOR")
                         .requestMatchers("/promotions/**").hasRole("ADMINISTRATOR")
                         .requestMatchers("/school-promotions/**").hasRole("ADMINISTRATOR")
                         .requestMatchers(HttpMethod.POST, "/settlements/**")
