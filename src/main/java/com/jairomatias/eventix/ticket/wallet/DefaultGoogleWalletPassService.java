@@ -169,6 +169,7 @@ public class DefaultGoogleWalletPassService
             seatInfo.put("seat", localized(ticket.getSeat()));
         }
         return Map.of(
+                "ticketHolderName", ticket.getAttendeeName(),
                 "state", googleState(ticket.getStatus()),
                 "barcode", Map.of(
                         "type", "QR_CODE",

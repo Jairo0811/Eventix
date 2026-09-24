@@ -140,7 +140,7 @@ public class TicketingProperties {
         private String wwdrCertificate = "";
         private String webServiceUrl = "";
         private boolean apnsEnabled;
-        private boolean apnsProduction;
+        private boolean apnsProduction = true;
 
         public boolean isEnabled() {
             return enabled;

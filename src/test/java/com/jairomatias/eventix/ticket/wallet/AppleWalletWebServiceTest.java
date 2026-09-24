@@ -44,7 +44,7 @@ class AppleWalletWebServiceTest {
         apple.setCertificateP12("base64:AA==");
         apple.setWwdrCertificate("AA==");
         apple.setWebServiceUrl(
-                "https://eventix.example.com/api/wallet/apple/v1");
+                "https://eventix.example.com/api/wallet/apple");
         Clock clock = Clock.fixed(
                 Instant.parse("2026-08-08T22:30:00Z"),
                 ZoneId.of("America/Santo_Domingo"));
@@ -93,6 +93,25 @@ class AppleWalletWebServiceTest {
                         ((ResponseStatusException) exception)
                                 .getStatusCode().value())
                         .isEqualTo(401));
+    }
+
+    @Test
+    void rejectsMissingAuthorizationBeforeReturningPass() {
+        prepareTicket();
+        assertThatThrownBy(() -> service.lastModified(
+                "pass.com.example.eventix", "TKT-ABC", null))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(exception -> assertThat(
+                        ((ResponseStatusException) exception).getStatusCode().value()).isEqualTo(401));
+    }
+
+    @Test
+    void rejectsOutOfRangeUpdateTag() {
+        assertThatThrownBy(() -> service.findUpdates(
+                "device-1", "pass.com.example.eventix", "9223372036854775807"))
+                .isInstanceOf(ResponseStatusException.class)
+                .satisfies(exception -> assertThat(
+                        ((ResponseStatusException) exception).getStatusCode().value()).isEqualTo(400));
     }
 
     private void prepareTicket() {

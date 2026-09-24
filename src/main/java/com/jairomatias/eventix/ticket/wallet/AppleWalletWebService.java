@@ -3,6 +3,7 @@ package com.jairomatias.eventix.ticket.wallet;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Clock;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -148,6 +149,16 @@ public class AppleWalletWebService {
                 authorization));
     }
 
+    @Transactional(readOnly = true)
+    public long lastModified(
+            String passTypeIdentifier,
+            String serialNumber,
+            String authorization) {
+        return authorizedTicket(passTypeIdentifier, serialNumber, authorization)
+                .getPassUpdatedAt().atZone(EVENTIX_ZONE)
+                .toInstant().toEpochMilli();
+    }
+
     private DigitalTicket authorizedTicket(
             String passTypeIdentifier,
             String serialNumber,
@@ -192,7 +203,7 @@ public class AppleWalletWebService {
             return LocalDateTime.ofInstant(
                     Instant.ofEpochSecond(Long.parseLong(value)),
                     EVENTIX_ZONE);
-        } catch (NumberFormatException exception) {
+        } catch (NumberFormatException | DateTimeException exception) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "passesUpdatedSince no es válido.");

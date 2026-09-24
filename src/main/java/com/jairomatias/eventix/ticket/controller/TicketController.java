@@ -118,6 +118,8 @@ public class TicketController {
             @PathVariable Long id,
             Authentication authentication) {
         return ResponseEntity.status(302)
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .header("Referrer-Policy", "no-referrer")
                 .location(URI.create(ticketService.createGoogleWalletUrl(
                         id,
                         authentication.getName())))
@@ -144,6 +146,7 @@ public class TicketController {
             MediaType contentType,
             String filename) {
         return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .contentType(contentType)
                 .header(
                         HttpHeaders.CONTENT_DISPOSITION,

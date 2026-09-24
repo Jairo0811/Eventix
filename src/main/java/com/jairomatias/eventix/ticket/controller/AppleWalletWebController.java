@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import com.jairomatias.eventix.ticket.dto.ApplePassUpdates;
 import com.jairomatias.eventix.ticket.dto.AppleLogRequest;
@@ -26,7 +27,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @Validated
-@RequestMapping("/api/wallet/apple/v1")
+@RequestMapping({"/api/wallet/apple/v1", "/api/wallet/apple/v1/v1"})
 public class AppleWalletWebController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -47,7 +48,7 @@ public class AppleWalletWebController {
             @PathVariable String deviceIdentifier,
             @PathVariable String passTypeIdentifier,
             @PathVariable String serialNumber,
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
             @Valid @RequestBody ApplePushTokenRequest request) {
         boolean created = webService.register(
                 deviceIdentifier,
@@ -67,7 +68,7 @@ public class AppleWalletWebController {
             @PathVariable String deviceIdentifier,
             @PathVariable String passTypeIdentifier,
             @PathVariable String serialNumber,
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
         webService.unregister(
                 deviceIdentifier,
                 passTypeIdentifier,
@@ -79,14 +80,17 @@ public class AppleWalletWebController {
     @GetMapping(
             "/devices/{deviceIdentifier}/registrations/"
             + "{passTypeIdentifier}")
-    public ApplePassUpdates updates(
+    public ResponseEntity<ApplePassUpdates> updates(
             @PathVariable String deviceIdentifier,
             @PathVariable String passTypeIdentifier,
             @RequestParam(required = false) String passesUpdatedSince) {
-        return webService.findUpdates(
+        ApplePassUpdates updates = webService.findUpdates(
                 deviceIdentifier,
                 passTypeIdentifier,
                 passesUpdatedSince);
+        return updates.serialNumbers().isEmpty()
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok().body(updates);
     }
 
     @GetMapping(
@@ -95,8 +99,15 @@ public class AppleWalletWebController {
     public ResponseEntity<byte[]> latestPass(
             @PathVariable String passTypeIdentifier,
             @PathVariable String serialNumber,
-            @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization,
+            WebRequest request) {
+        long lastModified = webService.lastModified(
+                passTypeIdentifier, serialNumber, authorization);
+        if (request.checkNotModified(lastModified)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+        }
         return ResponseEntity.ok()
+                .lastModified(lastModified)
                 .contentType(PASSBOOK)
                 .body(webService.latestPass(
                         passTypeIdentifier,
