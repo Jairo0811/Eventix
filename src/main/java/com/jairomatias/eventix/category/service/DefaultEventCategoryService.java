@@ -52,7 +52,8 @@ public class DefaultEventCategoryService
                 .stream()
                 .map(category -> new CategoryOption(
                         category.getId(),
-                        category.getName()))
+                        category.getName(),
+                        category.getSystemKey()))
                 .toList();
     }
 

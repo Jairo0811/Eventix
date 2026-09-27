@@ -4,6 +4,8 @@ import com.jairomatias.eventix.shared.entity.AuditableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
 @Entity
@@ -15,6 +17,10 @@ public class EventCategory extends AuditableEntity {
 
     @Column(length = 240)
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "system_key", length = 40)
+    private EventCategorySystemKey systemKey;
 
     @Column(nullable = false)
     private boolean active = true;
@@ -41,6 +47,10 @@ public class EventCategory extends AuditableEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public EventCategorySystemKey getSystemKey() {
+        return systemKey;
     }
 
     public boolean isActive() {

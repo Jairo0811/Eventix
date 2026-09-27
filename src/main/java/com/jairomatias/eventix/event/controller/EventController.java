@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.jairomatias.eventix.category.service.EventCategoryService;
+import com.jairomatias.eventix.eligibility.service.SchoolAlumniBenefitService;
 import com.jairomatias.eventix.event.dto.EventDetailsView;
 import com.jairomatias.eventix.event.dto.EventForm;
 import com.jairomatias.eventix.event.dto.EventListItem;
@@ -38,16 +39,19 @@ public class EventController {
     private final EventManagementFacade eventManagementFacade;
     private final EventCategoryService categoryService;
     private final ReservationService reservationService;
+    private final SchoolAlumniBenefitService schoolAlumniBenefitService;
 
     public EventController(
             EventService eventService,
             EventManagementFacade eventManagementFacade,
             EventCategoryService categoryService,
-            ReservationService reservationService) {
+            ReservationService reservationService,
+            SchoolAlumniBenefitService schoolAlumniBenefitService) {
         this.eventService = eventService;
         this.eventManagementFacade = eventManagementFacade;
         this.categoryService = categoryService;
         this.reservationService = reservationService;
+        this.schoolAlumniBenefitService = schoolAlumniBenefitService;
     }
 
     @ModelAttribute("statuses")
@@ -125,6 +129,13 @@ public class EventController {
             Long eventId = eventManagementFacade.create(
                     form,
                     authentication.getName());
+            if (schoolAlumniBenefitService.isSchoolPromotionEvent(eventId)) {
+                redirectAttributes.addFlashAttribute(
+                        "successMessage",
+                        "Evento creado. Configura ahora el beneficio exclusivo para egresados.");
+                return "redirect:/events/" + eventId
+                        + "/school-alumni-benefit?setup=true";
+            }
             redirectAttributes.addFlashAttribute(
                     "successMessage",
                     "Evento creado correctamente.");
@@ -152,6 +163,9 @@ public class EventController {
                 id,
                 authentication.getName());
         model.addAttribute("event", event);
+        model.addAttribute(
+                "schoolPromotionEvent",
+                schoolAlumniBenefitService.isSchoolPromotionEvent(id));
 
         boolean administratorOrOperator =
                 authentication.getAuthorities().stream()

@@ -203,23 +203,12 @@ public class CustomerCheckoutService {
 
         Sale sale = new Sale(nextSaleReference(), reservation, currency, customer);
         sale.addItem(ticketType, form.getQuantity());
-        eligibilityService.resolveMonetaryDiscount(
-                        event,
-                        customer,
-                        ticketType.getId(),
-                        sale.getSubtotal())
-                .ifPresent(decision -> {
-                    if (!isBlank(form.getCouponCode())) {
-                        throw new BusinessRuleException(
-                                "Los beneficios monetarios de elegibilidad no se combinan con cupones todavía. "
-                                        + "Retira el cupón para usar el beneficio automático.");
-                    }
-                    sale.applyEligibilityDiscount(
-                            decision.benefitId(),
-                            decision.benefitType(),
-                            decision.configuredValue(),
-                            decision.discountAmount());
-                });
+        applyAutomaticEligibilityDiscount(
+                event,
+                customer,
+                ticketType,
+                sale,
+                form.getCouponCode());
 
         Sale savedSale = saleRepository.save(sale);
         promotionService.reserveForSale(form.getCouponCode(), savedSale, now);
@@ -258,6 +247,38 @@ public class CustomerCheckoutService {
         promotionService.consumeForSale(savedSale.getId(), processedAt);
         eventPublisher.publishEvent(new SalePaidEvent(savedSale.getId()));
         return savedSale.getId();
+    }
+
+    private void applyAutomaticEligibilityDiscount(
+            Event event,
+            User customer,
+            TicketType ticketType,
+            Sale sale,
+            String couponCode) {
+        var discountDecision = eligibilityService.resolveMonetaryDiscount(
+                event,
+                customer,
+                ticketType.getId(),
+                sale.getSubtotal());
+        if (discountDecision.isEmpty()) {
+            return;
+        }
+
+        ensureCouponCompatibleWithEligibilityDiscount(couponCode);
+        var decision = discountDecision.orElseThrow();
+        sale.applyEligibilityDiscount(
+                decision.benefitId(),
+                decision.benefitType(),
+                decision.configuredValue(),
+                decision.discountAmount());
+    }
+
+    private void ensureCouponCompatibleWithEligibilityDiscount(String couponCode) {
+        if (!isBlank(couponCode)) {
+            throw new BusinessRuleException(
+                    "Los beneficios monetarios de elegibilidad no se combinan con cupones todavía. "
+                            + "Retira el cupón para usar el beneficio automático.");
+        }
     }
 
     private void completeFreeSale(Sale sale, User customer, LocalDateTime processedAt) {
