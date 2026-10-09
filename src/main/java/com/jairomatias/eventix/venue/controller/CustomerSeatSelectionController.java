@@ -1,5 +1,6 @@
 package com.jairomatias.eventix.venue.controller;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,12 +33,15 @@ public class CustomerSeatSelectionController {
     @GetMapping
     public String select(
             @PathVariable Long eventId,
+            Authentication authentication,
             Model model) {
         if (!model.containsAttribute("seatSelectionForm")) {
             model.addAttribute("seatSelectionForm", new SeatSelectionForm());
         }
         model.addAttribute("eventId", eventId);
         model.addAttribute("inventory", inventoryService.getInventory(eventId));
+        inventoryService.getActiveHold(eventId, authentication.getName())
+                .ifPresent(hold -> addHoldModelAttributes(hold, model));
         return "checkout/seats";
     }
 
@@ -46,25 +50,25 @@ public class CustomerSeatSelectionController {
             @PathVariable Long eventId,
             @Valid @ModelAttribute("seatSelectionForm") SeatSelectionForm form,
             BindingResult bindingResult,
+            Authentication authentication,
             Model model,
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("eventId", eventId);
-            model.addAttribute("inventory", inventoryService.getInventory(eventId));
+            prepareModel(eventId, authentication, model);
             return "checkout/seats";
         }
 
         try {
             SeatHoldResult hold = inventoryService.holdSeats(
                     eventId,
-                    form.getSeatIds());
+                    form.getSeatIds(),
+                    authentication.getName());
             addHoldFlashAttributes(hold, redirectAttributes, "Asientos retenidos durante 10 minutos.");
             return "redirect:/my/checkout/events/" + eventId + "/seats";
         } catch (BusinessRuleException exception) {
             bindingResult.reject("seat.hold", exception.getMessage());
-            model.addAttribute("eventId", eventId);
-            model.addAttribute("inventory", inventoryService.getInventory(eventId));
+            prepareModel(eventId, authentication, model);
             return "checkout/seats";
         }
     }
@@ -74,12 +78,14 @@ public class CustomerSeatSelectionController {
             @PathVariable Long eventId,
             @RequestParam int quantity,
             @RequestParam(defaultValue = "false") boolean accessibilityRequired,
+            Authentication authentication,
             RedirectAttributes redirectAttributes) {
         try {
             SeatHoldResult hold = inventoryService.holdBestAvailableSeats(
                     eventId,
                     quantity,
-                    accessibilityRequired);
+                    accessibilityRequired,
+                    authentication.getName());
             addHoldFlashAttributes(
                     hold,
                     redirectAttributes,
@@ -94,13 +100,33 @@ public class CustomerSeatSelectionController {
     public String release(
             @PathVariable Long eventId,
             @RequestParam String holdToken,
+            Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
-        inventoryService.releaseHold(eventId, holdToken);
+        inventoryService.releaseHold(
+                eventId,
+                holdToken,
+                authentication.getName());
         redirectAttributes.addFlashAttribute(
                 "successMessage",
                 "Los asientos retenidos fueron liberados.");
         return "redirect:/my/checkout/events/" + eventId + "/seats";
+    }
+
+    private void prepareModel(
+            Long eventId,
+            Authentication authentication,
+            Model model) {
+        model.addAttribute("eventId", eventId);
+        model.addAttribute("inventory", inventoryService.getInventory(eventId));
+        inventoryService.getActiveHold(eventId, authentication.getName())
+                .ifPresent(hold -> addHoldModelAttributes(hold, model));
+    }
+
+    private void addHoldModelAttributes(SeatHoldResult hold, Model model) {
+        model.addAttribute("holdToken", hold.holdToken());
+        model.addAttribute("holdExpiresAt", hold.expiresAt());
+        model.addAttribute("heldSeatIds", hold.seatIds());
     }
 
     private void addHoldFlashAttributes(
