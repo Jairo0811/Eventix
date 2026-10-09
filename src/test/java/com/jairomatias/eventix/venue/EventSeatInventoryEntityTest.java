@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.user.entity.User;
@@ -54,7 +53,6 @@ class EventSeatInventoryEntityTest {
                 Mockito.mock(Event.class),
                 Mockito.mock(VenueSeat.class));
         User buyer = Mockito.mock(User.class);
-        ReflectionTestUtils.setField(buyer, "id", 7L);
 
         inventory.hold("hold", LocalDateTime.now().plusMinutes(10), buyer);
         inventory.block();
