@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.sale.entity.Sale;
 import com.jairomatias.eventix.shared.entity.AuditableEntity;
+import com.jairomatias.eventix.user.entity.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,6 +44,10 @@ public class EventSeatInventory extends AuditableEntity {
     private LocalDateTime holdExpiresAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "held_by_user_id")
+    private User heldByUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sale_id")
     private Sale sale;
 
@@ -54,10 +59,11 @@ public class EventSeatInventory extends AuditableEntity {
         this.seat = seat;
     }
 
-    public void hold(String token, LocalDateTime expiresAt) {
+    public void hold(String token, LocalDateTime expiresAt, User owner) {
         this.status = EventSeatStatus.HELD;
         this.holdToken = token;
         this.holdExpiresAt = expiresAt;
+        this.heldByUser = owner;
         this.sale = null;
     }
 
@@ -65,6 +71,7 @@ public class EventSeatInventory extends AuditableEntity {
         this.status = EventSeatStatus.AVAILABLE;
         this.holdToken = null;
         this.holdExpiresAt = null;
+        this.heldByUser = null;
         this.sale = null;
     }
 
@@ -73,12 +80,14 @@ public class EventSeatInventory extends AuditableEntity {
         this.sale = sale;
         this.holdToken = null;
         this.holdExpiresAt = null;
+        this.heldByUser = null;
     }
 
     public void block() {
         this.status = EventSeatStatus.BLOCKED;
         this.holdToken = null;
         this.holdExpiresAt = null;
+        this.heldByUser = null;
         this.sale = null;
     }
 
@@ -88,10 +97,17 @@ public class EventSeatInventory extends AuditableEntity {
                 && !holdExpiresAt.isAfter(now);
     }
 
+    public boolean isHeldBy(Long userId) {
+        return heldByUser != null
+                && userId != null
+                && userId.equals(heldByUser.getId());
+    }
+
     public Event getEvent() { return event; }
     public VenueSeat getSeat() { return seat; }
     public EventSeatStatus getStatus() { return status; }
     public String getHoldToken() { return holdToken; }
     public LocalDateTime getHoldExpiresAt() { return holdExpiresAt; }
+    public User getHeldByUser() { return heldByUser; }
     public Sale getSale() { return sale; }
 }
