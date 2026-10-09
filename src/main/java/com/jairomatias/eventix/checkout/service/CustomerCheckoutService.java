@@ -133,7 +133,8 @@ public class CustomerCheckoutService {
                             seatingRule.unitPrice(),
                             Math.max(ticketType.getCapacity()
                                     - Math.toIntExact(saleItemRepository
-                                            .sumAllocatedQuantity(ticketType.getId())), 0));
+                                            .sumAllocatedQuantity(ticketType.getId())), 0),
+                            seatingRule.requiresSeatHold());
                 })
                 .filter(option -> option.availableQuantity() > 0)
                 .toList();
