@@ -1,6 +1,7 @@
 package com.jairomatias.eventix.venue.entity;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.sale.entity.Sale;
@@ -33,6 +34,24 @@ public class EventSeatInventory extends AuditableEntity {
     @JoinColumn(name = "seat_id", nullable = false)
     private VenueSeat seat;
 
+    @Column(name = "section_code_snapshot", nullable = false, length = 40)
+    private String sectionCodeSnapshot;
+
+    @Column(name = "section_name_snapshot", nullable = false, length = 120)
+    private String sectionNameSnapshot;
+
+    @Column(name = "row_code_snapshot", nullable = false, length = 40)
+    private String rowCodeSnapshot;
+
+    @Column(name = "seat_number_snapshot", nullable = false, length = 20)
+    private String seatNumberSnapshot;
+
+    @Column(name = "seat_label_snapshot", nullable = false, length = 80)
+    private String seatLabelSnapshot;
+
+    @Column(name = "accessible_snapshot", nullable = false)
+    private boolean accessibleSnapshot;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     private EventSeatStatus status = EventSeatStatus.AVAILABLE;
@@ -55,8 +74,22 @@ public class EventSeatInventory extends AuditableEntity {
     }
 
     public EventSeatInventory(Event event, VenueSeat seat) {
-        this.event = event;
-        this.seat = seat;
+        this.event = Objects.requireNonNull(event, "El evento es obligatorio.");
+        this.seat = Objects.requireNonNull(seat, "El asiento es obligatorio.");
+
+        VenueRow row = Objects.requireNonNull(
+                seat.getRow(),
+                "La fila del asiento es obligatoria.");
+        VenueSection section = Objects.requireNonNull(
+                row.getSection(),
+                "La sección del asiento es obligatoria.");
+
+        this.sectionCodeSnapshot = section.getCode();
+        this.sectionNameSnapshot = section.getName();
+        this.rowCodeSnapshot = row.getCode();
+        this.seatNumberSnapshot = seat.getSeatNumber();
+        this.seatLabelSnapshot = seat.getLabel();
+        this.accessibleSnapshot = seat.isAccessible();
     }
 
     public void hold(String token, LocalDateTime expiresAt, User owner) {
@@ -105,6 +138,12 @@ public class EventSeatInventory extends AuditableEntity {
 
     public Event getEvent() { return event; }
     public VenueSeat getSeat() { return seat; }
+    public String getSectionCodeSnapshot() { return sectionCodeSnapshot; }
+    public String getSectionNameSnapshot() { return sectionNameSnapshot; }
+    public String getRowCodeSnapshot() { return rowCodeSnapshot; }
+    public String getSeatNumberSnapshot() { return seatNumberSnapshot; }
+    public String getSeatLabelSnapshot() { return seatLabelSnapshot; }
+    public boolean isAccessibleSnapshot() { return accessibleSnapshot; }
     public EventSeatStatus getStatus() { return status; }
     public String getHoldToken() { return holdToken; }
     public LocalDateTime getHoldExpiresAt() { return holdExpiresAt; }
