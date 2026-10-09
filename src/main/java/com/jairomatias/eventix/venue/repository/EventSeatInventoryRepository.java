@@ -49,6 +49,19 @@ public interface EventSeatInventoryRepository
     @Query("""
             SELECT i
             FROM EventSeatInventory i
+            JOIN FETCH i.seat s
+            JOIN FETCH s.row r
+            JOIN FETCH r.section sec
+            WHERE i.event.id = :eventId
+            ORDER BY sec.sortOrder, r.sortOrder, i.id
+            """)
+    List<EventSeatInventory> findAllForBestAvailableForUpdate(
+            @Param("eventId") Long eventId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT i
+            FROM EventSeatInventory i
             WHERE i.event.id = :eventId
             AND i.holdToken = :holdToken
             ORDER BY i.id
