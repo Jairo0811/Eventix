@@ -13,17 +13,21 @@ public interface EventSeatInventoryService {
 
     List<EventSeatView> getInventory(Long eventId);
 
+    List<EventSeatView> getInventory(Long eventId, Long requiredSectionId);
+
     Optional<SeatHoldResult> getActiveHold(Long eventId, String authenticatedLogin);
 
     SeatHoldResult holdSeats(
             Long eventId,
             Collection<Long> seatIds,
+            Long requiredSectionId,
             String authenticatedLogin);
 
     SeatHoldResult holdBestAvailableSeats(
             Long eventId,
             int quantity,
             boolean accessibilityRequired,
+            Long requiredSectionId,
             String authenticatedLogin);
 
     int validateActiveHold(
