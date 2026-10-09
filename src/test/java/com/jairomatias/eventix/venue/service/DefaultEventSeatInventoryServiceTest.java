@@ -11,6 +11,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.event.repository.EventRepository;
 import com.jairomatias.eventix.sale.repository.SaleRepository;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
+import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.repository.UserRepository;
 import com.jairomatias.eventix.venue.dto.SeatHoldResult;
 import com.jairomatias.eventix.venue.entity.EventSeatInventory;
@@ -35,6 +37,8 @@ import com.jairomatias.eventix.venue.repository.VenueSeatRepository;
 class DefaultEventSeatInventoryServiceTest {
 
     private static final Long EVENT_ID = 10L;
+    private static final String CUSTOMER_LOGIN = "buyer@eventix.local";
+    private static final Long CUSTOMER_ID = 77L;
 
     @Mock private EventRepository eventRepository;
     @Mock private VenueSeatRepository seatRepository;
@@ -44,10 +48,12 @@ class DefaultEventSeatInventoryServiceTest {
 
     private DefaultEventSeatInventoryService service;
     private Event event;
+    private User buyer;
 
     @BeforeEach
     void setUp() {
         event = mock(Event.class);
+        buyer = mock(User.class);
         Clock clock = Clock.fixed(
                 Instant.parse("2026-10-09T18:00:00Z"),
                 ZoneOffset.UTC);
@@ -58,7 +64,16 @@ class DefaultEventSeatInventoryServiceTest {
                 saleRepository,
                 userRepository,
                 clock);
+
         lenient().when(eventRepository.existsById(EVENT_ID)).thenReturn(true);
+        lenient().when(eventRepository.findDetailedByIdForUpdate(EVENT_ID))
+                .thenReturn(Optional.of(event));
+        lenient().when(userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(
+                CUSTOMER_LOGIN,
+                CUSTOMER_LOGIN)).thenReturn(Optional.of(buyer));
+        lenient().when(buyer.getId()).thenReturn(CUSTOMER_ID);
+        lenient().when(inventoryRepository.findHeldByUserForUpdate(EVENT_ID, CUSTOMER_ID))
+                .thenReturn(List.of());
     }
 
     @Test
@@ -72,13 +87,19 @@ class DefaultEventSeatInventoryServiceTest {
         when(inventoryRepository.findAllForBestAvailableForUpdate(EVENT_ID))
                 .thenReturn(List.of(seat1, seat2, seat3, seat4, seat5));
 
-        SeatHoldResult result = service.holdBestAvailableSeats(EVENT_ID, 2, false);
+        SeatHoldResult result = service.holdBestAvailableSeats(
+                EVENT_ID,
+                2,
+                false,
+                CUSTOMER_LOGIN);
 
         assertThat(result.seatIds()).containsExactly(2L, 3L);
         assertThat(seat2.getStatus()).isEqualTo(EventSeatStatus.HELD);
         assertThat(seat3.getStatus()).isEqualTo(EventSeatStatus.HELD);
         assertThat(seat2.getHoldToken()).isEqualTo(result.holdToken());
         assertThat(seat3.getHoldToken()).isEqualTo(result.holdToken());
+        assertThat(seat2.getHeldByUser()).isSameAs(buyer);
+        assertThat(seat3.getHeldByUser()).isSameAs(buyer);
         assertThat(seat1.getStatus()).isEqualTo(EventSeatStatus.AVAILABLE);
         assertThat(seat4.getStatus()).isEqualTo(EventSeatStatus.AVAILABLE);
     }
@@ -94,7 +115,11 @@ class DefaultEventSeatInventoryServiceTest {
         when(inventoryRepository.findAllForBestAvailableForUpdate(EVENT_ID))
                 .thenReturn(List.of(seat1, seat2, seat3, seat4));
 
-        SeatHoldResult result = service.holdBestAvailableSeats(EVENT_ID, 2, false);
+        SeatHoldResult result = service.holdBestAvailableSeats(
+                EVENT_ID,
+                2,
+                false,
+                CUSTOMER_LOGIN);
 
         assertThat(result.seatIds()).containsExactly(13L, 14L);
         assertThat(seat1.getStatus()).isEqualTo(EventSeatStatus.AVAILABLE);
@@ -110,7 +135,11 @@ class DefaultEventSeatInventoryServiceTest {
         when(inventoryRepository.findAllForBestAvailableForUpdate(EVENT_ID))
                 .thenReturn(List.of(accessible, companion, standard));
 
-        SeatHoldResult result = service.holdBestAvailableSeats(EVENT_ID, 2, true);
+        SeatHoldResult result = service.holdBestAvailableSeats(
+                EVENT_ID,
+                2,
+                true,
+                CUSTOMER_LOGIN);
 
         assertThat(result.seatIds()).containsExactly(21L, 22L);
         assertThat(accessible.getStatus()).isEqualTo(EventSeatStatus.HELD);
@@ -128,7 +157,11 @@ class DefaultEventSeatInventoryServiceTest {
         when(inventoryRepository.findAllForBestAvailableForUpdate(EVENT_ID))
                 .thenReturn(List.of(accessible, companion, standard1, standard2));
 
-        SeatHoldResult result = service.holdBestAvailableSeats(EVENT_ID, 2, false);
+        SeatHoldResult result = service.holdBestAvailableSeats(
+                EVENT_ID,
+                2,
+                false,
+                CUSTOMER_LOGIN);
 
         assertThat(result.seatIds()).containsExactly(33L, 34L);
         assertThat(accessible.getStatus()).isEqualTo(EventSeatStatus.AVAILABLE);
@@ -145,14 +178,58 @@ class DefaultEventSeatInventoryServiceTest {
         when(inventoryRepository.findAllForBestAvailableForUpdate(EVENT_ID))
                 .thenReturn(List.of(seat1, seat2, seat3));
 
-        assertThatThrownBy(() -> service.holdBestAvailableSeats(EVENT_ID, 2, false))
+        assertThatThrownBy(() -> service.holdBestAvailableSeats(
+                EVENT_ID,
+                2,
+                false,
+                CUSTOMER_LOGIN))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("bloque contiguo");
     }
 
     @Test
+    void bestAvailableRejectsSecondActiveHoldForSameBuyer() {
+        VenueRow row = row(601L);
+        EventSeatInventory active = inventory(51L, row, "1", "1.0", false, false);
+        active.hold("existing", java.time.LocalDateTime.of(2026, 10, 9, 18, 5), buyer);
+        when(inventoryRepository.findHeldByUserForUpdate(EVENT_ID, CUSTOMER_ID))
+                .thenReturn(List.of(active));
+
+        assertThatThrownBy(() -> service.holdBestAvailableSeats(
+                EVENT_ID,
+                2,
+                false,
+                CUSTOMER_LOGIN))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Ya tienes una retención activa");
+    }
+
+    @Test
+    void recoversActiveHoldForAuthenticatedBuyer() {
+        VenueRow row = row(701L);
+        EventSeatInventory seat1 = inventory(61L, row, "1", "1.0", false, false);
+        EventSeatInventory seat2 = inventory(62L, row, "2", "2.0", false, false);
+        java.time.LocalDateTime expiresAt = java.time.LocalDateTime.of(2026, 10, 9, 18, 10);
+        seat1.hold("recoverable", expiresAt, buyer);
+        seat2.hold("recoverable", expiresAt, buyer);
+        when(inventoryRepository.findHeldByUserForUpdate(EVENT_ID, CUSTOMER_ID))
+                .thenReturn(List.of(seat1, seat2));
+
+        SeatHoldResult recovered = service.getActiveHold(EVENT_ID, CUSTOMER_LOGIN)
+                .orElseThrow();
+
+        assertThat(recovered.holdToken()).isEqualTo("recoverable");
+        assertThat(recovered.expiresAt()).isEqualTo(expiresAt);
+        assertThat(recovered.seatIds()).containsExactly(61L, 62L);
+    }
+
+    @Test
     void bestAvailableValidatesQuantityBeforeLockingInventory() {
-        assertThatThrownBy(() -> service.holdBestAvailableSeats(EVENT_ID, 11, false))
+        assertThatThrownBy(() -> service.holdBestAvailableSeats(
+                EVENT_ID,
+                11,
+                false,
+                CUSTOMER_LOGIN))
                 .isInstanceOf(BusinessRuleException.class)
                 .hasMessageContaining("entre 1 y 10");
     }
