@@ -22,31 +22,42 @@ WHERE status = 'HELD';
 ALTER TABLE event_seat_inventory
 ADD held_by_user_id BIGINT NULL;
 
-ALTER TABLE event_seat_inventory
-ADD CONSTRAINT FK_event_seat_inventory_held_by_user
-    FOREIGN KEY (held_by_user_id) REFERENCES users(id);
+/*
+   SQL Server compila el batch completo antes de ejecutar el ALTER ADD.
+   Las sentencias que referencian la columna recién creada se ejecutan
+   como SQL dinámico para forzar una nueva compilación después del ALTER.
+*/
+EXEC(N'
+    ALTER TABLE event_seat_inventory
+    ADD CONSTRAINT FK_event_seat_inventory_held_by_user
+        FOREIGN KEY (held_by_user_id) REFERENCES users(id)
+');
 
 ALTER TABLE event_seat_inventory
 DROP CONSTRAINT CK_event_seat_inventory_hold;
 
-ALTER TABLE event_seat_inventory
-ADD CONSTRAINT CK_event_seat_inventory_hold
-    CHECK (
-        (
-            status = 'HELD'
-            AND hold_token IS NOT NULL
-            AND hold_expires_at IS NOT NULL
-            AND held_by_user_id IS NOT NULL
+EXEC(N'
+    ALTER TABLE event_seat_inventory
+    ADD CONSTRAINT CK_event_seat_inventory_hold
+        CHECK (
+            (
+                status = ''HELD''
+                AND hold_token IS NOT NULL
+                AND hold_expires_at IS NOT NULL
+                AND held_by_user_id IS NOT NULL
+            )
+            OR
+            (
+                status <> ''HELD''
+                AND hold_token IS NULL
+                AND hold_expires_at IS NULL
+                AND held_by_user_id IS NULL
+            )
         )
-        OR
-        (
-            status <> 'HELD'
-            AND hold_token IS NULL
-            AND hold_expires_at IS NULL
-            AND held_by_user_id IS NULL
-        )
-    );
+');
 
-CREATE INDEX IX_event_seat_inventory_hold_owner
-    ON event_seat_inventory(event_id, held_by_user_id, status)
-    WHERE status = 'HELD';
+EXEC(N'
+    CREATE INDEX IX_event_seat_inventory_hold_owner
+        ON event_seat_inventory(event_id, held_by_user_id, status)
+        WHERE status = ''HELD''
+');
