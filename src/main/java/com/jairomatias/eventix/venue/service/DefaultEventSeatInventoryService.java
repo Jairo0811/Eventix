@@ -1,10 +1,15 @@
 package com.jairomatias.eventix.venue.service;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,15 +160,56 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
             }
         }
 
-        String holdToken = UUID.randomUUID().toString().replace("-", "");
-        LocalDateTime expiresAt = now.plus(DEFAULT_HOLD_DURATION);
+        return createHold(inventory, now);
+    }
 
-        inventory.forEach(item -> item.hold(holdToken, expiresAt));
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public SeatHoldResult holdBestAvailableSeats(
+            Long eventId,
+            int quantity,
+            boolean accessibilityRequired) {
+        if (quantity < 1 || quantity > 10) {
+            throw new BusinessRuleException(
+                    "Puedes solicitar entre 1 y 10 asientos por operación.");
+        }
 
-        return new SeatHoldResult(
-                holdToken,
-                expiresAt,
-                inventory.stream().map(item -> item.getSeat().getId()).toList());
+        ensureEventExists(eventId);
+        LocalDateTime now = now();
+        inventoryRepository.releaseExpiredHolds(now);
+
+        List<EventSeatInventory> inventory = inventoryRepository
+                .findAllForBestAvailableForUpdate(eventId);
+
+        if (inventory.isEmpty()) {
+            throw new BusinessRuleException(
+                    "Este evento no tiene inventario de asientos reservados disponible.");
+        }
+
+        Map<Long, List<EventSeatInventory>> rows = new LinkedHashMap<>();
+        for (EventSeatInventory item : inventory) {
+            Long rowId = item.getSeat().getRow().getId();
+            rows.computeIfAbsent(rowId, ignored -> new ArrayList<>()).add(item);
+        }
+
+        for (List<EventSeatInventory> row : rows.values()) {
+            row.sort(this::compareSeatPosition);
+            List<EventSeatInventory> block = findBestContiguousBlock(
+                    row,
+                    quantity,
+                    accessibilityRequired);
+            if (!block.isEmpty()) {
+                return createHold(block, now);
+            }
+        }
+
+        if (accessibilityRequired) {
+            throw new BusinessRuleException(
+                    "No hay un bloque accesible contiguo con la cantidad solicitada.");
+        }
+        throw new BusinessRuleException(
+                "No hay un bloque contiguo de asientos estándar con la cantidad solicitada.");
     }
 
     @Override
@@ -280,6 +326,106 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     @Transactional
     public int releaseExpiredHolds() {
         return inventoryRepository.releaseExpiredHolds(now());
+    }
+
+    private SeatHoldResult createHold(
+            List<EventSeatInventory> inventory,
+            LocalDateTime now) {
+        String holdToken = UUID.randomUUID().toString().replace("-", "");
+        LocalDateTime expiresAt = now.plus(DEFAULT_HOLD_DURATION);
+        inventory.forEach(item -> item.hold(holdToken, expiresAt));
+
+        return new SeatHoldResult(
+                holdToken,
+                expiresAt,
+                inventory.stream().map(item -> item.getSeat().getId()).toList());
+    }
+
+    private List<EventSeatInventory> findBestContiguousBlock(
+            List<EventSeatInventory> row,
+            int quantity,
+            boolean accessibilityRequired) {
+        if (row.size() < quantity) {
+            return List.of();
+        }
+
+        double rowCenter = (row.size() - 1) / 2.0;
+        double bestDistance = Double.MAX_VALUE;
+        List<EventSeatInventory> best = List.of();
+
+        for (int start = 0; start <= row.size() - quantity; start++) {
+            List<EventSeatInventory> window = row.subList(start, start + quantity);
+            if (!isAvailableBlock(window)
+                    || !matchesAccessibility(window, accessibilityRequired)) {
+                continue;
+            }
+
+            double windowCenter = start + (quantity - 1) / 2.0;
+            double distance = Math.abs(windowCenter - rowCenter);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = List.copyOf(window);
+            }
+        }
+
+        return best;
+    }
+
+    private boolean isAvailableBlock(List<EventSeatInventory> window) {
+        return window.stream()
+                .allMatch(item -> item.getStatus() == EventSeatStatus.AVAILABLE);
+    }
+
+    private boolean matchesAccessibility(
+            List<EventSeatInventory> window,
+            boolean accessibilityRequired) {
+        if (!accessibilityRequired) {
+            return window.stream().allMatch(item ->
+                    !item.getSeat().isAccessible()
+                            && !item.getSeat().isCompanionSeat());
+        }
+
+        boolean hasAccessibleSeat = window.stream()
+                .anyMatch(item -> item.getSeat().isAccessible());
+        boolean accessibilityOnly = window.stream().allMatch(item ->
+                item.getSeat().isAccessible()
+                        || item.getSeat().isCompanionSeat());
+        return hasAccessibleSeat && accessibilityOnly;
+    }
+
+    private int compareSeatPosition(
+            EventSeatInventory left,
+            EventSeatInventory right) {
+        BigDecimal leftX = left.getSeat().getXPosition();
+        BigDecimal rightX = right.getSeat().getXPosition();
+        if (leftX != null || rightX != null) {
+            int xComparison = Comparator.nullsLast(BigDecimal::compareTo)
+                    .compare(leftX, rightX);
+            if (xComparison != 0) {
+                return xComparison;
+            }
+        }
+
+        int numberComparison = compareSeatNumbers(
+                left.getSeat().getSeatNumber(),
+                right.getSeat().getSeatNumber());
+        if (numberComparison != 0) {
+            return numberComparison;
+        }
+        return Comparator.nullsLast(Long::compareTo)
+                .compare(left.getSeat().getId(), right.getSeat().getId());
+    }
+
+    private int compareSeatNumbers(String left, String right) {
+        if (left == null || right == null) {
+            return Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)
+                    .compare(left, right);
+        }
+        try {
+            return Integer.compare(Integer.parseInt(left), Integer.parseInt(right));
+        } catch (NumberFormatException ignored) {
+            return left.compareToIgnoreCase(right);
+        }
     }
 
     private User findActor(String login) {
