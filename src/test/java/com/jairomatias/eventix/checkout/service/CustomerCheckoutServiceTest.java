@@ -26,7 +26,6 @@ import com.jairomatias.eventix.eligibility.dto.EligibilityDiscountDecision;
 import com.jairomatias.eventix.eligibility.entity.EligibilityBenefitType;
 import com.jairomatias.eventix.eligibility.service.EventEligibilityService;
 import com.jairomatias.eventix.event.entity.Event;
-import com.jairomatias.eventix.event.entity.EventSeatingMode;
 import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.repository.EventRepository;
 import com.jairomatias.eventix.payment.entity.PaymentProvider;
@@ -159,7 +158,6 @@ class CustomerCheckoutServiceTest {
         prepareCustomer();
         when(customer.getEmail()).thenReturn(CUSTOMER_LOGIN);
         preparePublishedEvent();
-        when(event.getSeatingMode()).thenReturn(EventSeatingMode.MIXED);
         prepareTicketType();
         when(eventRepository.findDetailedByIdForUpdate(10L))
                 .thenReturn(Optional.of(event));
@@ -217,7 +215,6 @@ class CustomerCheckoutServiceTest {
         prepareCustomer();
         when(customer.getEmail()).thenReturn(CUSTOMER_LOGIN);
         preparePublishedEvent();
-        when(event.getSeatingMode()).thenReturn(EventSeatingMode.RESERVED_SEATING);
         prepareTicketType();
         when(eventRepository.findDetailedByIdForUpdate(10L))
                 .thenReturn(Optional.of(event));
@@ -324,7 +321,6 @@ class CustomerCheckoutServiceTest {
         when(ticketType.isActive()).thenReturn(true);
         when(ticketType.getCapacity()).thenReturn(100);
         when(ticketType.getName()).thenReturn("General");
-        when(ticketType.getPrice()).thenReturn(new BigDecimal("500.00"));
     }
 
     private CustomerCheckoutForm validForm(int quantity) {
