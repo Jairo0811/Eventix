@@ -123,14 +123,15 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     @Transactional
     @PreAuthorize("isAuthenticated()")
     public List<EventSeatView> getInventory(Long eventId) {
-        releaseExpiredHolds();
-        ensureEventExists(eventId);
+        return loadInventory(eventId, null);
+    }
 
-        return inventoryRepository
-                .findAllByEvent_IdOrderBySeat_Row_Section_SortOrderAscSeat_Row_SortOrderAscSeat_SeatNumberAsc(eventId)
-                .stream()
-                .map(this::toView)
-                .toList();
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public List<EventSeatView> getInventory(Long eventId, Long requiredSectionId) {
+        requireSection(requiredSectionId);
+        return loadInventory(eventId, requiredSectionId);
     }
 
     @Override
@@ -173,7 +174,9 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     public SeatHoldResult holdSeats(
             Long eventId,
             Collection<Long> seatIds,
+            Long requiredSectionId,
             String authenticatedLogin) {
+        requireSection(requiredSectionId);
         if (seatIds == null || seatIds.isEmpty()) {
             throw new BusinessRuleException("Selecciona al menos un asiento.");
         }
@@ -198,6 +201,10 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
         }
 
         for (EventSeatInventory item : inventory) {
+            if (!requiredSectionId.equals(sectionId(item))) {
+                throw new BusinessRuleException(
+                        "Todos los asientos deben pertenecer a la sección asignada al tipo de entrada.");
+            }
             if (item.getStatus() != EventSeatStatus.AVAILABLE) {
                 throw new BusinessRuleException(
                         "El asiento " + item.getSeat().getLabel() + " ya no está disponible.");
@@ -214,7 +221,9 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
             Long eventId,
             int quantity,
             boolean accessibilityRequired,
+            Long requiredSectionId,
             String authenticatedLogin) {
+        requireSection(requiredSectionId);
         if (quantity < 1 || quantity > 10) {
             throw new BusinessRuleException(
                     "Puedes solicitar entre 1 y 10 asientos por operación.");
@@ -227,11 +236,14 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
         ensureNoActiveHold(eventId, buyer);
 
         List<EventSeatInventory> inventory = inventoryRepository
-                .findAllForBestAvailableForUpdate(eventId);
+                .findAllForBestAvailableForUpdate(eventId)
+                .stream()
+                .filter(item -> requiredSectionId.equals(sectionId(item)))
+                .toList();
 
         if (inventory.isEmpty()) {
             throw new BusinessRuleException(
-                    "Este evento no tiene inventario de asientos reservados disponible.");
+                    "La sección seleccionada no tiene inventario de asientos reservados disponible.");
         }
 
         Map<Long, List<EventSeatInventory>> rows = new LinkedHashMap<>();
@@ -253,10 +265,10 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
 
         if (accessibilityRequired) {
             throw new BusinessRuleException(
-                    "No hay un bloque accesible contiguo con la cantidad solicitada.");
+                    "No hay un bloque accesible contiguo con la cantidad solicitada en esta sección.");
         }
         throw new BusinessRuleException(
-                "No hay un bloque contiguo de asientos estándar con la cantidad solicitada.");
+                "No hay un bloque contiguo de asientos estándar con la cantidad solicitada en esta sección.");
     }
 
     @Override
@@ -301,8 +313,7 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
                         "La retención de asientos ya no es válida.");
             }
             if (requiredSectionId != null
-                    && !requiredSectionId.equals(
-                            item.getSeat().getRow().getSection().getId())) {
+                    && !requiredSectionId.equals(sectionId(item))) {
                 throw new BusinessRuleException(
                         "Los asientos retenidos no pertenecen a la sección del tipo de entrada seleccionado.");
             }
@@ -388,6 +399,19 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
         return inventoryRepository.releaseExpiredHolds(now());
     }
 
+    private List<EventSeatView> loadInventory(Long eventId, Long requiredSectionId) {
+        releaseExpiredHolds();
+        ensureEventExists(eventId);
+
+        return inventoryRepository
+                .findAllByEvent_IdOrderBySeat_Row_Section_SortOrderAscSeat_Row_SortOrderAscSeat_SeatNumberAsc(eventId)
+                .stream()
+                .filter(item -> requiredSectionId == null
+                        || requiredSectionId.equals(sectionId(item)))
+                .map(this::toView)
+                .toList();
+    }
+
     private SeatHoldResult createHold(
             List<EventSeatInventory> inventory,
             LocalDateTime now,
@@ -415,6 +439,17 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
         if (!item.isHeldBy(buyer.getId())) {
             throw new BusinessRuleException(
                     "La retención de asientos pertenece a otro usuario.");
+        }
+    }
+
+    private Long sectionId(EventSeatInventory item) {
+        return item.getSeat().getRow().getSection().getId();
+    }
+
+    private void requireSection(Long requiredSectionId) {
+        if (requiredSectionId == null) {
+            throw new BusinessRuleException(
+                    "Selecciona un tipo de entrada con sección reservada antes de elegir asientos.");
         }
     }
 
