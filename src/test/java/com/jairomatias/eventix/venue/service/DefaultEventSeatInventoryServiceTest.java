@@ -2,7 +2,7 @@ package com.jairomatias.eventix.venue.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -58,7 +58,7 @@ class DefaultEventSeatInventoryServiceTest {
                 saleRepository,
                 userRepository,
                 clock);
-        when(eventRepository.existsById(EVENT_ID)).thenReturn(true);
+        lenient().when(eventRepository.existsById(EVENT_ID)).thenReturn(true);
     }
 
     @Test
@@ -159,7 +159,7 @@ class DefaultEventSeatInventoryServiceTest {
 
     private VenueRow row(Long id) {
         VenueRow row = mock(VenueRow.class);
-        when(row.getId()).thenReturn(id);
+        lenient().when(row.getId()).thenReturn(id);
         return row;
     }
 
@@ -171,12 +171,12 @@ class DefaultEventSeatInventoryServiceTest {
             boolean accessible,
             boolean companion) {
         VenueSeat seat = mock(VenueSeat.class);
-        when(seat.getId()).thenReturn(seatId);
-        when(seat.getRow()).thenReturn(row);
-        when(seat.getSeatNumber()).thenReturn(seatNumber);
-        when(seat.getXPosition()).thenReturn(new BigDecimal(xPosition));
-        when(seat.isAccessible()).thenReturn(accessible);
-        when(seat.isCompanionSeat()).thenReturn(companion);
+        lenient().when(seat.getId()).thenReturn(seatId);
+        lenient().when(seat.getRow()).thenReturn(row);
+        lenient().when(seat.getSeatNumber()).thenReturn(seatNumber);
+        lenient().when(seat.getXPosition()).thenReturn(new BigDecimal(xPosition));
+        lenient().when(seat.isAccessible()).thenReturn(accessible);
+        lenient().when(seat.isCompanionSeat()).thenReturn(companion);
         return new EventSeatInventory(event, seat);
     }
 }
