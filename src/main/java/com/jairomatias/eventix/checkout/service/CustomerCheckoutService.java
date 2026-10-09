@@ -191,7 +191,8 @@ public class CustomerCheckoutService {
             purchaseQuantity = seatInventoryService.validateActiveHold(
                     eventId,
                     form.getHoldToken(),
-                    seatingRule.sectionId());
+                    seatingRule.sectionId(),
+                    authenticatedLogin);
         }
         if (purchaseQuantity < 1 || purchaseQuantity > 10) {
             throw new BusinessRuleException("Puedes comprar entre 1 y 10 entradas por operación.");
@@ -255,7 +256,11 @@ public class CustomerCheckoutService {
         if (savedSale.getTotal().compareTo(BigDecimal.ZERO) == 0) {
             completeFreeSale(savedSale, customer, now);
             if (seatingRule.requiresSeatHold()) {
-                seatInventoryService.confirmSale(eventId, form.getHoldToken(), savedSale.getId());
+                seatInventoryService.confirmSale(
+                        eventId,
+                        form.getHoldToken(),
+                        savedSale.getId(),
+                        authenticatedLogin);
             }
             return savedSale.getId();
         }
@@ -288,7 +293,11 @@ public class CustomerCheckoutService {
         savedSale.markPaid(processedAt);
         promotionService.consumeForSale(savedSale.getId(), processedAt);
         if (seatingRule.requiresSeatHold()) {
-            seatInventoryService.confirmSale(eventId, form.getHoldToken(), savedSale.getId());
+            seatInventoryService.confirmSale(
+                    eventId,
+                    form.getHoldToken(),
+                    savedSale.getId(),
+                    authenticatedLogin);
         }
         eventPublisher.publishEvent(new SalePaidEvent(savedSale.getId()));
         return savedSale.getId();
