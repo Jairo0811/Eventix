@@ -16,8 +16,8 @@ import com.jairomatias.eventix.checkout.dto.CustomerCheckoutPage;
 import com.jairomatias.eventix.checkout.dto.CustomerTicketOption;
 import com.jairomatias.eventix.eligibility.service.EventEligibilityService;
 import com.jairomatias.eventix.event.entity.Event;
-import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.entity.EventSeatingMode;
+import com.jairomatias.eventix.event.entity.EventStatus;
 import com.jairomatias.eventix.event.repository.EventRepository;
 import com.jairomatias.eventix.payment.entity.PaymentStatus;
 import com.jairomatias.eventix.payment.entity.PaymentTransaction;
@@ -45,7 +45,9 @@ import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
 import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.repository.UserRepository;
+import com.jairomatias.eventix.venue.dto.TicketSeatingRule;
 import com.jairomatias.eventix.venue.service.EventSeatInventoryService;
+import com.jairomatias.eventix.venue.service.EventSectionPricingService;
 
 @Service
 public class CustomerCheckoutService {
@@ -67,6 +69,7 @@ public class CustomerCheckoutService {
     private final EventEligibilityService eligibilityService;
     private final ApplicationEventPublisher eventPublisher;
     private final EventSeatInventoryService seatInventoryService;
+    private final EventSectionPricingService sectionPricingService;
     private final String currency;
 
     public CustomerCheckoutService(
@@ -85,6 +88,7 @@ public class CustomerCheckoutService {
             EventEligibilityService eligibilityService,
             ApplicationEventPublisher eventPublisher,
             EventSeatInventoryService seatInventoryService,
+            EventSectionPricingService sectionPricingService,
             @Value("${app.currency:DOP}") String currency) {
         this.eventRepository = eventRepository;
         this.ticketTypeRepository = ticketTypeRepository;
@@ -101,6 +105,7 @@ public class CustomerCheckoutService {
         this.eligibilityService = eligibilityService;
         this.eventPublisher = eventPublisher;
         this.seatInventoryService = seatInventoryService;
+        this.sectionPricingService = sectionPricingService;
         this.currency = currency == null ? "DOP" : currency.trim().toUpperCase(Locale.ROOT);
     }
 
@@ -119,13 +124,17 @@ public class CustomerCheckoutService {
                 .stream()
                 .filter(ticketType -> eligibilityService.isTicketVisible(
                         event, customer, ticketType.getId()))
-                .map(ticketType -> new CustomerTicketOption(
-                        ticketType.getId(),
-                        ticketType.getName(),
-                        ticketType.getCategory().getDisplayName(),
-                        ticketType.getPrice(),
-                        Math.max(ticketType.getCapacity()
-                                - Math.toIntExact(saleItemRepository.sumAllocatedQuantity(ticketType.getId())), 0)))
+                .map(ticketType -> {
+                    TicketSeatingRule seatingRule = sectionPricingService.resolveRule(event, ticketType);
+                    return new CustomerTicketOption(
+                            ticketType.getId(),
+                            ticketType.getName(),
+                            ticketType.getCategory().getDisplayName(),
+                            seatingRule.unitPrice(),
+                            Math.max(ticketType.getCapacity()
+                                    - Math.toIntExact(saleItemRepository
+                                            .sumAllocatedQuantity(ticketType.getId())), 0));
+                })
                 .filter(option -> option.availableQuantity() > 0)
                 .toList();
 
@@ -167,17 +176,6 @@ public class CustomerCheckoutService {
         Event event = eventRepository.findDetailedByIdForUpdate(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró el evento solicitado."));
         ensurePurchasable(event, now);
-
-        int purchaseQuantity = form.getQuantity();
-        if (requiresSeatHold(event)) {
-            purchaseQuantity = seatInventoryService.validateActiveHold(
-                    eventId,
-                    form.getHoldToken());
-        }
-        if (purchaseQuantity < 1 || purchaseQuantity > 10) {
-            throw new BusinessRuleException("Puedes comprar entre 1 y 10 entradas por operación.");
-        }
-
         reservationRepository.expirePendingForEvent(eventId, now);
 
         TicketType ticketType = ticketTypeRepository.findDetailedByIdForUpdate(form.getTicketTypeId())
@@ -185,6 +183,19 @@ public class CustomerCheckoutService {
         if (!ticketType.getEvent().getId().equals(eventId) || !ticketType.isActive()) {
             throw new BusinessRuleException("El tipo de entrada seleccionado no está disponible para este evento.");
         }
+
+        TicketSeatingRule seatingRule = sectionPricingService.resolveRule(event, ticketType);
+        int purchaseQuantity = form.getQuantity();
+        if (seatingRule.requiresSeatHold()) {
+            purchaseQuantity = seatInventoryService.validateActiveHold(
+                    eventId,
+                    form.getHoldToken(),
+                    seatingRule.sectionId());
+        }
+        if (purchaseQuantity < 1 || purchaseQuantity > 10) {
+            throw new BusinessRuleException("Puedes comprar entre 1 y 10 entradas por operación.");
+        }
+
         eligibilityService.assertPurchaseAllowed(
                 event, customer, ticketType.getId(), purchaseQuantity);
 
@@ -218,7 +229,7 @@ public class CustomerCheckoutService {
         eventPublisher.publishEvent(new ReservationConfirmedEvent(reservation.getId()));
 
         Sale sale = new Sale(nextSaleReference(), reservation, currency, customer);
-        sale.addItem(ticketType, purchaseQuantity);
+        sale.addItem(ticketType, purchaseQuantity, seatingRule.unitPrice());
         eligibilityService.resolveMonetaryDiscount(
                         event,
                         customer,
@@ -242,7 +253,7 @@ public class CustomerCheckoutService {
 
         if (savedSale.getTotal().compareTo(BigDecimal.ZERO) == 0) {
             completeFreeSale(savedSale, customer, now);
-            if (requiresSeatHold(event)) {
+            if (seatingRule.requiresSeatHold()) {
                 seatInventoryService.confirmSale(eventId, form.getHoldToken(), savedSale.getId());
             }
             return savedSale.getId();
@@ -275,7 +286,7 @@ public class CustomerCheckoutService {
         }
         savedSale.markPaid(processedAt);
         promotionService.consumeForSale(savedSale.getId(), processedAt);
-        if (requiresSeatHold(event)) {
+        if (seatingRule.requiresSeatHold()) {
             seatInventoryService.confirmSale(eventId, form.getHoldToken(), savedSale.getId());
         }
         eventPublisher.publishEvent(new SalePaidEvent(savedSale.getId()));
@@ -346,10 +357,6 @@ public class CustomerCheckoutService {
         return event.getSeatingMode() == null
                 ? EventSeatingMode.GENERAL_ADMISSION
                 : event.getSeatingMode();
-    }
-
-    private boolean requiresSeatHold(Event event) {
-        return effectiveSeatingMode(event) != EventSeatingMode.GENERAL_ADMISSION;
     }
 
     private LocalDateTime now() { return LocalDateTime.now(); }
