@@ -13,8 +13,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.jairomatias.eventix.event.entity.EventSeatingMode;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
+import com.jairomatias.eventix.venue.dto.EventSectionPricingForm;
 import com.jairomatias.eventix.venue.dto.EventVenueConfigurationForm;
 import com.jairomatias.eventix.venue.service.EventSeatInventoryService;
+import com.jairomatias.eventix.venue.service.EventSectionPricingService;
 import com.jairomatias.eventix.venue.service.EventVenueConfigurationService;
 
 import jakarta.validation.Valid;
@@ -25,12 +27,15 @@ public class EventVenueConfigurationController {
 
     private final EventVenueConfigurationService configurationService;
     private final EventSeatInventoryService inventoryService;
+    private final EventSectionPricingService pricingService;
 
     public EventVenueConfigurationController(
             EventVenueConfigurationService configurationService,
-            EventSeatInventoryService inventoryService) {
+            EventSeatInventoryService inventoryService,
+            EventSectionPricingService pricingService) {
         this.configurationService = configurationService;
         this.inventoryService = inventoryService;
+        this.pricingService = pricingService;
     }
 
     @GetMapping
@@ -43,7 +48,10 @@ public class EventVenueConfigurationController {
                     "seatingForm",
                     configurationService.getForm(eventId, authentication.getName()));
         }
-        prepareModel(eventId, model);
+        if (!model.containsAttribute("pricingForm")) {
+            model.addAttribute("pricingForm", new EventSectionPricingForm());
+        }
+        prepareModel(eventId, authentication.getName(), model);
         return "events/seating";
     }
 
@@ -57,7 +65,10 @@ public class EventVenueConfigurationController {
             RedirectAttributes redirectAttributes) {
 
         if (bindingResult.hasErrors()) {
-            prepareModel(eventId, model);
+            if (!model.containsAttribute("pricingForm")) {
+                model.addAttribute("pricingForm", new EventSectionPricingForm());
+            }
+            prepareModel(eventId, authentication.getName(), model);
             return "events/seating";
         }
 
@@ -69,9 +80,61 @@ public class EventVenueConfigurationController {
             return "redirect:/events/" + eventId + "/seating";
         } catch (BusinessRuleException exception) {
             bindingResult.reject("seating.configure", exception.getMessage());
-            prepareModel(eventId, model);
+            if (!model.containsAttribute("pricingForm")) {
+                model.addAttribute("pricingForm", new EventSectionPricingForm());
+            }
+            prepareModel(eventId, authentication.getName(), model);
             return "events/seating";
         }
+    }
+
+    @PostMapping("/pricing")
+    public String savePricing(
+            @PathVariable Long eventId,
+            @Valid @ModelAttribute("pricingForm") EventSectionPricingForm form,
+            BindingResult bindingResult,
+            Authentication authentication,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute(
+                    "seatingForm",
+                    configurationService.getForm(eventId, authentication.getName()));
+            prepareModel(eventId, authentication.getName(), model);
+            return "events/seating";
+        }
+
+        try {
+            pricingService.save(eventId, form, authentication.getName());
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Sección, tipo de entrada y precio configurados.");
+            return "redirect:/events/" + eventId + "/seating";
+        } catch (BusinessRuleException exception) {
+            bindingResult.reject("pricing.configure", exception.getMessage());
+            model.addAttribute(
+                    "seatingForm",
+                    configurationService.getForm(eventId, authentication.getName()));
+            prepareModel(eventId, authentication.getName(), model);
+            return "events/seating";
+        }
+    }
+
+    @PostMapping("/pricing/{pricingId}/delete")
+    public String removePricing(
+            @PathVariable Long eventId,
+            @PathVariable Long pricingId,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+        try {
+            pricingService.remove(eventId, pricingId, authentication.getName());
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Configuración de sección eliminada.");
+        } catch (BusinessRuleException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/events/" + eventId + "/seating";
     }
 
     @PostMapping("/inventory")
@@ -92,10 +155,13 @@ public class EventVenueConfigurationController {
         return "redirect:/events/" + eventId + "/seating";
     }
 
-    private void prepareModel(Long eventId, Model model) {
+    private void prepareModel(Long eventId, String authenticatedLogin, Model model) {
         model.addAttribute("eventId", eventId);
         model.addAttribute("venues", configurationService.getActiveVenues());
         model.addAttribute("seatingModes", EventSeatingMode.values());
         model.addAttribute("inventory", inventoryService.getInventory(eventId));
+        model.addAttribute("sectionPricing", pricingService.list(eventId, authenticatedLogin));
+        model.addAttribute("sectionOptions", pricingService.sectionOptions(eventId, authenticatedLogin));
+        model.addAttribute("ticketTypeOptions", pricingService.ticketTypeOptions(eventId, authenticatedLogin));
     }
 }
