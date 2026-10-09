@@ -16,6 +16,8 @@ public interface EventSeatInventoryService {
 
     int validateActiveHold(Long eventId, String holdToken);
 
+    int validateActiveHold(Long eventId, String holdToken, Long requiredSectionId);
+
     void releaseHold(Long eventId, String holdToken);
 
     void confirmSale(Long eventId, String holdToken, Long saleId);
