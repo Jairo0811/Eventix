@@ -225,7 +225,11 @@ class CustomerCheckoutServiceTest {
                         true,
                         501L,
                         new BigDecimal("650.00")));
-        when(seatInventoryService.validateActiveHold(10L, "hold-abc", 501L))
+        when(seatInventoryService.validateActiveHold(
+                10L,
+                "hold-abc",
+                501L,
+                CUSTOMER_LOGIN))
                 .thenReturn(2);
         when(reservationRepository.sumOccupiedSeats(any(), any()))
                 .thenReturn(0L);
@@ -273,9 +277,9 @@ class CustomerCheckoutServiceTest {
 
         assertThat(saleId).isEqualTo(77L);
         org.mockito.Mockito.verify(seatInventoryService)
-                .validateActiveHold(10L, "hold-abc", 501L);
+                .validateActiveHold(10L, "hold-abc", 501L, CUSTOMER_LOGIN);
         org.mockito.Mockito.verify(seatInventoryService)
-                .confirmSale(10L, "hold-abc", 77L);
+                .confirmSale(10L, "hold-abc", 77L, CUSTOMER_LOGIN);
         org.mockito.Mockito.verify(reservationRepository)
                 .save(org.mockito.ArgumentMatchers.argThat(
                         reservation -> reservation.getQuantity() == 2));
