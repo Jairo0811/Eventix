@@ -59,14 +59,7 @@ public class CustomerSeatSelectionController {
             SeatHoldResult hold = inventoryService.holdSeats(
                     eventId,
                     form.getSeatIds());
-
-            redirectAttributes.addFlashAttribute("holdToken", hold.holdToken());
-            redirectAttributes.addFlashAttribute("holdExpiresAt", hold.expiresAt());
-            redirectAttributes.addFlashAttribute("heldSeatIds", hold.seatIds());
-            redirectAttributes.addFlashAttribute(
-                    "successMessage",
-                    "Asientos retenidos durante 10 minutos.");
-
+            addHoldFlashAttributes(hold, redirectAttributes, "Asientos retenidos durante 10 minutos.");
             return "redirect:/my/checkout/events/" + eventId + "/seats";
         } catch (BusinessRuleException exception) {
             bindingResult.reject("seat.hold", exception.getMessage());
@@ -74,6 +67,27 @@ public class CustomerSeatSelectionController {
             model.addAttribute("inventory", inventoryService.getInventory(eventId));
             return "checkout/seats";
         }
+    }
+
+    @PostMapping("/best-available")
+    public String holdBestAvailable(
+            @PathVariable Long eventId,
+            @RequestParam int quantity,
+            @RequestParam(defaultValue = "false") boolean accessibilityRequired,
+            RedirectAttributes redirectAttributes) {
+        try {
+            SeatHoldResult hold = inventoryService.holdBestAvailableSeats(
+                    eventId,
+                    quantity,
+                    accessibilityRequired);
+            addHoldFlashAttributes(
+                    hold,
+                    redirectAttributes,
+                    "Eventix encontró y retuvo los mejores asientos contiguos disponibles.");
+        } catch (BusinessRuleException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/my/checkout/events/" + eventId + "/seats";
     }
 
     @PostMapping("/release")
@@ -87,5 +101,15 @@ public class CustomerSeatSelectionController {
                 "successMessage",
                 "Los asientos retenidos fueron liberados.");
         return "redirect:/my/checkout/events/" + eventId + "/seats";
+    }
+
+    private void addHoldFlashAttributes(
+            SeatHoldResult hold,
+            RedirectAttributes redirectAttributes,
+            String successMessage) {
+        redirectAttributes.addFlashAttribute("holdToken", hold.holdToken());
+        redirectAttributes.addFlashAttribute("holdExpiresAt", hold.expiresAt());
+        redirectAttributes.addFlashAttribute("heldSeatIds", hold.seatIds());
+        redirectAttributes.addFlashAttribute("successMessage", successMessage);
     }
 }
