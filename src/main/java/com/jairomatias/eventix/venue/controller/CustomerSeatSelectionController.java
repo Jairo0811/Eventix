@@ -1,5 +1,7 @@
 package com.jairomatias.eventix.venue.controller;
 
+import java.util.Optional;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +17,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.venue.dto.SeatHoldResult;
 import com.jairomatias.eventix.venue.dto.SeatSelectionForm;
+import com.jairomatias.eventix.venue.dto.TicketSeatingRule;
+import com.jairomatias.eventix.venue.service.CustomerSeatingRuleService;
 import com.jairomatias.eventix.venue.service.EventSeatInventoryService;
 
 import jakarta.validation.Valid;
@@ -24,38 +28,70 @@ import jakarta.validation.Valid;
 public class CustomerSeatSelectionController {
 
     private final EventSeatInventoryService inventoryService;
+    private final CustomerSeatingRuleService seatingRuleService;
 
     public CustomerSeatSelectionController(
-            EventSeatInventoryService inventoryService) {
+            EventSeatInventoryService inventoryService,
+            CustomerSeatingRuleService seatingRuleService) {
         this.inventoryService = inventoryService;
+        this.seatingRuleService = seatingRuleService;
     }
 
     @GetMapping
     public String select(
             @PathVariable Long eventId,
+            @RequestParam(required = false) Long ticketTypeId,
             Authentication authentication,
-            Model model) {
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        Optional<SeatHoldResult> activeHold = inventoryService.getActiveHold(
+                eventId,
+                authentication.getName());
+
+        if (ticketTypeId == null && activeHold.isEmpty()) {
+            redirectAttributes.addFlashAttribute(
+                    "warningMessage",
+                    "Selecciona primero el tipo de entrada para mostrar la sección de asientos correcta.");
+            return "redirect:/my/checkout/events/" + eventId;
+        }
+
         if (!model.containsAttribute("seatSelectionForm")) {
             model.addAttribute("seatSelectionForm", new SeatSelectionForm());
         }
-        model.addAttribute("eventId", eventId);
-        model.addAttribute("inventory", inventoryService.getInventory(eventId));
-        inventoryService.getActiveHold(eventId, authentication.getName())
-                .ifPresent(hold -> addHoldModelAttributes(hold, model));
-        return "checkout/seats";
+
+        try {
+            prepareModel(eventId, ticketTypeId, authentication, activeHold, model);
+            return "checkout/seats";
+        } catch (BusinessRuleException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/my/checkout/events/" + eventId;
+        }
     }
 
     @PostMapping
     public String hold(
             @PathVariable Long eventId,
+            @RequestParam Long ticketTypeId,
             @Valid @ModelAttribute("seatSelectionForm") SeatSelectionForm form,
             BindingResult bindingResult,
             Authentication authentication,
             Model model,
             RedirectAttributes redirectAttributes) {
+        TicketSeatingRule rule;
+        try {
+            rule = seatingRuleService.resolve(eventId, ticketTypeId);
+        } catch (BusinessRuleException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/my/checkout/events/" + eventId;
+        }
 
         if (bindingResult.hasErrors()) {
-            prepareModel(eventId, authentication, model);
+            prepareModel(
+                    eventId,
+                    ticketTypeId,
+                    authentication,
+                    inventoryService.getActiveHold(eventId, authentication.getName()),
+                    model);
             return "checkout/seats";
         }
 
@@ -63,12 +99,18 @@ public class CustomerSeatSelectionController {
             SeatHoldResult hold = inventoryService.holdSeats(
                     eventId,
                     form.getSeatIds(),
+                    rule.sectionId(),
                     authentication.getName());
             addHoldFlashAttributes(hold, redirectAttributes, "Asientos retenidos durante 10 minutos.");
-            return "redirect:/my/checkout/events/" + eventId + "/seats";
+            return seatSelectionRedirect(eventId, ticketTypeId);
         } catch (BusinessRuleException exception) {
             bindingResult.reject("seat.hold", exception.getMessage());
-            prepareModel(eventId, authentication, model);
+            prepareModel(
+                    eventId,
+                    ticketTypeId,
+                    authentication,
+                    inventoryService.getActiveHold(eventId, authentication.getName()),
+                    model);
             return "checkout/seats";
         }
     }
@@ -76,30 +118,34 @@ public class CustomerSeatSelectionController {
     @PostMapping("/best-available")
     public String holdBestAvailable(
             @PathVariable Long eventId,
+            @RequestParam Long ticketTypeId,
             @RequestParam int quantity,
             @RequestParam(defaultValue = "false") boolean accessibilityRequired,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
         try {
+            TicketSeatingRule rule = seatingRuleService.resolve(eventId, ticketTypeId);
             SeatHoldResult hold = inventoryService.holdBestAvailableSeats(
                     eventId,
                     quantity,
                     accessibilityRequired,
+                    rule.sectionId(),
                     authentication.getName());
             addHoldFlashAttributes(
                     hold,
                     redirectAttributes,
-                    "Eventix encontró y retuvo los mejores asientos contiguos disponibles.");
+                    "Eventix encontró y retuvo los mejores asientos contiguos disponibles en tu sección.");
         } catch (BusinessRuleException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
-        return "redirect:/my/checkout/events/" + eventId + "/seats";
+        return seatSelectionRedirect(eventId, ticketTypeId);
     }
 
     @PostMapping("/release")
     public String release(
             @PathVariable Long eventId,
             @RequestParam String holdToken,
+            @RequestParam(required = false) Long ticketTypeId,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
 
@@ -110,17 +156,28 @@ public class CustomerSeatSelectionController {
         redirectAttributes.addFlashAttribute(
                 "successMessage",
                 "Los asientos retenidos fueron liberados.");
-        return "redirect:/my/checkout/events/" + eventId + "/seats";
+        return ticketTypeId == null
+                ? "redirect:/my/checkout/events/" + eventId
+                : seatSelectionRedirect(eventId, ticketTypeId);
     }
 
     private void prepareModel(
             Long eventId,
+            Long ticketTypeId,
             Authentication authentication,
+            Optional<SeatHoldResult> activeHold,
             Model model) {
         model.addAttribute("eventId", eventId);
-        model.addAttribute("inventory", inventoryService.getInventory(eventId));
-        inventoryService.getActiveHold(eventId, authentication.getName())
-                .ifPresent(hold -> addHoldModelAttributes(hold, model));
+        model.addAttribute("ticketTypeId", ticketTypeId);
+
+        if (ticketTypeId == null) {
+            model.addAttribute("inventory", inventoryService.getInventory(eventId));
+        } else {
+            TicketSeatingRule rule = seatingRuleService.resolve(eventId, ticketTypeId);
+            model.addAttribute("inventory", inventoryService.getInventory(eventId, rule.sectionId()));
+        }
+
+        activeHold.ifPresent(hold -> addHoldModelAttributes(hold, model));
     }
 
     private void addHoldModelAttributes(SeatHoldResult hold, Model model) {
@@ -137,5 +194,10 @@ public class CustomerSeatSelectionController {
         redirectAttributes.addFlashAttribute("holdExpiresAt", hold.expiresAt());
         redirectAttributes.addFlashAttribute("heldSeatIds", hold.seatIds());
         redirectAttributes.addFlashAttribute("successMessage", successMessage);
+    }
+
+    private String seatSelectionRedirect(Long eventId, Long ticketTypeId) {
+        return "redirect:/my/checkout/events/" + eventId
+                + "/seats?ticketTypeId=" + ticketTypeId;
     }
 }
