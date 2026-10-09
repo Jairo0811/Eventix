@@ -7,8 +7,9 @@
 <main class="app-main">
     <div th:replace="~{fragments/messages :: messages}"></div>
     <div class="mb-4">
-        <a class="text-decoration-none small" th:href="@{/events/{id}(id=${eventId})}">
-            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver al evento
+        <a class="text-decoration-none small"
+           th:href="@{/my/checkout/events/{id}(id=${eventId},ticketTypeId=${ticketTypeId})}">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver al checkout
         </a>
         <h1 class="page-title mt-3 mb-1">Seleccionar asientos</h1>
         <p class="page-subtitle">Elige tus asientos. Al confirmar, Eventix los retendrá durante 10 minutos.</p>
@@ -34,11 +35,12 @@
             <div class="d-flex flex-wrap gap-2">
                 <a class="btn btn-success"
                    id="seat-hold-checkout-link"
-                   th:href="@{/my/checkout/events/{id}(id=${eventId},holdToken=${holdToken})}">
+                   th:href="@{/my/checkout/events/{id}(id=${eventId},holdToken=${holdToken},ticketTypeId=${ticketTypeId})}">
                     <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>Continuar al checkout
                 </a>
                 <form th:action="@{/my/checkout/events/{id}/seats/release(id=${eventId})}" method="post">
                     <input type="hidden" name="holdToken" th:value="${holdToken}">
+                    <input type="hidden" name="ticketTypeId" th:value="${ticketTypeId}" th:if="${ticketTypeId != null}">
                     <button class="btn btn-outline-danger" type="submit">
                         <i class="bi bi-x-circle me-2" aria-hidden="true"></i>Liberar asientos
                     </button>
@@ -52,13 +54,14 @@
                 <span class="badge text-bg-primary mb-2">Best Available</span>
                 <h2 class="h5 mb-2">Déjale la selección a Eventix</h2>
                 <p class="text-secondary mb-0">
-                    Buscaremos un bloque contiguo en la mejor fila disponible, priorizando posiciones centrales y evitando ocupar espacios accesibles salvo que los solicites.
+                    Buscaremos un bloque contiguo dentro de la sección de tu tipo de entrada, priorizando posiciones centrales y evitando ocupar espacios accesibles salvo que los solicites.
                 </p>
             </div>
             <div class="col-12 col-lg-7">
                 <form class="row g-3 align-items-end"
                       th:action="@{/my/checkout/events/{id}/seats/best-available(id=${eventId})}"
                       method="post">
+                    <input type="hidden" name="ticketTypeId" th:value="${ticketTypeId}">
                     <div class="col-12 col-md-4">
                         <label class="form-label" for="bestAvailableQuantity">Cantidad</label>
                         <input class="form-control"
@@ -96,6 +99,7 @@
         </div>
     </section>
     <form th:action="@{/my/checkout/events/{id}/seats(id=${eventId})}" th:object="${seatSelectionForm}" method="post">
+        <input type="hidden" name="ticketTypeId" th:value="${ticketTypeId}">
         <section class="content-card">
             <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors()}">
                 <div th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</div>
@@ -104,7 +108,7 @@
             <div class="empty-state" th:if="${#lists.isEmpty(inventory)}">
                 <i class="bi bi-grid-3x3-gap fs-1 d-block mb-3" aria-hidden="true"></i>
                 <h2 class="h5 text-dark">No hay asientos configurados</h2>
-                <p class="mb-0">Este evento todavía no tiene inventario de asientos reservados.</p>
+                <p class="mb-0">La sección asignada a esta entrada todavía no tiene inventario de asientos reservados.</p>
             </div>
             <div th:unless="${#lists.isEmpty(inventory)}">
                 <div class="d-flex flex-wrap gap-2 mb-4" aria-label="Leyenda de estados">
