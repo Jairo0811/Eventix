@@ -62,6 +62,10 @@ public interface EventSeatInventoryRepository
     @Query("""
             SELECT i
             FROM EventSeatInventory i
+            JOIN FETCH i.seat s
+            JOIN FETCH s.row r
+            JOIN FETCH r.section sec
+            LEFT JOIN FETCH i.heldByUser u
             WHERE i.event.id = :eventId
             AND i.holdToken = :holdToken
             ORDER BY i.id
@@ -69,6 +73,23 @@ public interface EventSeatInventoryRepository
     List<EventSeatInventory> findHeldByTokenForUpdate(
             @Param("eventId") Long eventId,
             @Param("holdToken") String holdToken);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT i
+            FROM EventSeatInventory i
+            JOIN FETCH i.seat s
+            JOIN FETCH s.row r
+            JOIN FETCH r.section sec
+            JOIN FETCH i.heldByUser u
+            WHERE i.event.id = :eventId
+            AND u.id = :userId
+            AND i.status = com.jairomatias.eventix.venue.entity.EventSeatStatus.HELD
+            ORDER BY i.id
+            """)
+    List<EventSeatInventory> findHeldByUserForUpdate(
+            @Param("eventId") Long eventId,
+            @Param("userId") Long userId);
 
     long countByEvent_IdAndStatus(Long eventId, EventSeatStatus status);
 
@@ -86,6 +107,7 @@ public interface EventSeatInventoryRepository
             SET i.status = com.jairomatias.eventix.venue.entity.EventSeatStatus.AVAILABLE,
                 i.holdToken = null,
                 i.holdExpiresAt = null,
+                i.heldByUser = null,
                 i.updatedAt = :now,
                 i.updatedBy = 'seat-hold-expiration',
                 i.version = i.version + 1
