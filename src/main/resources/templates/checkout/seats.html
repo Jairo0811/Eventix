@@ -18,10 +18,22 @@
             <div>
                 <span class="text-success fw-semibold d-block">Retención activa</span>
                 <strong th:text="|${#lists.size(heldSeatIds)} asiento(s) retenido(s)|">Asientos retenidos</strong>
-                <div class="small text-secondary mt-1" th:text="|Expira: ${#temporals.format(holdExpiresAt, 'dd/MM/yyyy HH:mm:ss')}|">Expira</div>
+                <div class="mt-2 d-flex flex-wrap align-items-center gap-2">
+                    <span class="small text-secondary">Tiempo restante:</span>
+                    <strong id="seat-hold-countdown"
+                            class="text-success font-monospace"
+                            aria-live="polite"
+                            th:attr="data-expires-at=${holdExpiresAt}">10:00</strong>
+                </div>
+                <div class="small text-secondary mt-1"
+                     th:text="|Expira: ${#temporals.format(holdExpiresAt, 'dd/MM/yyyy HH:mm:ss')}|">Expira</div>
+                <div class="small text-secondary mt-1">
+                    La retención está vinculada a tu cuenta y se recupera al volver a esta pantalla.
+                </div>
             </div>
             <div class="d-flex flex-wrap gap-2">
                 <a class="btn btn-success"
+                   id="seat-hold-checkout-link"
                    th:href="@{/my/checkout/events/{id}(id=${eventId},holdToken=${holdToken})}">
                     <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>Continuar al checkout
                 </a>
@@ -113,7 +125,7 @@
                                        th:disabled="${seat.status.name() != 'AVAILABLE' or holdToken != null}">
                                 <span class="badge"
                                       th:classappend="${seat.status.name() == 'AVAILABLE' ? ' text-bg-success' : (seat.status.name() == 'HELD' ? ' text-bg-warning' : (seat.status.name() == 'SOLD' ? ' text-bg-secondary' : ' text-bg-dark'))}"
-                                      th:text="${seat.status}">AVAILABLE</span>
+                                      th:text="${holdToken != null and #lists.contains(heldSeatIds, seat.seatId) ? 'TU HOLD' : seat.status}">AVAILABLE</span>
                             </div>
                             <strong class="d-block mt-3" th:text="${seat.label}">A-12</strong>
                             <small class="text-secondary d-block" th:text="|${seat.sectionName} · fila ${seat.rowCode}|">VIP · A</small>
@@ -132,5 +144,6 @@
     <footer th:replace="~{fragments/footer :: footer}"></footer>
 </main>
 <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+<script th:src="@{/js/seat-hold-countdown.js}"></script>
 </body>
 </html>
