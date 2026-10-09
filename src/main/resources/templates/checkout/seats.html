@@ -34,6 +34,55 @@
             </div>
         </div>
     </section>
+    <section class="content-card mb-4" th:unless="${#lists.isEmpty(inventory)}">
+        <div class="row g-4 align-items-end">
+            <div class="col-12 col-lg-5">
+                <span class="badge text-bg-primary mb-2">Best Available</span>
+                <h2 class="h5 mb-2">Déjale la selección a Eventix</h2>
+                <p class="text-secondary mb-0">
+                    Buscaremos un bloque contiguo en la mejor fila disponible, priorizando posiciones centrales y evitando ocupar espacios accesibles salvo que los solicites.
+                </p>
+            </div>
+            <div class="col-12 col-lg-7">
+                <form class="row g-3 align-items-end"
+                      th:action="@{/my/checkout/events/{id}/seats/best-available(id=${eventId})}"
+                      method="post">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label" for="bestAvailableQuantity">Cantidad</label>
+                        <input class="form-control"
+                               id="bestAvailableQuantity"
+                               type="number"
+                               name="quantity"
+                               min="1"
+                               max="10"
+                               value="2"
+                               required
+                               th:disabled="${holdToken != null}">
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-check mt-md-4 pt-md-2">
+                            <input class="form-check-input"
+                                   id="accessibilityRequired"
+                                   type="checkbox"
+                                   name="accessibilityRequired"
+                                   value="true"
+                                   th:disabled="${holdToken != null}">
+                            <label class="form-check-label" for="accessibilityRequired">
+                                Necesito ubicación accesible
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 d-grid">
+                        <button class="btn btn-primary"
+                                type="submit"
+                                th:disabled="${holdToken != null}">
+                            <i class="bi bi-stars me-2" aria-hidden="true"></i>Buscar mejores
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
     <form th:action="@{/my/checkout/events/{id}/seats(id=${eventId})}" th:object="${seatSelectionForm}" method="post">
         <section class="content-card">
             <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors()}">
@@ -61,7 +110,7 @@
                                        type="checkbox"
                                        th:field="*{seatIds}"
                                        th:value="${seat.seatId}"
-                                       th:disabled="${seat.status.name() != 'AVAILABLE'}">
+                                       th:disabled="${seat.status.name() != 'AVAILABLE' or holdToken != null}">
                                 <span class="badge"
                                       th:classappend="${seat.status.name() == 'AVAILABLE' ? ' text-bg-success' : (seat.status.name() == 'HELD' ? ' text-bg-warning' : (seat.status.name() == 'SOLD' ? ' text-bg-secondary' : ' text-bg-dark'))}"
                                       th:text="${seat.status}">AVAILABLE</span>
