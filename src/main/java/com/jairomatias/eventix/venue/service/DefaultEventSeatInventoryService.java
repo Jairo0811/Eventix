@@ -15,11 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jairomatias.eventix.event.entity.Event;
 import com.jairomatias.eventix.event.entity.EventSeatingMode;
 import com.jairomatias.eventix.event.repository.EventRepository;
+import com.jairomatias.eventix.role.entity.RoleName;
 import com.jairomatias.eventix.sale.entity.Sale;
 import com.jairomatias.eventix.sale.repository.SaleRepository;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
-import com.jairomatias.eventix.role.entity.RoleName;
 import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.repository.UserRepository;
 import com.jairomatias.eventix.venue.dto.EventSeatView;
@@ -170,6 +170,16 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     @Transactional
     @PreAuthorize("hasRole('USER')")
     public int validateActiveHold(Long eventId, String holdToken) {
+        return validateActiveHold(eventId, holdToken, null);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public int validateActiveHold(
+            Long eventId,
+            String holdToken,
+            Long requiredSectionId) {
         if (holdToken == null || holdToken.isBlank()) {
             throw new BusinessRuleException(
                     "Selecciona y retén tus asientos antes de continuar.");
@@ -193,6 +203,12 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
                     || !holdToken.equals(item.getHoldToken())) {
                 throw new BusinessRuleException(
                         "La retención de asientos ya no es válida.");
+            }
+            if (requiredSectionId != null
+                    && !requiredSectionId.equals(
+                            item.getSeat().getRow().getSection().getId())) {
+                throw new BusinessRuleException(
+                        "Los asientos retenidos no pertenecen a la sección del tipo de entrada seleccionado.");
             }
         }
 
