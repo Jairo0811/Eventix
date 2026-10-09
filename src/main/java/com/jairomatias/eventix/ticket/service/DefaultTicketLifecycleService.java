@@ -136,8 +136,8 @@ public class DefaultTicketLifecycleService
                 if (!soldSeats.isEmpty()) {
                     EventSeatInventory soldSeat = soldSeats.get(sequence - 1);
                     ticket.assignSeat(
-                            soldSeat.getSeat().getRow().getSection().getName(),
-                            soldSeat.getSeat().getLabel());
+                            soldSeat.getSectionNameSnapshot(),
+                            soldSeat.getSeatLabelSnapshot());
                 }
 
                 tickets.add(ticket);
