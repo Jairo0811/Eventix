@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,13 +136,59 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     @Override
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public SeatHoldResult holdSeats(Long eventId, Collection<Long> seatIds) {
+    public Optional<SeatHoldResult> getActiveHold(
+            Long eventId,
+            String authenticatedLogin) {
+        ensureEventExists(eventId);
+        User buyer = findActor(authenticatedLogin);
+        LocalDateTime now = now();
+        inventoryRepository.releaseExpiredHolds(now);
+
+        List<EventSeatInventory> held = inventoryRepository
+                .findHeldByUserForUpdate(eventId, buyer.getId());
+        if (held.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String token = held.get(0).getHoldToken();
+        if (held.stream().anyMatch(item -> !token.equals(item.getHoldToken()))) {
+            throw new BusinessRuleException(
+                    "Tu cuenta tiene más de una retención activa para este evento. Libéralas antes de continuar.");
+        }
+
+        LocalDateTime expiresAt = held.stream()
+                .map(EventSeatInventory::getHoldExpiresAt)
+                .min(LocalDateTime::compareTo)
+                .orElseThrow();
+
+        return Optional.of(new SeatHoldResult(
+                token,
+                expiresAt,
+                held.stream().map(item -> item.getSeat().getId()).toList()));
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('USER')")
+    public SeatHoldResult holdSeats(
+            Long eventId,
+            Collection<Long> seatIds,
+            String authenticatedLogin) {
         if (seatIds == null || seatIds.isEmpty()) {
             throw new BusinessRuleException("Selecciona al menos un asiento.");
         }
 
         List<Long> requested = seatIds.stream().distinct().toList();
+        if (requested.size() > 10) {
+            throw new BusinessRuleException(
+                    "Puedes retener entre 1 y 10 asientos por operación.");
+        }
+
+        lockEvent(eventId);
+        User buyer = findActor(authenticatedLogin);
         LocalDateTime now = now();
+        inventoryRepository.releaseExpiredHolds(now);
+        ensureNoActiveHold(eventId, buyer);
 
         List<EventSeatInventory> inventory = inventoryRepository.findForUpdate(eventId, requested);
 
@@ -151,16 +198,13 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
         }
 
         for (EventSeatInventory item : inventory) {
-            if (item.isHeldAndExpired(now)) {
-                item.release();
-            }
             if (item.getStatus() != EventSeatStatus.AVAILABLE) {
                 throw new BusinessRuleException(
                         "El asiento " + item.getSeat().getLabel() + " ya no está disponible.");
             }
         }
 
-        return createHold(inventory, now);
+        return createHold(inventory, now, buyer);
     }
 
     @Override
@@ -169,15 +213,18 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     public SeatHoldResult holdBestAvailableSeats(
             Long eventId,
             int quantity,
-            boolean accessibilityRequired) {
+            boolean accessibilityRequired,
+            String authenticatedLogin) {
         if (quantity < 1 || quantity > 10) {
             throw new BusinessRuleException(
                     "Puedes solicitar entre 1 y 10 asientos por operación.");
         }
 
-        ensureEventExists(eventId);
+        lockEvent(eventId);
+        User buyer = findActor(authenticatedLogin);
         LocalDateTime now = now();
         inventoryRepository.releaseExpiredHolds(now);
+        ensureNoActiveHold(eventId, buyer);
 
         List<EventSeatInventory> inventory = inventoryRepository
                 .findAllForBestAvailableForUpdate(eventId);
@@ -200,7 +247,7 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
                     quantity,
                     accessibilityRequired);
             if (!block.isEmpty()) {
-                return createHold(block, now);
+                return createHold(block, now, buyer);
             }
         }
 
@@ -215,8 +262,11 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     @Override
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public int validateActiveHold(Long eventId, String holdToken) {
-        return validateActiveHold(eventId, holdToken, null);
+    public int validateActiveHold(
+            Long eventId,
+            String holdToken,
+            String authenticatedLogin) {
+        return validateActiveHold(eventId, holdToken, null, authenticatedLogin);
     }
 
     @Override
@@ -225,26 +275,26 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     public int validateActiveHold(
             Long eventId,
             String holdToken,
-            Long requiredSectionId) {
+            Long requiredSectionId,
+            String authenticatedLogin) {
         if (holdToken == null || holdToken.isBlank()) {
             throw new BusinessRuleException(
                     "Selecciona y retén tus asientos antes de continuar.");
         }
 
+        User buyer = findActor(authenticatedLogin);
         LocalDateTime now = now();
+        inventoryRepository.releaseExpiredHolds(now);
         List<EventSeatInventory> held = inventoryRepository
                 .findHeldByTokenForUpdate(eventId, holdToken);
 
         if (held.isEmpty()) {
             throw new BusinessRuleException(
-                    "La retención de asientos no existe o ya fue liberada.");
+                    "La retención de asientos no existe o ya expiró.");
         }
 
         for (EventSeatInventory item : held) {
-            if (item.isHeldAndExpired(now)) {
-                throw new BusinessRuleException(
-                        "La retención de asientos expiró. Selecciona tus asientos nuevamente.");
-            }
+            assertHoldOwnedBy(item, buyer);
             if (item.getStatus() != EventSeatStatus.HELD
                     || !holdToken.equals(item.getHoldToken())) {
                 throw new BusinessRuleException(
@@ -264,29 +314,39 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
     @Override
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public void releaseHold(Long eventId, String holdToken) {
+    public void releaseHold(
+            Long eventId,
+            String holdToken,
+            String authenticatedLogin) {
         if (holdToken == null || holdToken.isBlank()) {
             return;
         }
 
+        User buyer = findActor(authenticatedLogin);
         List<EventSeatInventory> held = inventoryRepository
                 .findHeldByTokenForUpdate(eventId, holdToken);
 
         for (EventSeatInventory item : held) {
-            if (item.getStatus() == EventSeatStatus.HELD) {
-                item.release();
-            }
+            assertHoldOwnedBy(item, buyer);
         }
+        held.stream()
+                .filter(item -> item.getStatus() == EventSeatStatus.HELD)
+                .forEach(EventSeatInventory::release);
     }
 
     @Override
     @Transactional
     @PreAuthorize("hasRole('USER')")
-    public void confirmSale(Long eventId, String holdToken, Long saleId) {
+    public void confirmSale(
+            Long eventId,
+            String holdToken,
+            Long saleId,
+            String authenticatedLogin) {
         if (holdToken == null || holdToken.isBlank()) {
             throw new BusinessRuleException("El hold de asientos es obligatorio.");
         }
 
+        User buyer = findActor(authenticatedLogin);
         Sale sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No se encontró la venta solicitada."));
@@ -295,23 +355,23 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
             throw new BusinessRuleException(
                     "La venta no pertenece al evento indicado.");
         }
+        if (sale.getSoldBy() == null || !buyer.getId().equals(sale.getSoldBy().getId())) {
+            throw new BusinessRuleException(
+                    "La venta no pertenece al usuario que retuvo los asientos.");
+        }
 
         LocalDateTime now = now();
+        inventoryRepository.releaseExpiredHolds(now);
         List<EventSeatInventory> held = inventoryRepository
                 .findHeldByTokenForUpdate(eventId, holdToken);
 
         if (held.isEmpty()) {
             throw new BusinessRuleException(
-                    "El hold de asientos no existe o ya fue liberado.");
+                    "El hold de asientos no existe o expiró antes de confirmar la venta.");
         }
 
         for (EventSeatInventory item : held) {
-            if (item.isHeldAndExpired(now)) {
-                item.release();
-                throw new BusinessRuleException(
-                        "El hold de asientos expiró antes de confirmar la venta.");
-            }
-
+            assertHoldOwnedBy(item, buyer);
             if (item.getStatus() != EventSeatStatus.HELD
                     || !holdToken.equals(item.getHoldToken())) {
                 throw new BusinessRuleException(
@@ -330,15 +390,32 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
 
     private SeatHoldResult createHold(
             List<EventSeatInventory> inventory,
-            LocalDateTime now) {
+            LocalDateTime now,
+            User buyer) {
         String holdToken = UUID.randomUUID().toString().replace("-", "");
         LocalDateTime expiresAt = now.plus(DEFAULT_HOLD_DURATION);
-        inventory.forEach(item -> item.hold(holdToken, expiresAt));
+        inventory.forEach(item -> item.hold(holdToken, expiresAt, buyer));
 
         return new SeatHoldResult(
                 holdToken,
                 expiresAt,
                 inventory.stream().map(item -> item.getSeat().getId()).toList());
+    }
+
+    private void ensureNoActiveHold(Long eventId, User buyer) {
+        List<EventSeatInventory> active = inventoryRepository
+                .findHeldByUserForUpdate(eventId, buyer.getId());
+        if (!active.isEmpty()) {
+            throw new BusinessRuleException(
+                    "Ya tienes una retención activa para este evento. Continúa con ella o libérala antes de seleccionar otros asientos.");
+        }
+    }
+
+    private void assertHoldOwnedBy(EventSeatInventory item, User buyer) {
+        if (!item.isHeldBy(buyer.getId())) {
+            throw new BusinessRuleException(
+                    "La retención de asientos pertenece a otro usuario.");
+        }
     }
 
     private List<EventSeatInventory> findBestContiguousBlock(
@@ -426,6 +503,12 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
         } catch (NumberFormatException ignored) {
             return left.compareToIgnoreCase(right);
         }
+    }
+
+    private Event lockEvent(Long eventId) {
+        return eventRepository.findDetailedByIdForUpdate(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró el evento solicitado."));
     }
 
     private User findActor(String login) {
