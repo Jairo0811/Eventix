@@ -1,11 +1,14 @@
 package com.jairomatias.eventix.venue.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.shared.exception.DuplicateResourceException;
 import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
 import com.jairomatias.eventix.venue.dto.VenueLayoutView;
@@ -23,6 +26,9 @@ import com.jairomatias.eventix.venue.repository.VenueSectionRepository;
 
 @Service
 public class DefaultVenueLayoutService implements VenueLayoutService {
+
+    private static final BigDecimal MIN_POSITION = BigDecimal.ZERO;
+    private static final BigDecimal MAX_POSITION = BigDecimal.valueOf(100);
 
     private final VenueRepository venueRepository;
     private final VenueSectionRepository sectionRepository;
@@ -70,7 +76,9 @@ public class DefaultVenueLayoutService implements VenueLayoutService {
                                                         seat.getSeatNumber(),
                                                         seat.getLabel(),
                                                         seat.isAccessible(),
-                                                        seat.isCompanionSeat()))
+                                                        seat.isCompanionSeat(),
+                                                        seat.getXPosition(),
+                                                        seat.getYPosition()))
                                                 .toList()))
                                 .toList()))
                 .toList();
@@ -143,14 +151,46 @@ public class DefaultVenueLayoutService implements VenueLayoutService {
                     "Ya existe ese número de asiento en la fila.");
         }
 
+        validateCoordinates(form.getXPosition(), form.getYPosition());
         VenueSeat seat = new VenueSeat(
                 row,
                 seatNumber,
                 form.getLabel().trim(),
                 form.isAccessible(),
                 form.isCompanionSeat());
+        seat.update(
+                seatNumber,
+                form.getLabel().trim(),
+                form.isAccessible(),
+                form.isCompanionSeat(),
+                normalizeCoordinate(form.getXPosition()),
+                normalizeCoordinate(form.getYPosition()),
+                true);
 
         return seatRepository.save(seat).getId();
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    public void updateSeatPosition(
+            Long venueId,
+            Long sectionId,
+            Long rowId,
+            Long seatId,
+            BigDecimal xPosition,
+            BigDecimal yPosition) {
+        VenueSeat seat = findSeatInRow(venueId, sectionId, rowId, seatId);
+        validateCoordinates(xPosition, yPosition);
+        seat.update(
+                seat.getSeatNumber(),
+                seat.getLabel(),
+                seat.isAccessible(),
+                seat.isCompanionSeat(),
+                normalizeCoordinate(xPosition),
+                normalizeCoordinate(yPosition),
+                seat.isActive());
+        seatRepository.save(seat);
     }
 
     private Venue findVenue(Long venueId) {
@@ -182,5 +222,42 @@ public class DefaultVenueLayoutService implements VenueLayoutService {
                     "La fila no pertenece a la sección indicada.");
         }
         return row;
+    }
+
+    private VenueSeat findSeatInRow(
+            Long venueId,
+            Long sectionId,
+            Long rowId,
+            Long seatId) {
+        VenueRow row = findRowInSection(venueId, sectionId, rowId);
+        VenueSeat seat = seatRepository.findById(seatId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "El asiento solicitado no existe."));
+        if (!seat.getRow().getId().equals(row.getId())) {
+            throw new ResourceNotFoundException(
+                    "El asiento no pertenece a la fila indicada.");
+        }
+        return seat;
+    }
+
+    private void validateCoordinates(BigDecimal xPosition, BigDecimal yPosition) {
+        if ((xPosition == null) != (yPosition == null)) {
+            throw new BusinessRuleException(
+                    "Indica ambas coordenadas X e Y, o deja ambas vacías.");
+        }
+        if (xPosition == null) {
+            return;
+        }
+        if (xPosition.compareTo(MIN_POSITION) < 0
+                || xPosition.compareTo(MAX_POSITION) > 0
+                || yPosition.compareTo(MIN_POSITION) < 0
+                || yPosition.compareTo(MAX_POSITION) > 0) {
+            throw new BusinessRuleException(
+                    "Las coordenadas del asiento deben estar entre 0 y 100.");
+        }
+    }
+
+    private BigDecimal normalizeCoordinate(BigDecimal value) {
+        return value == null ? null : value.setScale(4, RoundingMode.HALF_UP);
     }
 }
