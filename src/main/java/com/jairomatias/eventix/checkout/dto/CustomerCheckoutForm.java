@@ -38,6 +38,9 @@ public class CustomerCheckoutForm {
     @Size(max = 40)
     private String couponCode;
 
+    @Size(max = 64)
+    private String holdToken;
+
     @NotNull(message = "Selecciona el método de pago.")
     private PaymentProvider provider = PaymentProvider.CARDNET;
 
@@ -55,6 +58,8 @@ public class CustomerCheckoutForm {
     public void setPhone(String phone) { this.phone = phone; }
     public String getCouponCode() { return couponCode; }
     public void setCouponCode(String couponCode) { this.couponCode = couponCode; }
+    public String getHoldToken() { return holdToken; }
+    public void setHoldToken(String holdToken) { this.holdToken = holdToken; }
     public PaymentProvider getProvider() { return provider; }
     public void setProvider(PaymentProvider provider) { this.provider = provider; }
 }

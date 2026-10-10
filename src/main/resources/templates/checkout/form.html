@@ -26,6 +26,7 @@
           method="post"
           aria-labelledby="checkout-title"
           aria-describedby="checkout-instructions">
+        <input type="hidden" th:field="*{holdToken}">
         <div class="row g-4">
             <div class="col-lg-7">
                 <section class="content-card mb-4" aria-labelledby="ticket-selection-title">
@@ -56,10 +57,11 @@
                                                type="radio"
                                                th:field="*{ticketTypeId}"
                                                th:value="${ticket.id}"
-                                               th:attr="aria-invalid=${#fields.hasErrors('ticketTypeId') ? 'true' : 'false'}">
+                                               th:attr="data-seat-required=${ticket.seatSelectionRequired},aria-invalid=${#fields.hasErrors('ticketTypeId') ? 'true' : 'false'}">
                                         <span>
                                             <strong class="d-block" th:text="${ticket.name}">General</strong>
                                             <small class="text-secondary" th:text="|${ticket.category} · ${ticket.availableQuantity} disponibles|">Disponibles</small>
+                                            <span class="badge text-bg-info ms-1" th:if="${ticket.seatSelectionRequired}">Asiento requerido</span>
                                         </span>
                                     </span>
                                     <strong class="text-success" th:text="|RD$ ${#numbers.formatDecimal(ticket.price, 1, 2)}|">RD$ 0.00</strong>
@@ -73,8 +75,30 @@
                          th:if="${#fields.hasErrors('ticketTypeId')}"
                          th:errors="*{ticketTypeId}"></div>
 
+                    <div class="alert alert-info mt-3"
+                         id="reserved-seat-panel"
+                         hidden>
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                                <strong>Asientos reservados</strong>
+                                <div class="small"
+                                     th:text="${checkoutForm.holdToken != null and !#strings.isEmpty(checkoutForm.holdToken)
+                                               ? 'La cantidad se calculará desde tus asientos retenidos.'
+                                               : 'Esta entrada requiere seleccionar y retener asientos antes de comprar.'}">
+                                    Selección requerida
+                                </div>
+                            </div>
+                            <a class="btn btn-sm btn-outline-primary"
+                               id="seat-selection-link"
+                               th:attr="data-base-href=@{/my/checkout/events/{id}/seats(id=${checkout.eventId})}"
+                               th:href="@{/my/checkout/events/{id}/seats(id=${checkout.eventId})}">
+                                Seleccionar asientos
+                            </a>
+                        </div>
+                    </div>
+
                     <div class="row g-3 mt-2">
-                        <div class="col-md-4">
+                        <div class="col-md-4" id="quantity-panel">
                             <label class="form-label" for="quantity">Cantidad</label>
                             <input class="form-control"
                                    id="quantity"
@@ -197,7 +221,7 @@
 
                     <div class="alert alert-light border mt-4 mb-4 small" role="note">
                         <i class="bi bi-shield-check text-success me-2" aria-hidden="true"></i>
-                        Eventix valida nuevamente precio, disponibilidad y cupos en el servidor antes de confirmar la operación.
+                        Eventix valida nuevamente precio, disponibilidad, sección y cupos en el servidor antes de confirmar la operación.
                     </div>
 
                     <div class="alert alert-info small" role="note">
@@ -216,7 +240,7 @@
                     <div class="border rounded-3 p-3 mb-3" role="note" aria-label="Confirmación de la operación">
                         <strong class="d-block mb-1">Antes de confirmar</strong>
                         <p class="small text-secondary mb-0">
-                            Revisa el tipo de entrada, la cantidad, tus datos y el método de pago. Si Eventix detecta un error, conservarás la oportunidad de corregirlo antes de que la operación sea aceptada.
+                            Revisa el tipo de entrada, la cantidad o los asientos, tus datos y el método de pago. Si Eventix detecta un error, conservarás la oportunidad de corregirlo antes de que la operación sea aceptada.
                         </p>
                     </div>
 
@@ -232,5 +256,7 @@
         </div>
     </form>
 </main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+<script th:src="@{/js/checkout-seating.js}"></script>
 </body>
 </html>

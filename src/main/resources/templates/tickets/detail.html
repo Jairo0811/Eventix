@@ -34,7 +34,15 @@
                 <div class="row g-4 mt-1">
                     <div class="col-md-6"><p class="detail-label">Asistente</p><p class="detail-value" th:text="${ticket.attendeeName}">Nombre</p></div>
                     <div class="col-md-6"><p class="detail-label">Correo</p><p class="detail-value" th:text="${ticket.attendeeEmail}">Correo</p></div>
-                    <div class="col-md-6"><p class="detail-label">Tipo / zona</p><p class="detail-value" th:text="${ticket.ticketTypeName}">General</p></div>
+                    <div class="col-md-6"><p class="detail-label">Tipo de entrada</p><p class="detail-value" th:text="${ticket.ticketTypeName}">General</p></div>
+                    <div class="col-md-6" th:if="${ticket.zone != null}">
+                        <p class="detail-label">Zona / sección</p>
+                        <p class="detail-value" th:text="${ticket.zone}">VIP</p>
+                    </div>
+                    <div class="col-md-6" th:if="${ticket.seat != null}">
+                        <p class="detail-label">Asiento</p>
+                        <p class="detail-value fw-bold" th:text="${ticket.seat}">A-12</p>
+                    </div>
                     <div class="col-md-6"><p class="detail-label">Fecha</p><p class="detail-value" th:text="${#temporals.format(ticket.eventStartAt, 'dd/MM/yyyy HH:mm')}">Fecha</p></div>
                     <div class="col-md-6"><p class="detail-label">Lugar</p><p class="detail-value" th:text="${ticket.venue}">Lugar</p></div>
                     <div class="col-md-6"><p class="detail-label">Organizador</p><p class="detail-value" th:text="${ticket.organizerName}">Organizador</p></div>

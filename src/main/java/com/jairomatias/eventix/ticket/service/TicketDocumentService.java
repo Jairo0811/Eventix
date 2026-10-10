@@ -139,7 +139,7 @@ public class TicketDocumentService {
         drawInfoRow(content, "A", "ASISTENTE", value(ticket.getAttendeeName()),
                 x + 18, y + 270, 180, 2);
         drawSeparator(content, x + 18, y + 236, width - 36);
-        drawInfoRow(content, "T", "TIPO / ZONA", value(ticket.getTicketTypeName()),
+        drawInfoRow(content, "T", "TIPO / ZONA / ASIENTO", ticketLocation(ticket),
                 x + 18, y + 190, 180, 2);
         drawSeparator(content, x + 18, y + 156, width - 36);
         drawInfoRow(content, "F", "FECHA Y HORA",
@@ -439,6 +439,17 @@ public class TicketDocumentService {
         content.newLineAtOffset(x, y);
         content.showText(pdfSafe(text));
         content.endText();
+    }
+
+    private String ticketLocation(DigitalTicket ticket) {
+        StringBuilder location = new StringBuilder(value(ticket.getTicketTypeName()));
+        if (ticket.getZone() != null && !ticket.getZone().isBlank()) {
+            location.append(" · ").append(ticket.getZone());
+        }
+        if (ticket.getSeat() != null && !ticket.getSeat().isBlank()) {
+            location.append(" · Asiento ").append(ticket.getSeat());
+        }
+        return location.toString();
     }
 
     private String value(String text) {

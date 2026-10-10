@@ -171,7 +171,14 @@ public class Sale extends AuditableEntity {
     }
 
     public void addItem(TicketType ticketType, int quantity) {
-        SaleItem item = new SaleItem(this, ticketType, quantity);
+        addItem(ticketType, quantity, ticketType.getPrice());
+    }
+
+    public void addItem(
+            TicketType ticketType,
+            int quantity,
+            BigDecimal unitPrice) {
+        SaleItem item = new SaleItem(this, ticketType, quantity, unitPrice);
         items.add(item);
         recalculateTotals();
     }

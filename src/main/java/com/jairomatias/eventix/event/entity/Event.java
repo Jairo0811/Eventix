@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import com.jairomatias.eventix.category.entity.EventCategory;
 import com.jairomatias.eventix.shared.entity.AuditableEntity;
 import com.jairomatias.eventix.user.entity.User;
+import com.jairomatias.eventix.venue.entity.Venue;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,6 +43,14 @@ public class Event extends AuditableEntity {
 
     @Column(nullable = false, length = 160)
     private String venue;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "venue_id")
+    private Venue venueDefinition;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "seating_mode", nullable = false, length = 24)
+    private EventSeatingMode seatingMode = EventSeatingMode.GENERAL_ADMISSION;
 
     @Column(nullable = false, length = 300)
     private String address;
@@ -145,6 +154,18 @@ public class Event extends AuditableEntity {
         this.accessMode = accessMode == null ? EventAccessMode.PUBLIC : accessMode;
     }
 
+    public void configureVenue(Venue venueDefinition, EventSeatingMode seatingMode) {
+        this.venueDefinition = venueDefinition;
+        this.seatingMode = seatingMode == null
+                ? EventSeatingMode.GENERAL_ADMISSION
+                : seatingMode;
+
+        if (venueDefinition != null) {
+            this.venue = venueDefinition.getName();
+            this.address = venueDefinition.getAddress();
+        }
+    }
+
     public String getTitle() {
         return title;
     }
@@ -171,6 +192,14 @@ public class Event extends AuditableEntity {
 
     public String getVenue() {
         return venue;
+    }
+
+    public Venue getVenueDefinition() {
+        return venueDefinition;
+    }
+
+    public EventSeatingMode getSeatingMode() {
+        return seatingMode;
     }
 
     public String getAddress() {
