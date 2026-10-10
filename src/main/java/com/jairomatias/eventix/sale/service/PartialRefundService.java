@@ -20,6 +20,7 @@ import com.jairomatias.eventix.sale.entity.SaleStatus;
 import com.jairomatias.eventix.sale.event.SaleRefundedEvent;
 import com.jairomatias.eventix.sale.repository.SaleRepository;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
+import com.jairomatias.eventix.shared.exception.PaymentRejectedException;
 import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
 import com.jairomatias.eventix.ticket.entity.DigitalTicket;
 import com.jairomatias.eventix.ticket.entity.TicketStatus;
@@ -52,7 +53,7 @@ public class PartialRefundService {
         this.eventPublisher = eventPublisher;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = PaymentRejectedException.class)
     @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR')")
     public BigDecimal refundTickets(
             Long saleId,
@@ -85,7 +86,7 @@ public class PartialRefundService {
                 processedAt);
 
         if (result.status() != PaymentStatus.APPROVED) {
-            throw new BusinessRuleException("La pasarela no aprobó el reembolso.");
+            throw new PaymentRejectedException("La pasarela no aprobó el reembolso.");
         }
 
         sale.recordRefund(refundAmount, request.reason(), processedAt);
