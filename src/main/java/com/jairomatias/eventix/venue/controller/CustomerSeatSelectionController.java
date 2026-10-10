@@ -1,5 +1,6 @@
 package com.jairomatias.eventix.venue.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.core.Authentication;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
+import com.jairomatias.eventix.venue.dto.EventSeatView;
 import com.jairomatias.eventix.venue.dto.SeatHoldResult;
 import com.jairomatias.eventix.venue.dto.SeatSelectionForm;
 import com.jairomatias.eventix.venue.dto.TicketSeatingRule;
@@ -170,12 +172,22 @@ public class CustomerSeatSelectionController {
         model.addAttribute("eventId", eventId);
         model.addAttribute("ticketTypeId", ticketTypeId);
 
+        List<EventSeatView> inventory;
         if (ticketTypeId == null) {
-            model.addAttribute("inventory", inventoryService.getInventory(eventId));
+            inventory = inventoryService.getInventory(eventId);
         } else {
             TicketSeatingRule rule = seatingRuleService.resolve(eventId, ticketTypeId);
-            model.addAttribute("inventory", inventoryService.getInventory(eventId, rule.sectionId()));
+            inventory = inventoryService.getInventory(eventId, rule.sectionId());
         }
+        model.addAttribute("inventory", inventory);
+        model.addAttribute(
+                "hasPositionedSeats",
+                inventory.stream().anyMatch(seat ->
+                        seat.xPosition() != null && seat.yPosition() != null));
+        model.addAttribute(
+                "hasUnpositionedSeats",
+                inventory.stream().anyMatch(seat ->
+                        seat.xPosition() == null || seat.yPosition() == null));
 
         activeHold.ifPresent(hold -> addHoldModelAttributes(hold, model));
     }
