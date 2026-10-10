@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
@@ -19,7 +20,6 @@ import com.jairomatias.eventix.security.AuditAuthenticationFailureHandler;
 import com.jairomatias.eventix.security.AuditLogoutSuccessHandler;
 import com.jairomatias.eventix.security.DatabaseUserDetailsService;
 import com.jairomatias.eventix.security.ExternalOidcUserService;
-import com.jairomatias.eventix.security.ForcePasswordChangeFilter;
 import com.jairomatias.eventix.security.LoginSuccessHandler;
 import com.jairomatias.eventix.security.SecurityConfig;
 import com.jairomatias.eventix.ticket.dto.TicketDetailsView;
@@ -39,9 +39,6 @@ class TicketWalletSecurityIntegrationTest {
     private LoginSuccessHandler loginSuccessHandler;
 
     @MockitoBean
-    private ForcePasswordChangeFilter forcePasswordChangeFilter;
-
-    @MockitoBean
     private AuditAuthenticationFailureHandler authenticationFailureHandler;
 
     @MockitoBean
@@ -50,11 +47,8 @@ class TicketWalletSecurityIntegrationTest {
     @MockitoBean
     private ExternalOidcUserService externalOidcUserService;
 
-    private final MockMvc mockMvc;
-
-    TicketWalletSecurityIntegrationTest(MockMvc mockMvc) {
-        this.mockMvc = mockMvc;
-    }
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
     @WithMockUser(username = "buyer@example.com", roles = "USER")
