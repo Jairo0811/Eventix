@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -36,6 +37,9 @@ class TicketWalletSecurityIntegrationTest {
 
     @MockitoBean
     private AuditService auditService;
+
+    @MockitoBean
+    private JpaMetamodelMappingContext jpaMappingContext;
 
     @MockitoBean
     private DatabaseUserDetailsService userDetailsService;
