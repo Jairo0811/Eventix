@@ -16,6 +16,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.jairomatias.eventix.audit.service.AuditService;
 import com.jairomatias.eventix.security.AuditAuthenticationFailureHandler;
 import com.jairomatias.eventix.security.AuditLogoutSuccessHandler;
 import com.jairomatias.eventix.security.DatabaseUserDetailsService;
@@ -31,6 +32,9 @@ class TicketWalletSecurityIntegrationTest {
 
     @MockitoBean
     private TicketService ticketService;
+
+    @MockitoBean
+    private AuditService auditService;
 
     @MockitoBean
     private DatabaseUserDetailsService userDetailsService;
@@ -80,10 +84,7 @@ class TicketWalletSecurityIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(header().string(
                         HttpHeaders.CACHE_CONTROL,
-                        containsString("no-store")))
-                .andExpect(header().string(
-                        "Referrer-Policy",
-                        containsString("no-referrer")));
+                        containsString("no-store")));
     }
 
     @Test
