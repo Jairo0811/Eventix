@@ -20,6 +20,7 @@ import com.jairomatias.eventix.audit.service.AuditService;
 import com.jairomatias.eventix.security.AuditAuthenticationFailureHandler;
 import com.jairomatias.eventix.security.AuditLogoutSuccessHandler;
 import com.jairomatias.eventix.security.DatabaseUserDetailsService;
+import com.jairomatias.eventix.security.EventixSecurityProperties;
 import com.jairomatias.eventix.security.ExternalOidcUserService;
 import com.jairomatias.eventix.security.LoginSuccessHandler;
 import com.jairomatias.eventix.security.SecurityConfig;
@@ -27,7 +28,7 @@ import com.jairomatias.eventix.ticket.dto.TicketDetailsView;
 import com.jairomatias.eventix.ticket.service.TicketService;
 
 @WebMvcTest(TicketController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, EventixSecurityProperties.class})
 class TicketWalletSecurityIntegrationTest {
 
     @MockitoBean
@@ -84,7 +85,10 @@ class TicketWalletSecurityIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(header().string(
                         HttpHeaders.CACHE_CONTROL,
-                        containsString("no-store")));
+                        containsString("no-store")))
+                .andExpect(header().string(
+                        "Referrer-Policy",
+                        containsString("no-referrer")));
     }
 
     @Test
