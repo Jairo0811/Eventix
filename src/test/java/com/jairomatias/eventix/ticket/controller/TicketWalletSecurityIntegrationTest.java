@@ -1,7 +1,6 @@
 package com.jairomatias.eventix.ticket.controller;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -78,8 +77,33 @@ class TicketWalletSecurityIntegrationTest {
     @Test
     @WithMockUser(username = "buyer@example.com", roles = "USER")
     void appleWalletDownloadKeepsPrivateSecurityHeaders() throws Exception {
-        TicketDetailsView details = mock(TicketDetailsView.class);
-        when(details.uniqueCode()).thenReturn("TKT-ABC");
+        TicketDetailsView details = new TicketDetailsView(
+                41L,
+                "TKT-ABC",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                false,
+                true);
         when(ticketService.findById(41L, "buyer@example.com"))
                 .thenReturn(details);
         when(ticketService.createAppleWalletPass(41L, "buyer@example.com"))
