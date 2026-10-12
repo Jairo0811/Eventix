@@ -10,12 +10,77 @@
     <section class="content-card mx-auto mt-4" style="max-width:720px;">
         <form th:action="@{/venues/{venueId}/layout/sections/{sectionId}/rows/{rowId}/seats(venueId=${venueId},sectionId=${sectionId},rowId=${rowId})}" th:object="${seatForm}" method="post" novalidate>
             <div class="row g-4">
-                <div class="col-md-4"><label class="form-label" for="seatNumber">Número</label><input class="form-control" th:errorclass="is-invalid" id="seatNumber" th:field="*{seatNumber}" maxlength="20"><div class="invalid-feedback" th:errors="*{seatNumber}"></div></div>
-                <div class="col-md-8"><label class="form-label" for="label">Etiqueta visible</label><input class="form-control" th:errorclass="is-invalid" id="label" th:field="*{label}" maxlength="80" placeholder="Ej. A-12"><div class="invalid-feedback" th:errors="*{label}"></div></div>
-                <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" id="accessible" th:field="*{accessible}" type="checkbox"><label class="form-check-label" for="accessible">Asiento accesible</label></div></div>
-                <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" id="companionSeat" th:field="*{companionSeat}" type="checkbox"><label class="form-check-label" for="companionSeat">Asiento para acompañante</label></div></div>
+                <div class="col-md-4">
+                    <label class="form-label" for="seatNumber">Número</label>
+                    <input class="form-control" th:errorclass="is-invalid" id="seatNumber" th:field="*{seatNumber}" maxlength="20">
+                    <div class="invalid-feedback" th:errors="*{seatNumber}"></div>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label" for="label">Etiqueta visible</label>
+                    <input class="form-control" th:errorclass="is-invalid" id="label" th:field="*{label}" maxlength="80" placeholder="Ej. A-12">
+                    <div class="invalid-feedback" th:errors="*{label}"></div>
+                </div>
+
+                <div class="col-12">
+                    <div class="border rounded-3 p-3 bg-body-tertiary">
+                        <div class="d-flex align-items-start gap-2 mb-3">
+                            <i class="bi bi-bounding-box-circles text-primary" aria-hidden="true"></i>
+                            <div>
+                                <strong class="d-block">Posición en el mapa</strong>
+                                <small class="text-secondary">Opcional. Usa porcentajes: X va de izquierda (0) a derecha (100) y Y de arriba (0) a abajo (100). Si defines una coordenada, debes completar ambas.</small>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="xPosition">X (%)</label>
+                                <input class="form-control"
+                                       th:errorclass="is-invalid"
+                                       id="xPosition"
+                                       th:field="*{xPosition}"
+                                       type="number"
+                                       min="0"
+                                       max="100"
+                                       step="0.0001"
+                                       placeholder="Ej. 35.5000">
+                                <div class="invalid-feedback" th:errors="*{xPosition}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="yPosition">Y (%)</label>
+                                <input class="form-control"
+                                       th:errorclass="is-invalid"
+                                       id="yPosition"
+                                       th:field="*{yPosition}"
+                                       type="number"
+                                       min="0"
+                                       max="100"
+                                       step="0.0001"
+                                       placeholder="Ej. 62.0000">
+                                <div class="invalid-feedback" th:errors="*{yPosition}"></div>
+                            </div>
+                            <div class="col-12 text-danger small"
+                                 th:if="${#fields.hasErrors('coordinatePairValid')}"
+                                 th:errors="*{coordinatePairValid}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" id="accessible" th:field="*{accessible}" type="checkbox">
+                        <label class="form-check-label" for="accessible">Asiento accesible</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" id="companionSeat" th:field="*{companionSeat}" type="checkbox">
+                        <label class="form-check-label" for="companionSeat">Asiento para acompañante</label>
+                    </div>
+                </div>
             </div>
-            <div class="d-flex justify-content-end gap-2 mt-4"><a class="btn btn-light" th:href="@{/venues/{id}/layout(id=${venueId})}">Cancelar</a><button class="btn btn-primary" type="submit">Guardar asiento</button></div>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a class="btn btn-light" th:href="@{/venues/{id}/layout(id=${venueId})}">Cancelar</a>
+                <button class="btn btn-primary" type="submit">Guardar asiento</button>
+            </div>
         </form>
     </section>
 </main>

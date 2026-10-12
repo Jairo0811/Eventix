@@ -38,6 +38,30 @@
             </a>
         </div>
 
+        <div class="border rounded-4 bg-body-tertiary p-3 mb-4" th:unless="${#lists.isEmpty(section.rows)}">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <div>
+                    <strong class="d-block">Vista previa del mapa</strong>
+                    <small class="text-secondary">Solo aparecen los asientos que tienen coordenadas X/Y. Las posiciones usan una escala porcentual de 0 a 100.</small>
+                </div>
+                <span class="badge text-bg-light border">Escenario / frente arriba</span>
+            </div>
+            <div class="position-relative border rounded-3 bg-body overflow-hidden" style="min-height:320px;">
+                <div class="position-absolute top-0 start-50 translate-middle-x bg-dark text-white rounded-bottom px-4 py-2 small fw-semibold">
+                    ESCENARIO
+                </div>
+                <th:block th:each="row : ${section.rows}">
+                    <span th:each="seat : ${row.seats}"
+                          th:if="${seat.xPosition != null and seat.yPosition != null}"
+                          class="position-absolute badge rounded-pill text-bg-primary border"
+                          th:classappend="${seat.accessible ? ' border-info border-2' : ''}"
+                          th:style="|left:${seat.xPosition}%; top:${seat.yPosition}%; transform:translate(-50%,-50%);|"
+                          th:title="|${row.label} · ${seat.label} · X ${seat.xPosition}% · Y ${seat.yPosition}%|"
+                          th:text="${seat.label}">A-1</span>
+                </th:block>
+            </div>
+        </div>
+
         <div class="border rounded p-3 mb-3" th:each="row : ${section.rows}">
             <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
                 <div>
@@ -49,15 +73,58 @@
                     <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>Asiento
                 </a>
             </div>
-            <div class="d-flex flex-wrap gap-2">
-                <span class="badge rounded-pill text-bg-light border"
-                      th:each="seat : ${row.seats}"
-                      th:title="${seat.accessible ? 'Asiento accesible' : (seat.companionSeat ? 'Asiento acompañante' : 'Asiento')}"
-                      th:text="${seat.label}">
-                    A-1
-                </span>
-                <span class="text-secondary small" th:if="${#lists.isEmpty(row.seats)}">Sin asientos configurados.</span>
+
+            <div class="row g-3" th:unless="${#lists.isEmpty(row.seats)}">
+                <div class="col-12 col-lg-6 col-xl-4" th:each="seat : ${row.seats}">
+                    <div class="border rounded-3 p-3 h-100">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                            <div>
+                                <strong th:text="${seat.label}">A-1</strong>
+                                <small class="text-secondary d-block" th:text="|Asiento ${seat.seatNumber}|">Asiento 1</small>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1">
+                                <span class="badge text-bg-info" th:if="${seat.accessible}">Accesible</span>
+                                <span class="badge text-bg-light border" th:if="${seat.companionSeat}">Acompañante</span>
+                            </div>
+                        </div>
+
+                        <form class="row g-2 align-items-end"
+                              th:action="@{/venues/{venueId}/layout/sections/{sectionId}/rows/{rowId}/seats/{seatId}/position(venueId=${layout.id},sectionId=${section.id},rowId=${row.id},seatId=${seat.id})}"
+                              method="post">
+                            <div class="col-5">
+                                <label class="form-label small" th:for="|seat-${seat.id}-x|">X (%)</label>
+                                <input class="form-control form-control-sm"
+                                       th:id="|seat-${seat.id}-x|"
+                                       type="number"
+                                       name="xPosition"
+                                       min="0"
+                                       max="100"
+                                       step="0.0001"
+                                       th:value="${seat.xPosition}">
+                            </div>
+                            <div class="col-5">
+                                <label class="form-label small" th:for="|seat-${seat.id}-y|">Y (%)</label>
+                                <input class="form-control form-control-sm"
+                                       th:id="|seat-${seat.id}-y|"
+                                       type="number"
+                                       name="yPosition"
+                                       min="0"
+                                       max="100"
+                                       step="0.0001"
+                                       th:value="${seat.yPosition}">
+                            </div>
+                            <div class="col-2 d-grid">
+                                <button class="btn btn-sm btn-outline-primary" type="submit" th:title="|Guardar posición de ${seat.label}|">
+                                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Guardar posición</span>
+                                </button>
+                            </div>
+                        </form>
+                        <small class="text-secondary d-block mt-2" th:if="${seat.xPosition == null or seat.yPosition == null}">Sin posición: se mostrará en el selector de respaldo.</small>
+                    </div>
+                </div>
             </div>
+            <span class="text-secondary small" th:if="${#lists.isEmpty(row.seats)}">Sin asientos configurados.</span>
         </div>
 
         <p class="text-secondary small mb-0" th:if="${#lists.isEmpty(section.rows)}">Esta sección aún no tiene filas.</p>

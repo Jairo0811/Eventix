@@ -1,5 +1,6 @@
 package com.jairomatias.eventix.venue.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.jairomatias.eventix.venue.entity.VenueSectionType;
@@ -33,6 +34,8 @@ public record VenueLayoutView(
             String seatNumber,
             String label,
             boolean accessible,
-            boolean companionSeat) {
+            boolean companionSeat,
+            BigDecimal xPosition,
+            BigDecimal yPosition) {
     }
 }
