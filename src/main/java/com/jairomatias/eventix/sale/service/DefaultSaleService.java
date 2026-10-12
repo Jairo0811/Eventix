@@ -56,6 +56,7 @@ import com.jairomatias.eventix.sale.repository.SaleItemRepository;
 import com.jairomatias.eventix.sale.repository.SaleRepository;
 import com.jairomatias.eventix.sale.repository.TicketTypeRepository;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
+import com.jairomatias.eventix.shared.exception.PaymentRejectedException;
 import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
 import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.repository.UserRepository;
@@ -402,7 +403,7 @@ public class DefaultSaleService implements SaleService {
     }
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = PaymentRejectedException.class)
     @PreAuthorize("hasAnyRole('ADMINISTRATOR', 'OPERATOR')")
     public void refund(
             Long id,
@@ -450,7 +451,7 @@ public class DefaultSaleService implements SaleService {
                 actor));
 
         if (result.status() != PaymentStatus.APPROVED) {
-            throw new BusinessRuleException(
+            throw new PaymentRejectedException(
                     "La pasarela no aprobó el reembolso.");
         }
         sale.markRefunded(reason, processedAt);
