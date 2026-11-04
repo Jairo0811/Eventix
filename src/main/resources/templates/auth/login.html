@@ -51,6 +51,7 @@
             </div>
 
             <form th:action="@{/login}" method="post" novalidate aria-describedby="login-help">
+                <input type="hidden" name="next" th:if="${next != null}" th:value="${next}">
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="username">Correo o usuario</label>
                     <div class="input-group">
