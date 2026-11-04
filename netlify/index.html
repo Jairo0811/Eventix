@@ -3,68 +3,413 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Eventix: plataforma de eventos, entradas digitales y control de acceso. El sitio público se encuentra en preparación.">
+  <meta name="description" content="Conoce Eventix: una nueva experiencia para descubrir eventos, gestionar boletas digitales y facilitar el acceso con QR. Vista previa del producto en desarrollo.">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#071b24">
-  <title>Eventix · Tu próxima experiencia comienza aquí</title>
+  <meta name="theme-color" content="#071820">
+  <title>Eventix · Descubre eventos. Vive la experiencia.</title>
   <style>
-    :root { color-scheme: dark; --bg:#071b24; --surface:#102c32; --green:#22c55e; --teal:#14b8a6; --text:#eefcf5; --muted:#b8d1cb; }
-    * { box-sizing:border-box; }
-    body { min-height:100vh; margin:0; background:radial-gradient(circle at 85% 12%,#125842 0,transparent 33%),linear-gradient(135deg,#071b24,#091f23 65%,#092b2c); color:var(--text); font:16px/1.6 Inter,"Segoe UI",Arial,sans-serif; }
+    :root {
+      color-scheme: light;
+      --night:#071820; --night-2:#0a2530; --deep:#0e392f;
+      --green:#22c55e; --green-dark:#15803d; --mint:#86efac;
+      --teal:#14b8a6; --white:#ffffff; --light:#f2f8f5;
+      --ink:#142631; --muted:#576c74; --line:#dce8e3;
+      --radius:22px; --shadow:0 22px 55px rgba(7,24,32,.10);
+    }
+    *,*::before,*::after { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:90px; }
+    body { margin:0; background:var(--light); color:var(--ink); font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif; line-height:1.55; overflow-x:hidden; }
     a { color:inherit; }
-    a:focus-visible { outline:3px solid #86efac; outline-offset:5px; }
-    .container { width:min(1100px,calc(100% - 2.5rem)); margin-inline:auto; }
-    header { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1.9rem 0; }
-    .brand { display:inline-flex; gap:.65rem; align-items:center; font-weight:850; font-size:1.6rem; text-decoration:none; letter-spacing:-.04em; }
-    .brand-mark { display:inline-grid; place-items:center; width:2.4rem; height:2.4rem; border-radius:.75rem; background:linear-gradient(125deg,var(--green),var(--teal)); color:#071b24; font-size:1.35rem; }
-    .status { border:1px solid #276852; background:#12392e; color:#cbf9dc; border-radius:999px; padding:.35rem .85rem; font-size:.81rem; font-weight:700; }
-    main { padding:clamp(3rem,9vw,7.5rem) 0 5rem; }
-    .eyebrow { display:inline-flex; gap:.55rem; align-items:center; text-transform:uppercase; letter-spacing:.13em; color:#a6f1c2; font-size:.76rem; font-weight:800; }
-    .dot { width:.55rem; height:.55rem; border-radius:50%; background:var(--green); }
-    h1 { max-width:850px; font-size:clamp(2.5rem,7.6vw,5.5rem); letter-spacing:-.065em; line-height:1.07; margin:1.1rem 0 1.5rem; }
-    h1 span { color:#80efb0; }
-    .intro { max-width:640px; font-size:clamp(1.05rem,2vw,1.25rem); color:var(--muted); }
-    .note { max-width:740px; margin:2.4rem 0 0; border:1px solid #2e5d57; border-left:4px solid var(--green); background:rgb(15 56 52 / .72); border-radius:.85rem; padding:1.1rem 1.3rem; }
-    .note strong { display:block; color:#f0fff6; margin-bottom:.35rem; }
-    .note p { color:var(--muted); margin:0; }
-    .actions { display:flex; flex-wrap:wrap; gap:.8rem; margin-top:2rem; }
-    .button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:.85rem 1.3rem; border-radius:.75rem; font-weight:750; text-decoration:none; background:var(--green); color:#06241a; }
-    .button:hover { background:#86efac; }
-    .secondary { border:1px solid #67998b; background:transparent; color:#eefcf5; }
-    .secondary:hover { background:#153f38; }
-    .features { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin-top:4rem; }
-    .feature { background:rgb(12 44 49 / .76); border:1px solid #224a48; padding:1.4rem; border-radius:1rem; }
-    .feature h2 { font-size:1.06rem; margin:0 0 .5rem; }
-    .feature p { color:var(--muted); font-size:.95rem; margin:0; }
-    footer { border-top:1px solid #28514d; color:var(--muted); padding:1.6rem 0 2.5rem; font-size:.88rem; }
-    footer .container { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.5rem 1rem; }
-    @media(max-width:650px) { header { padding:1.25rem 0; } .features { grid-template-columns:1fr; margin-top:2.8rem; } .status { font-size:.72rem; } }
-    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; } }
+    a:focus-visible,summary:focus-visible { outline:3px solid #4ade80; outline-offset:4px; }
+    svg { display:inline-block; flex:none; width:1.15em; height:1.15em; vertical-align:-.18em; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .wrap { width:min(1216px,calc(100% - 48px)); margin-inline:auto; }
+    .skip-link { position:absolute; left:12px; top:-60px; z-index:100; background:#fff; padding:12px 16px; border-radius:9px; }
+    .skip-link:focus { top:12px; }
+    .dark-stage { background:radial-gradient(ellipse 850px 650px at 87% 30%,rgba(34,197,94,.17),transparent 75%),radial-gradient(ellipse 800px 600px at 9% 4%,rgba(20,184,166,.12),transparent 69%),linear-gradient(144deg,#061923 0%,#092630 56%,#0b332e 100%); color:#effaf5; }
+    .site-header { position:relative; z-index:20; background:rgba(5,24,32,.84); border-bottom:1px solid rgba(255,255,255,.085); backdrop-filter:blur(14px); }
+    .nav { display:flex; min-height:78px; align-items:center; justify-content:space-between; gap:22px; }
+    .brand { display:inline-flex; gap:11px; align-items:center; text-decoration:none; font-size:1.45rem; letter-spacing:-.055em; font-weight:850; white-space:nowrap; }
+    .brand-icon { width:39px; height:39px; border-radius:11px; background:linear-gradient(135deg,#22c55e,#14b8a6); display:grid; place-items:center; color:#06221b; box-shadow:0 4px 20px rgba(34,197,94,.16); }
+    .brand-icon svg { width:24px; height:24px; stroke-width:2; }
+    .nav-links { display:flex; align-items:center; gap:clamp(12px,2.5vw,31px); }
+    .nav-links a { color:#c5dad7; font-weight:600; font-size:.90rem; text-decoration:none; }
+    .nav-links a:hover { color:#fff; }
+    .nav-actions { display:flex; align-items:center; gap:11px; }
+    .status-pill { display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(134,239,172,.25); border-radius:999px; padding:9px 12px; background:rgba(34,197,94,.1); color:#c2f5d5; font-size:.78rem; font-weight:750; white-space:nowrap; }
+    .status-dot { display:inline-block; width:7px; height:7px; flex:none; border-radius:50%; background:#56e78e; box-shadow:0 0 0 4px rgba(34,197,94,.15); }
+    .hero { padding:90px 0 85px; position:relative; overflow:hidden; }
+    .hero-grid { display:grid; grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr); align-items:center; gap:clamp(30px,5vw,72px); }
+    .eyebrow { display:inline-flex; gap:10px; align-items:center; font-weight:800; font-size:.75rem; letter-spacing:.115em; text-transform:uppercase; color:#a2f4bd; }
+    .hero h1 { margin:22px 0 24px; font-size:clamp(3.1rem,5.35vw,5.7rem); font-weight:850; letter-spacing:-.068em; line-height:1.045; max-width:670px; }
+    .hero h1 span { display:block; color:#8becb0; }
+    .hero-lead { margin:0; max-width:600px; font-size:clamp(1rem,1.4vw,1.17rem); color:#c3d4d4; line-height:1.77; }
+    .hero-actions { display:flex; flex-wrap:wrap; gap:12px; margin:31px 0 23px; }
+    .button { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:49px; padding:12px 21px; border-radius:11px; font-weight:800; font-size:.94rem; text-decoration:none; transition:transform .2s,background .2s,border-color .2s; }
+    .button:hover { transform:translateY(-2px); }
+    .button-primary { color:#052417; background:#50d97b; box-shadow:0 9px 25px rgba(34,197,94,.2); }
+    .button-primary:hover { background:#86efac; }
+    .button-ghost { color:#ecfff5; border:1px solid #537e75; background:rgba(255,255,255,.04); }
+    .button-ghost:hover { border-color:#9bd6b7; background:rgba(255,255,255,.09); }
+    .micro-copy { font-size:.85rem; color:#9fbcb8; }
+    .micro-copy svg { color:#80e5a7; margin-right:5px; }
+    .trust-row { display:flex; flex-wrap:wrap; gap:12px 22px; margin-top:32px; color:#bbd2d0; font-size:.82rem; }
+    .trust-row span { display:inline-flex; gap:8px; align-items:center; }
+    .trust-row svg { color:#83f1b0; font-size:1.15rem; }
+    .visual { position:relative; min-width:0; padding:20px 13px 26px 3px; }
+    .visual::before { content:""; position:absolute; width:75%; aspect-ratio:1; right:-11%; top:1%; border-radius:50%; background:rgba(34,197,94,.17); filter:blur(68px); pointer-events:none; }
+    .browser-frame { position:relative; border:1px solid #416363; border-radius:24px; padding:0; overflow:hidden; background:#0d2730; box-shadow:0 32px 90px rgba(0,0,0,.38),0 0 0 8px rgba(255,255,255,.035); }
+    .browser-top { display:flex; align-items:center; justify-content:space-between; background:#0a2029; border-bottom:1px solid rgba(255,255,255,.1); min-height:44px; padding:0 15px; }
+    .window-dots { display:flex; gap:6px; }
+    .window-dots span { width:7px; height:7px; background:#567276; border-radius:50%; }
+    .window-dots span:first-child { background:#55c995; }
+    .window-url { color:#91b6b2; font-size:.71rem; letter-spacing:.01em; }
+    .browser-body { padding:21px; }
+    .mini-topline { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:16px; }
+    .mini-topline strong { font-size:.94rem; letter-spacing:-.02em; }
+    .mini-topline small { color:#8bd7ac; font-size:.68rem; }
+    .mini-search { display:flex; align-items:center; gap:11px; background:#fbfffd; color:#6c7d7a; border-radius:10px; min-height:44px; padding:10px 14px; font-size:.76rem; }
+    .mini-search svg { color:#218c55; }
+    .mini-chips { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0 16px; }
+    .mini-chips span { padding:5px 9px; border:1px solid #375952; border-radius:99px; color:#bdd4ca; font-size:.68rem; }
+    .mini-chips span:first-child { background:rgba(34,197,94,.18); border-color:#4f946c; color:#b4f2c9; }
+    .mini-card { overflow:hidden; background:#f9fcfa; color:#12352e; border-radius:15px; }
+    .mini-cover { min-height:194px; position:relative; overflow:hidden; background:radial-gradient(circle at 69% 34%,#90fff0 0%,#30aca3 8%,transparent 26%),radial-gradient(ellipse at 75% 80%,rgba(58,255,181,.4),transparent 43%),linear-gradient(133deg,#14284c 1%,#10696e 55%,#052327 100%); }
+    .mini-cover::before { content:""; position:absolute; width:140%; height:2px; left:-20%; top:60%; background:rgba(204,255,249,.8); transform:rotate(-23deg); box-shadow:0 28px 0 rgba(215,255,247,.35),0 -65px 0 rgba(255,255,255,.2),0 -95px 0 rgba(255,255,255,.13); }
+    .mini-cover::after { content:""; position:absolute; width:190px; height:190px; border-radius:50%; border:1px solid rgba(171,255,231,.45); box-shadow:0 0 0 18px rgba(171,255,231,.045),0 0 0 52px rgba(171,255,231,.035); right:-20px; top:4px; }
+    .mini-cover-text { position:absolute; z-index:1; bottom:15px; left:17px; right:15px; }
+    .mini-cover-text span { color:#b0ffdf; display:block; font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.12em; }
+    .mini-cover-text strong { color:#fff; font-size:1.6rem; line-height:1; letter-spacing:-.06em; display:block; margin-top:6px; }
+    .mini-cover-tag { position:absolute; top:12px; left:12px; background:rgba(5,31,34,.7); border:1px solid rgba(168,241,213,.3); padding:5px 8px; color:#d2ffea; font-size:.65rem; border-radius:7px; font-weight:700; }
+    .mini-card-info { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:14px 16px; }
+    .mini-card-info strong { display:block; font-size:.82rem; }
+    .mini-card-info small { display:block; color:#60756e; font-size:.7rem; margin-top:4px; }
+    .mini-card-action { border-radius:8px; padding:9px 10px; background:#16834a; color:white; font-size:.66rem; font-weight:800; white-space:nowrap; }
+    .floating-ticket { position:absolute; z-index:3; right:-25px; bottom:-11px; display:flex; gap:13px; width:min(270px,75%); padding:13px; align-items:center; background:#fff; color:#102b27; border:1px solid #d8e9e3; border-radius:14px; transform:rotate(5deg); box-shadow:0 18px 45px rgba(0,0,0,.32); }
+    .ticket-demo-data { min-width:0; flex:1; }
+    .ticket-demo-data b { display:block; font-size:.75rem; }
+    .ticket-demo-data small { display:block; font-size:.64rem; color:#596e67; margin:3px 0; }
+    .ticket-demo-data em { display:inline-block; background:#d6f9e2; color:#086d38; border-radius:5px; padding:2px 5px; font-size:.60rem; font-style:normal; font-weight:800; }
+    .qr-decor { position:relative; flex:0 0 auto; width:75px; height:75px; background:#fff; border:5px solid #fff; border-radius:2px; box-shadow:0 0 0 1px #bdd2c7; }
+    .qr-decor::before { content:""; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent 0 5px,#173e31 5px 8px,transparent 8px 12px),repeating-linear-gradient(90deg,transparent 0 7px,rgba(17,69,44,.8) 7px 9px,transparent 9px 14px); opacity:.75; }
+    .qr-decor::after { content:"DEMO"; position:absolute; inset:auto 0 27px; text-align:center; background:#fff; color:#0d5936; font-weight:900; font-size:12px; transform:rotate(-15deg); }
+    .visual-caption { position:absolute; z-index:4; left:16px; bottom:-9px; color:#9cc9b6; font-size:.72rem; }
+    .hero-base { border-top:1px solid rgba(255,255,255,.10); background:rgba(5,20,27,.30); }
+    .hero-base .wrap { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; padding:17px 0; color:#accac5; font-size:.82rem; }
+    .hero-base strong { color:#f3fff7; }
+    .hero-base .labels { display:flex; flex-wrap:wrap; gap:10px 24px; }
+    .hero-base .labels span { display:inline-flex; align-items:center; gap:7px; }
+    .hero-base svg { color:#80efb0; }
+    .section { padding:92px 0; }
+    .section-kicker { color:#14824e; font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; font-weight:850; }
+    .section-title { max-width:750px; font-size:clamp(2rem,3.5vw,3.4rem); letter-spacing:-.053em; line-height:1.13; margin:12px 0; }
+    .section-desc { color:#5c716f; margin:0; max-width:675px; font-size:1.03rem; }
+    .section-top { display:flex; justify-content:space-between; gap:22px; align-items:end; margin-bottom:35px; }
+    .section-mark { color:#267c50; background:#e0f6e8; border:1px solid #bbdfcc; border-radius:999px; font-size:.78rem; padding:8px 13px; font-weight:700; white-space:nowrap; }
+    .catalog-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:21px; }
+    .catalog-card { min-width:0; background:#fff; border:1px solid var(--line); border-radius:21px; overflow:hidden; box-shadow:0 8px 27px rgba(7,24,32,.055); }
+    .catalog-art { aspect-ratio:1.53; position:relative; overflow:hidden; }
+    .catalog-art::before { content:""; position:absolute; width:190px; height:190px; border:24px solid rgba(255,255,255,.09); border-radius:50%; right:-27px; top:-60px; }
+    .catalog-art::after { content:""; position:absolute; width:130%; height:3px; background:rgba(255,255,255,.25); top:65%; left:-10%; transform:rotate(-19deg); box-shadow:0 21px 0 rgba(255,255,255,.12),0 -48px 0 rgba(255,255,255,.10); }
+    .art-music { background:radial-gradient(circle at 78% 25%,#ec8cb8 0,transparent 38%),linear-gradient(135deg,#402255,#5d2aa1 48%,#db6691); }
+    .art-tech { background:radial-gradient(circle at 78% 19%,#72ffe2 0,transparent 34%),linear-gradient(135deg,#102c59,#087c83 50%,#142b3b); }
+    .art-culture { background:radial-gradient(circle at 72% 10%,#fff3ad 0,transparent 39%),linear-gradient(135deg,#884725,#e48d4e 54%,#b54b4e); }
+    .catalog-art-label { position:absolute; bottom:17px; left:20px; right:20px; color:#fff; font-size:clamp(1.4rem,2vw,1.9rem); font-weight:850; letter-spacing:-.05em; line-height:1.06; z-index:1; text-shadow:0 1px 8px rgba(0,0,0,.22); }
+    .catalog-art-chip { position:absolute; top:16px; left:16px; color:#fff; background:rgba(6,25,34,.45); border:1px solid rgba(255,255,255,.36); border-radius:999px; padding:5px 10px; font-size:.71rem; font-weight:750; }
+    .catalog-content { padding:20px; }
+    .catalog-content h3 { font-size:1.07rem; margin:0 0 8px; letter-spacing:-.025em; }
+    .catalog-content p { color:#617570; margin:0 0 15px; font-size:.88rem; }
+    .catalog-foot { border-top:1px solid #e7efe9; padding-top:13px; display:flex; justify-content:space-between; gap:6px; align-items:center; font-size:.8rem; font-weight:750; color:#167b46; }
+    .catalog-foot .label { color:#647971; font-weight:650; }
+    .process { background:#fff; border-top:1px solid #e8f0ec; border-bottom:1px solid #e8f0ec; }
+    .process-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(30px,7vw,88px); align-items:center; }
+    .steps { display:grid; gap:24px; margin-top:29px; }
+    .step { display:flex; gap:16px; }
+    .step-number { display:grid; flex:none; place-items:center; width:43px; height:43px; border-radius:13px; background:#e3f9e8; color:#14783c; font-weight:850; }
+    .step h3 { margin:0 0 4px; font-size:1.05rem; }
+    .step p { margin:0; color:#617570; font-size:.92rem; }
+    .experience-panel { border:1px solid #dbe9e1; padding:26px; background:linear-gradient(145deg,#f7fbf7,#e9f6ef); border-radius:26px; position:relative; }
+    .experience-panel::before { content:""; position:absolute; right:-10px; top:-9px; bottom:10px; left:10px; border:1px solid #cce6d3; border-radius:27px; z-index:0; }
+    .experience-panel > * { position:relative; z-index:1; }
+    .experience-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+    .experience-head b { color:#173b2e; }
+    .experience-head span { font-size:.7rem; color:#12773f; background:#d9f7e4; border-radius:999px; padding:5px 9px; font-weight:800; }
+    .experience-ticket { display:grid; grid-template-columns:minmax(0,1fr) 114px; align-items:stretch; background:#fff; border:1px solid #daebe0; border-radius:16px; overflow:hidden; box-shadow:0 14px 30px rgba(0,0,0,.06); }
+    .experience-ticket-main { padding:19px; min-width:0; }
+    .experience-ticket-main small { display:block; color:#198850; font-weight:800; letter-spacing:.07em; font-size:.68rem; }
+    .experience-ticket-main strong { display:block; font-size:1.45rem; margin:10px 0; letter-spacing:-.06em; line-height:1.14; }
+    .experience-ticket-main p { color:#526e60; font-size:.77rem; margin:7px 0; }
+    .experience-ticket-side { display:grid; place-items:center; border-left:2px dashed #cadecf; background:#f7fdf9; padding:14px; }
+    .experience-ticket-side .qr-decor { width:74px; height:74px; }
+    .experience-foot { display:flex; gap:9px; margin-top:16px; color:#5d766a; font-size:.78rem; align-items:center; }
+    .experience-foot svg { color:#14864d; }
+    .capabilities { background:#071c24; color:#f3fbf7; }
+    .capabilities .section-kicker { color:#9de9b6; }
+    .capabilities .section-desc { color:#bdd2cc; }
+    .cap-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-top:35px; }
+    .cap-card { padding:25px 22px; border:1px solid #274e4d; background:linear-gradient(160deg,#102c32,#0d252e); border-radius:18px; min-width:0; }
+    .cap-icon { display:grid; place-items:center; width:46px; height:46px; border:1px solid rgba(134,239,172,.2); border-radius:13px; background:rgba(34,197,94,.12); color:#91efb3; font-size:1.3rem; }
+    .cap-card h3 { margin:20px 0 7px; font-size:1rem; }
+    .cap-card p { color:#b2c8c2; margin:0; font-size:.87rem; }
+    .state-section { padding:65px 0; background:#eaf6ee; }
+    .state-box { background:#fff; border:1px solid #d2e7da; border-radius:24px; padding:clamp(25px,4vw,42px); display:flex; justify-content:space-between; gap:30px; align-items:center; box-shadow:0 14px 38px rgba(5,33,18,.05); }
+    .state-box h2 { margin:8px 0 9px; font-size:clamp(1.5rem,2.5vw,2.15rem); line-height:1.2; letter-spacing:-.045em; }
+    .state-box p { margin:0; color:#5c7168; max-width:610px; }
+    .state-box .button { white-space:nowrap; }
+    .state-box .button-ghost { border-color:#247147; color:#14623a; background:#f5fbf7; }
+    .state-box .button-ghost:hover { background:#e4f5e9; }
+    .footer { background:#061923; color:#a5c0bc; border-top:1px solid #24423e; padding:31px 0; }
+    .footer-content { display:flex; justify-content:space-between; gap:20px; align-items:center; flex-wrap:wrap; font-size:.83rem; }
+    .footer strong { color:#eafff4; }
+    .footer a { color:#bbf7cf; }
+    @media(max-width:1110px) {
+      .hero { padding-top:72px; }
+      .hero h1 { font-size:clamp(2.9rem,5.7vw,4.6rem); }
+      .nav-links { gap:17px; }
+      .cap-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media(max-width:850px) {
+      .nav-links { display:none; }
+      .hero-grid { grid-template-columns:1fr; }
+      .hero { padding-top:70px; padding-bottom:60px; }
+      .hero h1 { max-width:690px; }
+      .visual { max-width:640px; margin:0 auto; width:100%; }
+      .process-grid { grid-template-columns:1fr; }
+      .experience-panel { max-width:650px; }
+      .catalog-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .state-box { align-items:start; flex-direction:column; }
+      .section { padding:70px 0; }
+    }
+    @media(max-width:600px) {
+      .wrap { width:min(100% - 32px,1216px); }
+      .nav { min-height:68px; }
+      .brand { font-size:1.24rem; }
+      .brand-icon { width:34px; height:34px; }
+      .status-pill { font-size:.65rem; padding:7px 9px; }
+      .status-pill .status-dot { width:6px; height:6px; }
+      .hero { padding:52px 0 57px; }
+      .hero h1 { font-size:clamp(2.6rem,11.7vw,4.2rem); }
+      .hero-lead { font-size:1rem; }
+      .hero-actions { display:grid; }
+      .button { width:100%; }
+      .trust-row { gap:9px 15px; }
+      .visual { padding:0 8px 21px 0; }
+      .browser-body { padding:14px; }
+      .mini-cover { min-height:170px; }
+      .mini-card-info { padding:11px; }
+      .floating-ticket { right:-6px; bottom:-13px; }
+      .visual-caption { left:6px; bottom:-11px; font-size:.62rem; }
+      .hero-base .wrap { align-items:flex-start; }
+      .section-top { align-items:start; flex-direction:column; }
+      .catalog-grid,.cap-grid { grid-template-columns:1fr; }
+      .experience-panel { padding:15px; }
+      .experience-ticket { grid-template-columns:minmax(0,1fr) 92px; }
+      .experience-ticket-main { padding:14px; }
+      .experience-ticket-main strong { font-size:1.18rem; }
+      .experience-ticket-side { padding:8px; }
+      .experience-ticket-side .qr-decor { width:63px; height:63px; }
+      .state-box .button { width:100%; }
+    }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .button { transition:none; } .button:hover { transform:none; } }
+    @media(forced-colors:active) { .status-pill,.cap-card,.catalog-card,.button { border:1px solid CanvasText; } }
   </style>
 </head>
 <body>
-  <header class="container">
-    <a class="brand" href="/" aria-label="Eventix, inicio"><span class="brand-mark" aria-hidden="true">E</span> EVENTIX</a>
-    <span class="status">Sitio en preparación</span>
-  </header>
-  <main class="container">
-    <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Experiencias que conectan</p>
-    <h1>Tu próxima experiencia <span>comienza aquí.</span></h1>
-    <p class="intro">Eventix está construyendo una experiencia para descubrir eventos, administrar entradas digitales y facilitar el acceso con códigos QR.</p>
-    <section class="note" aria-labelledby="info-title">
-      <strong id="info-title">Estamos preparando la apertura del portal.</strong>
-      <p>Esta es una portada informativa temporal. La plataforma de eventos, cuentas y boletas no funciona dentro de Netlify: se desplegará por separado con Spring Boot y una base de datos persistente. No procesamos ventas desde esta página.</p>
-    </section>
-    <div class="actions">
-      <a class="button" href="https://github.com/Jairo0811/Eventix" target="_blank" rel="noopener noreferrer">Conocer el proyecto</a>
-      <a class="button secondary" href="https://github.com/Jairo0811/Eventix#-descripci%C3%B3n" target="_blank" rel="noopener noreferrer">Ver funcionalidades</a>
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="sr-only" focusable="false">
+    <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M4 5h16v5a2 2 0 0 0 0 4v5H4v-5a2 2 0 0 0 0-4V5Z M12 5v2m0 3v4m0 3v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m16 16 5 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 3v4m10-4v4M3 10h18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 2 9 4v6c0 5-3.7 8.4-9 10-5.3-1.6-9-5-9-10V6l9-4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.5 12 2.2 2.2 4.8-4.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx=".5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx=".5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx=".5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M14 14h3v3h-3v4m4-7h3m-2 4h2v3h-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 9V5a2 2 0 0 1 2-2h13m3 9h-6a2 2 0 0 0 0 4h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  </svg>
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+  <div class="dark-stage" id="inicio">
+    <header class="site-header">
+      <div class="wrap nav">
+        <a class="brand" href="#inicio" aria-label="Eventix, volver al inicio">
+          <span class="brand-icon"><svg aria-hidden="true"><use href="#i-ticket"></use></svg></span>
+          EVENTIX
+        </a>
+        <nav class="nav-links" aria-label="Navegación principal">
+          <a href="#experiencia">Explorar</a>
+          <a href="#como-funciona">Cómo funciona</a>
+          <a href="#funcionalidades">Funcionalidades</a>
+          <a href="#estado">Estado del proyecto</a>
+        </nav>
+        <div class="nav-actions">
+          <span class="status-pill"><span class="status-dot" aria-hidden="true"></span> Sitio en preparación</span>
+        </div>
+      </div>
+    </header>
+    <main id="contenido">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="wrap hero-grid">
+          <div>
+            <span class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Experiencias que conectan</span>
+            <h1 id="hero-title">Descubre eventos. <span>Vive la experiencia.</span></h1>
+            <p class="hero-lead">Conciertos, conferencias y momentos inolvidables. Eventix está diseñado para conectar cada evento con su público, desde el descubrimiento hasta la entrada con QR.</p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#experiencia">Ver experiencia de Eventix <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a>
+              <a class="button button-ghost" href="https://github.com/Jairo0811/Eventix" target="_blank" rel="noopener noreferrer">Conocer el proyecto <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a>
+            </div>
+            <div class="micro-copy"><svg aria-hidden="true"><use href="#i-check"></use></svg> Vista conceptual del producto · Sin compras habilitadas en este sitio</div>
+            <div class="trust-row" aria-label="Capacidades de la plataforma">
+              <span><svg aria-hidden="true"><use href="#i-ticket"></use></svg> Boletas digitales</span>
+              <span><svg aria-hidden="true"><use href="#i-qr"></use></svg> Acceso con QR</span>
+              <span><svg aria-hidden="true"><use href="#i-shield"></use></svg> Validaciones seguras</span>
+            </div>
+          </div>
+          <div class="visual" aria-label="Vista ilustrativa de la futura plataforma de eventos">
+            <div class="browser-frame" aria-hidden="true">
+              <div class="browser-top">
+                <div class="window-dots"><span></span><span></span><span></span></div>
+                <span class="window-url">eventix · descubre experiencias</span>
+              </div>
+              <div class="browser-body">
+                <div class="mini-topline"><strong>Explora tu próximo evento</strong><small>VISTA CONCEPTUAL</small></div>
+                <div class="mini-search"><svg><use href="#i-search"></use></svg> Evento, artista o lugar...</div>
+                <div class="mini-chips"><span>Todos</span><span>Conciertos</span><span>Conferencias</span><span>Cultura</span></div>
+                <div class="mini-card">
+                  <div class="mini-cover">
+                    <span class="mini-cover-tag">Muestra visual</span>
+                    <div class="mini-cover-text"><span>Una experiencia por descubrir</span><strong>Vive el escenario.</strong></div>
+                  </div>
+                  <div class="mini-card-info">
+                    <div><strong>Descubre experiencias únicas</strong><small>Tu próxima historia comienza aquí</small></div>
+                    <span class="mini-card-action">Vista del evento</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="floating-ticket" aria-hidden="true">
+              <div class="ticket-demo-data">
+                <b>Tu entrada, contigo.</b>
+                <small>Boleta digital Eventix</small>
+                <em>VISTA DEMO</em>
+              </div>
+              <div class="qr-decor"></div>
+            </div>
+            <span class="visual-caption">Interfaz ilustrativa · No muestra eventos reales</span>
+          </div>
+        </div>
+      </section>
+    </main>
+    <div class="hero-base">
+      <div class="wrap">
+        <strong>Todo el evento, en una sola experiencia.</strong>
+        <div class="labels">
+          <span><svg aria-hidden="true"><use href="#i-search"></use></svg> Descubre</span>
+          <span><svg aria-hidden="true"><use href="#i-ticket"></use></svg> Gestiona tus boletas</span>
+          <span><svg aria-hidden="true"><use href="#i-qr"></use></svg> Presenta tu QR</span>
+        </div>
+      </div>
     </div>
-    <section class="features" aria-label="Qué ofrecerá Eventix">
-      <article class="feature"><h2>Descubre eventos</h2><p>Catálogo de actividades, ubicaciones y categorías para encontrar nuevas experiencias.</p></article>
-      <article class="feature"><h2>Boletas digitales</h2><p>Entradas con QR y opciones de billetera digital cuando los proveedores estén habilitados.</p></article>
-      <article class="feature"><h2>Control de acceso</h2><p>Verificación segura en el recinto para organizadores y asistentes.</p></article>
-    </section>
-  </main>
-  <footer><div class="container"><span>© 2026 Eventix · Proyecto de software.</span><span>Portada informativa · Sin pagos ni cuentas habilitados aquí.</span></div></footer>
+  </div>
+
+  <section class="section" id="experiencia" aria-labelledby="experience-title">
+    <div class="wrap">
+      <div class="section-top">
+        <div>
+          <span class="section-kicker">Explora lo que viene</span>
+          <h2 class="section-title" id="experience-title">Encuentra tu próxima experiencia.</h2>
+          <p class="section-desc">Una vista del catálogo que estamos preparando: visual, claro y pensado para descubrir lo que realmente te interesa.</p>
+        </div>
+        <span class="section-mark">Ejemplos de diseño · Sin eventos publicados aquí</span>
+      </div>
+      <div class="catalog-grid">
+        <article class="catalog-card">
+          <div class="catalog-art art-music" aria-hidden="true"><span class="catalog-art-chip">Música</span><span class="catalog-art-label">El ritmo nos conecta.</span></div>
+          <div class="catalog-content">
+            <h3>Conciertos y espectáculos</h3>
+            <p>Una experiencia visual para encontrar tu próximo concierto y conocer sus detalles.</p>
+            <div class="catalog-foot"><span>Exploración de eventos</span><span class="label">Vista de muestra</span></div>
+          </div>
+        </article>
+        <article class="catalog-card">
+          <div class="catalog-art art-tech" aria-hidden="true"><span class="catalog-art-chip">Tecnología</span><span class="catalog-art-label">Ideas que transforman.</span></div>
+          <div class="catalog-content">
+            <h3>Conferencias y encuentros</h3>
+            <p>Información de fecha, lugar y entradas organizada para tomar decisiones con claridad.</p>
+            <div class="catalog-foot"><span>Detalle del evento</span><span class="label">Vista de muestra</span></div>
+          </div>
+        </article>
+        <article class="catalog-card">
+          <div class="catalog-art art-culture" aria-hidden="true"><span class="catalog-art-chip">Cultura</span><span class="catalog-art-label">Momentos para recordar.</span></div>
+          <div class="catalog-content">
+            <h3>Experiencias y actividades</h3>
+            <p>Descubre propuestas culturales, actividades y eventos desde un solo lugar.</p>
+            <div class="catalog-foot"><span>Categorías y búsqueda</span><span class="label">Vista de muestra</span></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section process" id="como-funciona" aria-labelledby="process-title">
+    <div class="wrap process-grid">
+      <div>
+        <span class="section-kicker">El recorrido del asistente</span>
+        <h2 class="section-title" id="process-title">De descubrir el evento a vivirlo en persona.</h2>
+        <p class="section-desc">Cada paso está pensado para sentirse simple. Aquí puedes ver el concepto de la experiencia de comprador que desarrollamos en Eventix.</p>
+        <div class="steps">
+          <div class="step"><span class="step-number">01</span><div><h3>Encuentra lo que te gusta</h3><p>Explora por categoría, consulta los detalles y elige la experiencia adecuada.</p></div></div>
+          <div class="step"><span class="step-number">02</span><div><h3>Organiza tus entradas</h3><p>Consulta tus boletas y la información importante desde «Mi Eventix».</p></div></div>
+          <div class="step"><span class="step-number">03</span><div><h3>Presenta tu código QR</h3><p>La plataforma está diseñada para validar las boletas en el acceso al recinto.</p></div></div>
+        </div>
+      </div>
+      <div class="experience-panel">
+        <div class="experience-head"><b>Mi Eventix · Boleta digital</b><span>Diseño de muestra</span></div>
+        <div class="experience-ticket">
+          <div class="experience-ticket-main">
+            <small>EVENTIX / ENTRADA DIGITAL</small>
+            <strong>Tu próximo gran momento</strong>
+            <p><svg aria-hidden="true"><use href="#i-calendar"></use></svg> Fecha por anunciar</p>
+            <p><svg aria-hidden="true"><use href="#i-ticket"></use></svg> Entrada de demostración</p>
+            <p style="font-weight:800;color:#136e3a;margin-top:14px;">QR ilustrativo, no válido</p>
+          </div>
+          <div class="experience-ticket-side"><div class="qr-decor" aria-hidden="true"></div></div>
+        </div>
+        <div class="experience-foot"><svg aria-hidden="true"><use href="#i-shield"></use></svg> La emisión y validación real requieren el backend de Eventix.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section capabilities" id="funcionalidades" aria-labelledby="capabilities-title">
+    <div class="wrap">
+      <span class="section-kicker">Eventix para asistentes y organizadores</span>
+      <h2 class="section-title" id="capabilities-title">Más que una entrada. <br>Una plataforma completa.</h2>
+      <p class="section-desc">Las capacidades del producto se desarrollan sobre Java, Spring Boot y Thymeleaf. Esta página presenta su concepto visual, no una simulación de operaciones reales.</p>
+      <div class="cap-grid">
+        <article class="cap-card"><span class="cap-icon"><svg aria-hidden="true"><use href="#i-search"></use></svg></span><h3>Catálogo público</h3><p>Descubrimiento, categorías y páginas de detalle para eventos publicados.</p></article>
+        <article class="cap-card"><span class="cap-icon"><svg aria-hidden="true"><use href="#i-ticket"></use></svg></span><h3>Boletas digitales</h3><p>Entradas individuales y consulta del historial de boletas del comprador.</p></article>
+        <article class="cap-card"><span class="cap-icon"><svg aria-hidden="true"><use href="#i-qr"></use></svg></span><h3>Control de acceso</h3><p>Códigos QR firmados y verificación de entradas en el recinto.</p></article>
+        <article class="cap-card"><span class="cap-icon"><svg aria-hidden="true"><use href="#i-grid"></use></svg></span><h3>Gestión de eventos</h3><p>Herramientas operativas para organizadores, reservaciones y reportes.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="state-section" id="estado" aria-labelledby="state-title">
+    <div class="wrap">
+      <div class="state-box">
+        <div>
+          <span class="section-kicker">Estado del proyecto</span>
+          <h2 id="state-title">Estamos preparando la apertura.</h2>
+          <p>Esta página es una vista comercial estática. El catálogo con datos reales, las cuentas, las compras y las boletas operarán en el servidor Spring Boot, cuando su despliegue y las integraciones estén disponibles. Aquí no se procesan pagos ni se emiten entradas.</p>
+        </div>
+        <a class="button button-ghost" href="https://github.com/Jairo0811/Eventix" target="_blank" rel="noopener noreferrer">Seguir el desarrollo <svg aria-hidden="true"><use href="#i-arrow"></use></svg></a>
+      </div>
+    </div>
+  </section>
+  <footer class="footer">
+    <div class="wrap footer-content">
+      <span><strong>EVENTIX</strong> · Tu próxima experiencia comienza aquí.</span>
+      <span>© 2026 Eventix · Portada conceptual, sin ventas habilitadas.</span>
+      <a href="https://github.com/Jairo0811/Eventix" target="_blank" rel="noopener noreferrer">Repositorio GitHub</a>
+    </div>
+  </footer>
 </body>
 </html>
