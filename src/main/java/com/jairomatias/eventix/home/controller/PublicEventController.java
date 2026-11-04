@@ -2,10 +2,8 @@ package com.jairomatias.eventix.home.controller;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.jairomatias.eventix.home.dto.HomeEventView;
 import com.jairomatias.eventix.home.dto.PublicEventDetail;
+import com.jairomatias.eventix.home.service.IcsCalendarWriter;
 import com.jairomatias.eventix.home.service.PublicStorefrontService;
 import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
 
@@ -31,8 +30,6 @@ import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
 @Controller
 public class PublicEventController {
 
-    private static final DateTimeFormatter ICS_UTC =
-            DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'");
     private static final int SITEMAP_CACHE_MINUTES = 10;
     private static final String NOT_FOUND = "No se encontró el evento solicitado.";
 
@@ -81,24 +78,24 @@ public class PublicEventController {
     public ResponseEntity<byte[]> calendar(@PathVariable Long id) {
         PublicEventDetail event = storefront.findEvent(id)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND));
-        String location = event.venue() + (event.address() == null ? "" : ", " + event.address());
-        String ics = String.join("\r\n",
-                "BEGIN:VCALENDAR",
-                "VERSION:2.0",
-                "PRODID:-//Eventix//Eventos//ES",
-                "BEGIN:VEVENT",
-                "UID:event-" + event.id() + "@eventix",
-                "DTSTAMP:" + ICS_UTC.format(ZonedDateTime.now(ZoneOffset.UTC)),
-                "DTSTART:" + icsUtc(event.startAt()),
-                "DTEND:" + icsUtc(event.endAt()),
-                "SUMMARY:" + icsText(event.title()),
-                "LOCATION:" + icsText(location),
-                "URL:" + baseUrl + "/e/" + event.id(),
-                "END:VEVENT",
-                "END:VCALENDAR") + "\r\n";
+        String location = event.address() == null || event.address().isBlank()
+                ? event.venue()
+                : event.venue() + ", " + event.address();
+        String ics = IcsCalendarWriter.forEvent(
+                event.id(),
+                event.title(),
+                location,
+                baseUrl + "/e/" + event.id(),
+                event.startAt(),
+                event.endAt(),
+                PublicEventDetail.EVENT_ZONE,
+                ZonedDateTime.now(ZoneOffset.UTC));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        ContentDisposition.attachment().filename("evento-" + event.id() + ".ics").build().toString())
+                        ContentDisposition.attachment()
+                                .filename("evento-" + event.id() + ".ics")
+                                .build()
+                                .toString())
                 .contentType(MediaType.parseMediaType("text/calendar;charset=UTF-8"))
                 .body(ics.getBytes(StandardCharsets.UTF_8));
     }
@@ -183,21 +180,6 @@ public class PublicEventController {
             return cover;
         }
         return cover.startsWith("/") ? baseUrl + cover : null;
-    }
-
-    private static String icsUtc(LocalDateTime value) {
-        return ICS_UTC.format(value.atZone(PublicEventDetail.EVENT_ZONE).withZoneSameInstant(ZoneOffset.UTC));
-    }
-
-    private static String icsText(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value.replace("\\", "\\\\")
-                .replace(";", "\;")
-                .replace(",", "\\,")
-                .replace("\r", "")
-                .replace("\n", "\\n");
     }
 
     private static void appendUrl(StringBuilder xml, String location) {
