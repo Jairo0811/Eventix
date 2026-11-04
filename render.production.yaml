@@ -1,0 +1,56 @@
+# Blueprint de PRODUCCIÓN (opcional, con coste).
+# No reemplaza render.yaml (demo H2); elegir manualmente este archivo al crear
+# un Blueprint en Render. No crear ni desplegar sin SQL Server externo y secretos.
+services:
+  - type: web
+    name: eventix-production
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: 1c-2g
+    healthCheckPath: /actuator/health/readiness
+    autoDeployTrigger: off
+    disk:
+      name: eventix-covers
+      mountPath: /app/data
+      sizeGB: 5
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: APP_PORT
+        value: 10000
+      - key: APP_BASE_URL
+        sync: false
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: FLYWAY_DB_USERNAME
+        sync: false
+      - key: FLYWAY_DB_PASSWORD
+        sync: false
+      - key: EVENT_COVER_STORAGE_PATH
+        value: /app/data/event-covers
+      - key: EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN
+        value: false
+      - key: EVENTIX_ELIGIBILITY_HMAC_SECRET
+        generateValue: true
+      - key: TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY
+        value: false
+      - key: TICKETING_SIGNING_KEY_ID
+        sync: false
+      - key: TICKETING_SIGNING_PRIVATE_KEY
+        sync: false
+      - key: TICKETING_SIGNING_PUBLIC_KEY
+        sync: false
+      - key: EVENTIX_EMAIL_ENABLED
+        value: false
+      - key: EVENTIX_REMINDERS_ENABLED
+        value: false
+      - key: AZUL_WALLET_ENABLED
+        value: false
+      - key: GOOGLE_WALLET_ENABLED
+        value: false
+      - key: APPLE_WALLET_ENABLED
+        value: false
