@@ -13,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 import org.springframework.security.web.header.writers.StaticHeadersWriter;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Configuration
 public class SecurityConfig {
@@ -40,6 +41,15 @@ public class SecurityConfig {
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.externalOidcUserService = externalOidcUserService;
         this.registrations = registrations;
+    }
+
+    /**
+     * Notifica al registro de sesiones cuando una sesión termina; sin esto
+     * {@code maximumSessions} no se entera de logouts ni expiraciones.
+     */
+    @Bean
+    HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 
     @Bean
