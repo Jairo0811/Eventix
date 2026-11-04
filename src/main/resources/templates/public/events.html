@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/public :: head('Eventos', 'Descubre conciertos, conferencias y experiencias. Compra tus boletas digitales en Eventix.', ${canonicalUrl}, ${ogImage})}"></head>
+<body class="home-page public-page">
+<header th:replace="~{fragments/public :: header('events')}"></header>
+<main id="main-content">
+    <section class="public-hero">
+        <div class="container">
+            <h1>Encuentra tu próximo evento</h1>
+            <p>Conciertos, conferencias y experiencias. Compra en minutos y lleva tu boleta en el celular.</p>
+            <form class="public-search" th:action="@{/e}" method="get" role="search">
+                <input type="hidden" name="when" th:value="${when}">
+                <div>
+                    <label class="visually-hidden" for="term">Buscar</label>
+                    <input class="form-control form-control-lg" id="term" name="term" type="search" maxlength="80"
+                           th:value="${term}" placeholder="Evento, artista o lugar">
+                </div>
+                <div>
+                    <label class="visually-hidden" for="category">Categoría</label>
+                    <select class="form-select form-select-lg" id="category" name="category">
+                        <option value="">Todas las categorías</option>
+                        <option th:each="item : ${categories}" th:value="${item.id}" th:text="${item.name}"
+                                th:selected="${item.id == selectedCategory}">Música</option>
+                    </select>
+                </div>
+                <button class="btn btn-success btn-lg" type="submit"><i class="bi bi-search me-2" aria-hidden="true"></i>Buscar</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="public-surface">
+        <div class="container">
+            <nav class="public-chips" aria-label="Filtrar por fecha">
+                <a th:each="option : ${ {'all','today','weekend','month'} }"
+                   th:href="@{/e(term=${term},category=${selectedCategory},when=${option})}"
+                   th:classappend="${when == option} ? ' is-active'"
+                   th:attr="aria-current=${when == option} ? 'true'"
+                   th:text="${option == 'all' ? 'Todos' : option == 'today' ? 'Hoy' : option == 'weekend' ? 'Este fin de semana' : 'Este mes'}">Todos</a>
+            </nav>
+
+            <p class="public-count" th:if="${events.hasContent()}"
+               th:text="${events.totalElements == 1 ? '1 evento' : events.totalElements + ' eventos'}">12 eventos</p>
+
+            <div class="row g-4" th:if="${events.hasContent()}">
+                <div class="col-md-6 col-xl-4" th:each="event : ${events.content}">
+                    <article class="home-event-card h-100">
+                        <a class="public-card-link" th:href="@{/e/{id}(id=${event.id})}"
+                           th:attr="aria-label=|${event.title}, ${event.dateLabel}|">
+                            <div class="home-event-card-media">
+                                <img th:if="${event.coverImageUrl != null and !#strings.isEmpty(event.coverImageUrl)}"
+                                     th:src="${event.coverImageUrl}" th:alt="${'Portada de ' + event.title}"
+                                     loading="lazy" width="640" height="360">
+                                <img th:unless="${event.coverImageUrl != null and !#strings.isEmpty(event.coverImageUrl)}"
+                                     th:src="@{/images/event-cover-default.svg}" alt="" loading="lazy" width="640" height="360">
+                                <span class="home-event-date-badge" th:text="${event.dateLabel}">sáb 15 ago</span>
+                            </div>
+                            <div class="home-event-card-body">
+                                <span class="home-event-category" th:text="${event.categoryName}">Categoría</span>
+                                <h2 class="h4" th:text="${event.title}">Nombre del evento</h2>
+                                <p><i class="bi bi-clock" aria-hidden="true"></i> <span th:text="${event.timeLabel}">8:00 PM</span>
+                                   · <i class="bi bi-geo-alt" aria-hidden="true"></i> <span th:text="${event.venue}">Recinto</span></p>
+                                <div class="home-event-card-footer">
+                                    <strong th:text="${event.freeEvent or event.basePrice == null ? 'Gratis' : 'Desde RD$ ' + #numbers.formatDecimal(event.basePrice, 1, 'COMMA', 2, 'POINT')}">Gratis</strong>
+                                    <span class="public-card-cta">Ver entradas <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+                                </div>
+                            </div>
+                        </a>
+                    </article>
+                </div>
+            </div>
+
+            <nav class="public-pagination" aria-label="Paginación" th:if="${events.totalPages > 1}">
+                <a class="btn btn-outline-dark" th:if="${events.hasPrevious()}"
+                   th:href="@{/e(term=${term},category=${selectedCategory},when=${when},page=${events.number - 1})}">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i> Anterior</a>
+                <span th:text="|Página ${events.number + 1} de ${events.totalPages}|">Página 1 de 3</span>
+                <a class="btn btn-outline-dark" th:if="${events.hasNext()}"
+                   th:href="@{/e(term=${term},category=${selectedCategory},when=${when},page=${events.number + 1})}">
+                    Siguiente <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </nav>
+
+            <div class="public-empty" th:unless="${events.hasContent()}">
+                <i class="bi bi-calendar-x" aria-hidden="true"></i>
+                <h2 class="h3">No encontramos eventos con esos filtros</h2>
+                <p>Prueba con otra fecha o categoría, o quita la búsqueda.</p>
+                <a class="btn btn-success" th:href="@{/e}">Ver todos los eventos</a>
+            </div>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/public :: footer}"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
