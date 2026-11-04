@@ -64,6 +64,11 @@ class TicketDetailNavigationTest {
     private MockMvc mockMvc;
 
     private static TicketDetailsView ticket() {
+        return ticket(TicketStatus.ACTIVE, false, false);
+    }
+
+    private static TicketDetailsView ticket(
+            TicketStatus status, boolean googleWalletAvailable, boolean appleWalletAvailable) {
         return new TicketDetailsView(
                 41L,
                 "EVX-41",
@@ -81,7 +86,7 @@ class TicketDetailNavigationTest {
                 "General",
                 "Platea",
                 "A-1",
-                TicketStatus.ACTIVE,
+                status,
                 "ANTI-41",
                 "key-1",
                 "abcd1234",
@@ -89,8 +94,8 @@ class TicketDetailNavigationTest {
                 null,
                 null,
                 null,
-                false,
-                false);
+                googleWalletAvailable,
+                appleWalletAvailable);
     }
 
     @Test
@@ -118,4 +123,51 @@ class TicketDetailNavigationTest {
                 .andExpect(content().string(containsString("href=\"/sales/91\"")))
                 .andExpect(content().string(not(containsString("href=\"/my/tickets\""))));
     }
+    @Test
+    @WithMockUser(username = "buyer@example.com", roles = "USER")
+    void activeTicketRendersQrDialogWithLocalScriptAndCollapsibleTechnicalDetails() throws Exception {
+        when(ticketService.findById(41L, "buyer@example.com")).thenReturn(ticket());
+
+        mockMvc.perform(get("/tickets/41"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Presenta este QR en el acceso")))
+                .andExpect(content().string(containsString("data-ticket-qr-dialog")))
+                .andExpect(content().string(containsString("data-ticket-qr-open")))
+                .andExpect(content().string(containsString("href=\"/tickets/41/qr\"")))
+                .andExpect(content().string(containsString("src=\"/js/ticket-presentation.js\"")))
+                .andExpect(content().string(containsString("<details class=\"ticket-pass-technical\"")))
+                .andExpect(content().string(containsString("Ver información técnica y de la compra")));
+    }
+
+    @Test
+    @WithMockUser(username = "buyer@example.com", roles = "USER")
+    void inactiveTicketsDoNotOfferQrPresentationOrWalletButtons() throws Exception {
+        for (TicketStatus status : new TicketStatus[] {
+                TicketStatus.USED, TicketStatus.CANCELLED, TicketStatus.EXPIRED}) {
+            when(ticketService.findById(41L, "buyer@example.com"))
+                    .thenReturn(ticket(status, true, true));
+
+            mockMvc.perform(get("/tickets/41"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("Esta boleta no está activa.")))
+                    .andExpect(content().string(not(containsString("data-ticket-qr-dialog"))))
+                    .andExpect(content().string(not(containsString("src=\"/tickets/41/qr\""))))
+                    .andExpect(content().string(not(containsString("href=\"/tickets/41/wallet/google\""))))
+                    .andExpect(content().string(not(containsString("href=\"/tickets/41/wallet/apple\""))));
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "buyer@example.com", roles = "USER")
+    void activeTicketKeepsWalletLinksOnlyWhenProvidersAreAvailable() throws Exception {
+        when(ticketService.findById(41L, "buyer@example.com"))
+                .thenReturn(ticket(TicketStatus.ACTIVE, true, true));
+
+        mockMvc.perform(get("/tickets/41"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("href=\"/tickets/41/wallet/google\"")))
+                .andExpect(content().string(containsString("href=\"/tickets/41/wallet/apple\"")))
+                .andExpect(content().string(containsString("href=\"/tickets/41/pdf\"")));
+    }
+
 }
