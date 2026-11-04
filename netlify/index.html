@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Eventix: plataforma de eventos, entradas digitales y control de acceso. El sitio público se encuentra en preparación.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#071b24">
+  <title>Eventix · Tu próxima experiencia comienza aquí</title>
+  <style>
+    :root { color-scheme: dark; --bg:#071b24; --surface:#102c32; --green:#22c55e; --teal:#14b8a6; --text:#eefcf5; --muted:#b8d1cb; }
+    * { box-sizing:border-box; }
+    body { min-height:100vh; margin:0; background:radial-gradient(circle at 85% 12%,#125842 0,transparent 33%),linear-gradient(135deg,#071b24,#091f23 65%,#092b2c); color:var(--text); font:16px/1.6 Inter,"Segoe UI",Arial,sans-serif; }
+    a { color:inherit; }
+    a:focus-visible { outline:3px solid #86efac; outline-offset:5px; }
+    .container { width:min(1100px,calc(100% - 2.5rem)); margin-inline:auto; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1.9rem 0; }
+    .brand { display:inline-flex; gap:.65rem; align-items:center; font-weight:850; font-size:1.6rem; text-decoration:none; letter-spacing:-.04em; }
+    .brand-mark { display:inline-grid; place-items:center; width:2.4rem; height:2.4rem; border-radius:.75rem; background:linear-gradient(125deg,var(--green),var(--teal)); color:#071b24; font-size:1.35rem; }
+    .status { border:1px solid #276852; background:#12392e; color:#cbf9dc; border-radius:999px; padding:.35rem .85rem; font-size:.81rem; font-weight:700; }
+    main { padding:clamp(3rem,9vw,7.5rem) 0 5rem; }
+    .eyebrow { display:inline-flex; gap:.55rem; align-items:center; text-transform:uppercase; letter-spacing:.13em; color:#a6f1c2; font-size:.76rem; font-weight:800; }
+    .dot { width:.55rem; height:.55rem; border-radius:50%; background:var(--green); }
+    h1 { max-width:850px; font-size:clamp(2.5rem,7.6vw,5.5rem); letter-spacing:-.065em; line-height:1.07; margin:1.1rem 0 1.5rem; }
+    h1 span { color:#80efb0; }
+    .intro { max-width:640px; font-size:clamp(1.05rem,2vw,1.25rem); color:var(--muted); }
+    .note { max-width:740px; margin:2.4rem 0 0; border:1px solid #2e5d57; border-left:4px solid var(--green); background:rgb(15 56 52 / .72); border-radius:.85rem; padding:1.1rem 1.3rem; }
+    .note strong { display:block; color:#f0fff6; margin-bottom:.35rem; }
+    .note p { color:var(--muted); margin:0; }
+    .actions { display:flex; flex-wrap:wrap; gap:.8rem; margin-top:2rem; }
+    .button { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:.85rem 1.3rem; border-radius:.75rem; font-weight:750; text-decoration:none; background:var(--green); color:#06241a; }
+    .button:hover { background:#86efac; }
+    .secondary { border:1px solid #67998b; background:transparent; color:#eefcf5; }
+    .secondary:hover { background:#153f38; }
+    .features { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin-top:4rem; }
+    .feature { background:rgb(12 44 49 / .76); border:1px solid #224a48; padding:1.4rem; border-radius:1rem; }
+    .feature h2 { font-size:1.06rem; margin:0 0 .5rem; }
+    .feature p { color:var(--muted); font-size:.95rem; margin:0; }
+    footer { border-top:1px solid #28514d; color:var(--muted); padding:1.6rem 0 2.5rem; font-size:.88rem; }
+    footer .container { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.5rem 1rem; }
+    @media(max-width:650px) { header { padding:1.25rem 0; } .features { grid-template-columns:1fr; margin-top:2.8rem; } .status { font-size:.72rem; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; } }
+  </style>
+</head>
+<body>
+  <header class="container">
+    <a class="brand" href="/" aria-label="Eventix, inicio"><span class="brand-mark" aria-hidden="true">E</span> EVENTIX</a>
+    <span class="status">Sitio en preparación</span>
+  </header>
+  <main class="container">
+    <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Experiencias que conectan</p>
+    <h1>Tu próxima experiencia <span>comienza aquí.</span></h1>
+    <p class="intro">Eventix está construyendo una experiencia para descubrir eventos, administrar entradas digitales y facilitar el acceso con códigos QR.</p>
+    <section class="note" aria-labelledby="info-title">
+      <strong id="info-title">Estamos preparando la apertura del portal.</strong>
+      <p>Esta es una portada informativa temporal. La plataforma de eventos, cuentas y boletas no funciona dentro de Netlify: se desplegará por separado con Spring Boot y una base de datos persistente. No procesamos ventas desde esta página.</p>
+    </section>
+    <div class="actions">
+      <a class="button" href="https://github.com/Jairo0811/Eventix" target="_blank" rel="noopener noreferrer">Conocer el proyecto</a>
+      <a class="button secondary" href="https://github.com/Jairo0811/Eventix#-descripci%C3%B3n" target="_blank" rel="noopener noreferrer">Ver funcionalidades</a>
+    </div>
+    <section class="features" aria-label="Qué ofrecerá Eventix">
+      <article class="feature"><h2>Descubre eventos</h2><p>Catálogo de actividades, ubicaciones y categorías para encontrar nuevas experiencias.</p></article>
+      <article class="feature"><h2>Boletas digitales</h2><p>Entradas con QR y opciones de billetera digital cuando los proveedores estén habilitados.</p></article>
+      <article class="feature"><h2>Control de acceso</h2><p>Verificación segura en el recinto para organizadores y asistentes.</p></article>
+    </section>
+  </main>
+  <footer><div class="container"><span>© 2026 Eventix · Proyecto de software.</span><span>Portada informativa · Sin pagos ni cuentas habilitados aquí.</span></div></footer>
+</body>
+</html>
