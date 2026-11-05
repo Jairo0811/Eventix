@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+<title id="title">Eventix Tech Experience 2026</title>
+<desc id="desc">Ilustración de una conferencia tecnológica con escenario futurista en tonos verdes y turquesas. Portada de muestra.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#071622"/><stop offset=".52" stop-color="#0b2933"/><stop offset="1" stop-color="#071c28"/></linearGradient>
+  <linearGradient id="neon" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#05baaa"/><stop offset=".48" stop-color="#23da80"/><stop offset="1" stop-color="#bcff31"/></linearGradient>
+  <radialGradient id="aura"><stop stop-color="#0cbb9c" stop-opacity=".56"/><stop offset="1" stop-color="#0cbb9c" stop-opacity="0"/></radialGradient>
+  <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#0e726b"/><stop offset="1" stop-color="#020e19"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="16"/></filter>
+  <pattern id="dots" width="25" height="25" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="2" fill="#22d58c" opacity=".26"/></pattern>
+</defs>
+<rect width="1200" height="675" fill="url(#bg)"/>
+<circle cx="1030" cy="70" r="340" fill="url(#aura)"/>
+<circle cx="160" cy="480" r="300" fill="url(#aura)" opacity=".45"/>
+<rect x="720" y="0" width="480" height="260" fill="url(#dots)" opacity=".85"/>
+<path d="M0 568 C210 514 355 652 595 590 S920 510 1200 574" fill="none" stroke="#15f3a5" stroke-width="8" opacity=".3" filter="url(#glow)"/>
+<path d="M0 568 C210 514 355 652 595 590 S920 510 1200 574" fill="none" stroke="#00e7b4" stroke-width="2" opacity=".75"/>
+<g opacity=".95">
+  <ellipse cx="855" cy="560" rx="290" ry="75" fill="url(#floor)" stroke="#4bffb4" stroke-width="5"/>
+  <ellipse cx="855" cy="538" rx="250" ry="47" fill="#0b2d38" stroke="#20c8ac" stroke-width="4"/>
+  <path d="M613 536V564Q850 665 1100 561v-24" fill="none" stroke="#45ffc1" stroke-width="5" opacity=".7"/>
+  <path d="M717 183L998 183Q1018 183 1018 205V485Q1018 504 998 504H717Q694 504 694 485V205Q694 183 717 183Z" fill="#07232e" fill-opacity=".88" stroke="url(#neon)" stroke-width="5"/>
+  <rect x="710" y="202" width="295" height="275" rx="8" fill="url(#dots)"/>
+  <circle cx="855" cy="357" r="106" fill="none" stroke="#2cf9b5" stroke-width="2" opacity=".55"/>
+  <circle cx="855" cy="357" r="79" fill="none" stroke="#2cf9b5" stroke-width="2" opacity=".36"/>
+  <path d="M800 326L916 300 899 366 930 374 862 426 852 385 816 391Z" fill="url(#neon)" opacity=".9"/>
+  <path d="M773 297h57v10h-57zm-26 28h48v10h-48zm10 27h55v10h-55z" fill="#1af1b2" opacity=".8"/>
+  <path d="M660 120H1050" stroke="#1cf6be" stroke-width="8" opacity=".9" stroke-linecap="round"/>
+  <path d="M678 123L640 505M1031 123L1070 506" stroke="#1cf6be" stroke-width="2" opacity=".3"/>
+  <path d="M730 124L664 520M978 124L1043 520" stroke="#28efa0" stroke-width="12" opacity=".26" filter="url(#glow)"/>
+  <path d="M730 124L664 520M978 124L1043 520" stroke="#4af7c4" stroke-width="2" opacity=".24"/>
+</g>
+<g fill="#020c17" opacity=".85">
+  <circle cx="70" cy="623" r="26"/><ellipse cx="70" cy="688" rx="57" ry="66"/>
+  <circle cx="175" cy="638" r="22"/><ellipse cx="175" cy="701" rx="55" ry="65"/>
+  <circle cx="313" cy="620" r="24"/><ellipse cx="313" cy="699" rx="62" ry="74"/>
+  <circle cx="458" cy="643" r="25"/><ellipse cx="458" cy="703" rx="55" ry="69"/>
+  <circle cx="582" cy="635" r="24"/><ellipse cx="582" cy="700" rx="60" ry="69"/>
+  <circle cx="1138" cy="624" r="29"/><ellipse cx="1138" cy="699" rx="65" ry="76"/>
+</g>
+<rect x="43" y="48" width="390" height="34" rx="17" fill="#115240" opacity=".9"/>
+<circle cx="65" cy="65" r="6" fill="#8cfda9"/>
+<text x="85" y="72" fill="#cbffe0" font-family="Arial,sans-serif" font-weight="bold" font-size="18" letter-spacing="3">EXPERIENCIA TECNOLÓGICA</text>
+<text x="43" y="180" fill="#fff" font-family="Arial,sans-serif" font-size="72" font-weight="900" letter-spacing="-3">Eventix Tech</text>
+<text x="43" y="263" fill="url(#neon)" font-family="Arial,sans-serif" font-size="79" font-weight="900" letter-spacing="-4">Experience</text>
+<text x="43" y="357" fill="#d6ff79" font-family="Arial,sans-serif" font-size="96" font-weight="900">2026</text>
+<text x="47" y="407" fill="#e3faf1" font-family="Arial,sans-serif" font-size="23">Innovación, tecnología y experiencias</text>
+<text x="47" y="443" fill="#e3faf1" font-family="Arial,sans-serif" font-size="23">en un solo lugar.</text>
+<path d="M45 474h230" stroke="url(#neon)" stroke-width="6" stroke-linecap="round"/>
+<text x="48" y="548" fill="#c7e9db" font-family="Arial,sans-serif" font-size="18" letter-spacing="2">PORTADA ILUSTRATIVA · DEMO</text>
+</svg>
