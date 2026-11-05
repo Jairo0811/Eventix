@@ -29,6 +29,41 @@ class HostingDeploymentContractTest {
     }
 
     @Test
+    void publicDemoMatchesBuyerStorefrontWithoutFakeTransactions() throws IOException {
+        String landing = read("netlify/index.html");
+        String script = read("netlify/demo.js");
+        String config = read("netlify.toml");
+
+        assertThat(landing)
+                .contains("Compra boletas para tus eventos favoritos.")
+                .contains("Eventix Tech Experience 2026")
+                .contains("src=\"/images/eventix-logo.png\"")
+                .contains("src=\"/images/eventix-tech-experience-2026.svg\"")
+                .contains("id=\"demo-search\"")
+                .contains("id=\"demo-category\"")
+                .contains("id=\"demo-dialog\"")
+                .contains("data-demo-event")
+                .contains("data-demo-details")
+                .contains("demo.js")
+                .contains("Sin compras habilitadas")
+                .doesNotContain("<form")
+                .doesNotContain("/login")
+                .doesNotContain("/checkout")
+                .doesNotContain("/tickets/");
+
+        assertThat(Files.exists(Path.of("netlify/images/eventix-logo.png"))).isTrue();
+        assertThat(Files.exists(Path.of("netlify/images/eventix-tech-experience-2026.svg"))).isTrue();
+        assertThat(config).contains("script-src 'self'");
+        assertThat(script)
+                .contains("data-demo-event")
+                .contains("dialog.showModal()")
+                .doesNotContain("fetch(")
+                .doesNotContain("XMLHttpRequest")
+                .doesNotContain("localStorage")
+                .doesNotContain("sessionStorage");
+    }
+
+    @Test
     void productionBlueprintDoesNotInheritDemoDatabaseOrEphemeralKeys() throws IOException {
         String demo = read("src/main/resources/application-render.yml");
         String prod = read("render.production.yaml");
