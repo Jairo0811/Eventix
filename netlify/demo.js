@@ -108,6 +108,7 @@
       dialog.showModal();
     });
   });
+  dialog?.querySelector("[data-demo-close]")?.addEventListener("click", () => dialog.close());
   dialog?.addEventListener("close", () => {
     lastTrigger?.focus();
   });
