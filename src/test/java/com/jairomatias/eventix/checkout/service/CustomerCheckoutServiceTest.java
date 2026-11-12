@@ -376,8 +376,11 @@ class CustomerCheckoutServiceTest {
 
     @Test
     void propagatesTheHoldFailureWhenTheTokenIsNotValid() {
+        // Este camino falla en la retención, antes de tocar el inventario o la
+        // identidad del evento, así que solo se prepara lo que llega a usarse.
         prepareCustomer();
-        preparePublishedEvent();
+        when(event.getStatus()).thenReturn(EventStatus.PUBLISHED);
+        when(event.getStartAt()).thenReturn(LocalDateTime.of(2099, 1, 1, 20, 0));
         when(eventRepository.findDetailedById(10L)).thenReturn(Optional.of(event));
         when(ticketTypeRepository.findDetailedById(31L)).thenReturn(Optional.of(ticketType));
         when(sectionPricingService.resolveRule(event, ticketType))
