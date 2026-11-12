@@ -7,5 +7,6 @@ public record CustomerTicketOption(
         String name,
         String category,
         BigDecimal price,
-        int availableQuantity) {
+        int availableQuantity,
+        boolean seatSelectionRequired) {
 }

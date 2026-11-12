@@ -20,7 +20,8 @@ import com.jairomatias.eventix.eligibility.entity.SchoolRosterImport;
 import com.jairomatias.eventix.eligibility.repository.PromotionMemberRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolPromotionRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolRosterImportRepository;
-import com.jairomatias.eventix.role.entity.RoleName;
+import com.jairomatias.eventix.institution.entity.InstitutionMembershipRole;
+import com.jairomatias.eventix.institution.service.InstitutionAuthorizationService;
 import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.repository.UserRepository;
 
@@ -35,6 +36,7 @@ public class SchoolRosterImportService {
     private final SchoolPromotionRepository schoolPromotionRepository;
     private final SchoolRosterImportRepository rosterImportRepository;
     private final UserRepository userRepository;
+    private final InstitutionAuthorizationService authorizationService;
 
     public SchoolRosterImportService(
             CsvRosterParser csvRosterParser,
@@ -42,13 +44,15 @@ public class SchoolRosterImportService {
             PromotionMemberRepository promotionMemberRepository,
             SchoolPromotionRepository schoolPromotionRepository,
             SchoolRosterImportRepository rosterImportRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            InstitutionAuthorizationService authorizationService) {
         this.csvRosterParser = csvRosterParser;
         this.nameNormalizer = nameNormalizer;
         this.promotionMemberRepository = promotionMemberRepository;
         this.schoolPromotionRepository = schoolPromotionRepository;
         this.rosterImportRepository = rosterImportRepository;
         this.userRepository = userRepository;
+        this.authorizationService = authorizationService;
     }
 
     @Transactional
@@ -63,13 +67,15 @@ public class SchoolRosterImportService {
                 .orElseThrow(() -> new IllegalArgumentException("La promoción indicada no existe."));
         User importedBy = userRepository.findById(importedById)
                 .orElseThrow(() -> new IllegalArgumentException("El usuario importador no existe."));
-        if (importedBy.getRole().getName() != RoleName.ADMINISTRATOR) {
+        authorizationService.requireOperationalRole(
+                promotion.getInstitution(),
+                importedById,
+                InstitutionMembershipRole.OWNER,
+                InstitutionMembershipRole.ADMIN,
+                InstitutionMembershipRole.ROSTER_MANAGER);
+        if (!promotion.isActive()) {
             throw new IllegalArgumentException(
-                    "Solo un administrador puede importar padrones escolares.");
-        }
-        if (!promotion.isActive() || !promotion.getInstitution().isActive()) {
-            throw new IllegalArgumentException(
-                    "La institución y la promoción deben estar activas para importar el padrón.");
+                    "La promoción debe estar activa para importar el padrón.");
         }
 
         String checksum = checksum(content);

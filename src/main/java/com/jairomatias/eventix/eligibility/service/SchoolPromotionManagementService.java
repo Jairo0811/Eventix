@@ -19,11 +19,10 @@ import com.jairomatias.eventix.eligibility.repository.PromotionMemberRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolInstitutionRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolPromotionRepository;
 import com.jairomatias.eventix.eligibility.repository.SchoolRosterImportRepository;
-import com.jairomatias.eventix.role.entity.RoleName;
+import com.jairomatias.eventix.institution.entity.InstitutionMembershipRole;
+import com.jairomatias.eventix.institution.service.InstitutionAuthorizationService;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.shared.exception.ResourceNotFoundException;
-import com.jairomatias.eventix.user.entity.User;
-import com.jairomatias.eventix.user.repository.UserRepository;
 
 @Service
 public class SchoolPromotionManagementService {
@@ -33,7 +32,7 @@ public class SchoolPromotionManagementService {
     private final PromotionMemberRepository memberRepository;
     private final SchoolRosterImportRepository rosterImportRepository;
     private final EligibilityVerificationRepository verificationRepository;
-    private final UserRepository userRepository;
+    private final InstitutionAuthorizationService authorizationService;
 
     public SchoolPromotionManagementService(
             SchoolInstitutionRepository institutionRepository,
@@ -41,18 +40,18 @@ public class SchoolPromotionManagementService {
             PromotionMemberRepository memberRepository,
             SchoolRosterImportRepository rosterImportRepository,
             EligibilityVerificationRepository verificationRepository,
-            UserRepository userRepository) {
+            InstitutionAuthorizationService authorizationService) {
         this.institutionRepository = institutionRepository;
         this.promotionRepository = promotionRepository;
         this.memberRepository = memberRepository;
         this.rosterImportRepository = rosterImportRepository;
         this.verificationRepository = verificationRepository;
-        this.userRepository = userRepository;
+        this.authorizationService = authorizationService;
     }
 
     @Transactional(readOnly = true)
     public List<SchoolInstitutionView> listInstitutions(Long actorId) {
-        requireAdministrator(actorId);
+        authorizationService.requireAdministrator(actorId);
         return institutionRepository.findAllByOrderByNameAsc().stream()
                 .map(SchoolInstitutionView::from)
                 .toList();
@@ -60,8 +59,18 @@ public class SchoolPromotionManagementService {
 
     @Transactional(readOnly = true)
     public List<SchoolPromotionView> listPromotions(Long actorId) {
-        requireAdministrator(actorId);
+        authorizationService.requireAdministrator(actorId);
         return promotionRepository.findAllByOrderByGraduationYearDescNameAsc().stream()
+                .map(SchoolPromotionView::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<SchoolPromotionView> listPromotionsForInstitution(Long institutionId, Long actorId) {
+        SchoolInstitution institution = getInstitutionEntity(institutionId);
+        authorizationService.requireInstitutionRole(institution, actorId);
+        return promotionRepository.findAllByInstitution_IdOrderByGraduationYearDescNameAsc(institutionId)
+                .stream()
                 .map(SchoolPromotionView::from)
                 .toList();
     }
@@ -76,14 +85,15 @@ public class SchoolPromotionManagementService {
 
     @Transactional(readOnly = true)
     public SchoolPromotionView getPromotion(Long promotionId, Long actorId) {
-        requireAdministrator(actorId);
-        return SchoolPromotionView.from(getPromotionEntity(promotionId));
+        SchoolPromotion promotion = getPromotionEntity(promotionId);
+        authorizationService.requireInstitutionRole(promotion.getInstitution(), actorId);
+        return SchoolPromotionView.from(promotion);
     }
 
     @Transactional(readOnly = true)
     public List<PromotionMemberView> listMembers(Long promotionId, Long actorId) {
-        requireAdministrator(actorId);
-        getPromotionEntity(promotionId);
+        SchoolPromotion promotion = getPromotionEntity(promotionId);
+        authorizationService.requireInstitutionRole(promotion.getInstitution(), actorId);
         return memberRepository.findAllByPromotion_IdOrderByFullNameAsc(promotionId).stream()
                 .map(PromotionMemberView::from)
                 .toList();
@@ -91,8 +101,8 @@ public class SchoolPromotionManagementService {
 
     @Transactional(readOnly = true)
     public List<RosterImportView> listImports(Long promotionId, Long actorId) {
-        requireAdministrator(actorId);
-        getPromotionEntity(promotionId);
+        SchoolPromotion promotion = getPromotionEntity(promotionId);
+        authorizationService.requireInstitutionRole(promotion.getInstitution(), actorId);
         return rosterImportRepository.findAllByPromotion_IdOrderByImportedAtDesc(promotionId).stream()
                 .map(RosterImportView::from)
                 .toList();
@@ -100,7 +110,7 @@ public class SchoolPromotionManagementService {
 
     @Transactional(readOnly = true)
     public List<SchoolVerificationView> listVerifications(Long actorId) {
-        requireAdministrator(actorId);
+        authorizationService.requireAdministrator(actorId);
         return verificationRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(SchoolVerificationView::from)
                 .toList();
@@ -115,7 +125,7 @@ public class SchoolPromotionManagementService {
 
     @Transactional
     public Long createInstitution(SchoolInstitutionForm form, Long actorId) {
-        requireAdministrator(actorId);
+        authorizationService.requireAdministrator(actorId);
         String code = form.code().trim().toUpperCase();
         if (institutionRepository.existsByCodeIgnoreCase(code)) {
             throw new BusinessRuleException("Ya existe una institución con ese código.");
@@ -125,9 +135,8 @@ public class SchoolPromotionManagementService {
 
     @Transactional
     public void updateInstitution(Long institutionId, SchoolInstitutionForm form, Long actorId) {
-        requireAdministrator(actorId);
-        SchoolInstitution institution = institutionRepository.findById(institutionId)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la institución."));
+        authorizationService.requireAdministrator(actorId);
+        SchoolInstitution institution = getInstitutionEntity(institutionId);
         String code = form.code().trim().toUpperCase();
         if (institutionRepository.existsByCodeIgnoreCaseAndIdNot(code, institutionId)) {
             throw new BusinessRuleException("Ya existe otra institución con ese código.");
@@ -138,9 +147,8 @@ public class SchoolPromotionManagementService {
 
     @Transactional
     public void setInstitutionActive(Long institutionId, boolean active, Long actorId) {
-        requireAdministrator(actorId);
-        SchoolInstitution institution = institutionRepository.findById(institutionId)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la institución."));
+        authorizationService.requireAdministrator(actorId);
+        SchoolInstitution institution = getInstitutionEntity(institutionId);
         if (active) {
             institution.activate();
         } else {
@@ -151,12 +159,13 @@ public class SchoolPromotionManagementService {
 
     @Transactional
     public Long createPromotion(SchoolPromotionForm form, Long actorId) {
-        requireAdministrator(actorId);
-        SchoolInstitution institution = institutionRepository.findById(form.institutionId())
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la institución."));
-        if (!institution.isActive()) {
-            throw new BusinessRuleException("La institución debe estar activa para crear promociones.");
-        }
+        SchoolInstitution institution = getInstitutionEntity(form.institutionId());
+        authorizationService.requireOperationalRole(
+                institution,
+                actorId,
+                InstitutionMembershipRole.OWNER,
+                InstitutionMembershipRole.ADMIN,
+                InstitutionMembershipRole.EVENT_MANAGER);
         if (promotionRepository.existsByInstitution_IdAndGraduationYear(
                 form.institutionId(), form.graduationYear())) {
             throw new BusinessRuleException("Ya existe una promoción para ese año en la institución.");
@@ -167,8 +176,13 @@ public class SchoolPromotionManagementService {
 
     @Transactional
     public void updatePromotion(Long promotionId, SchoolPromotionForm form, Long actorId) {
-        requireAdministrator(actorId);
         SchoolPromotion promotion = getPromotionEntity(promotionId);
+        authorizationService.requireOperationalRole(
+                promotion.getInstitution(),
+                actorId,
+                InstitutionMembershipRole.OWNER,
+                InstitutionMembershipRole.ADMIN,
+                InstitutionMembershipRole.EVENT_MANAGER);
         if (!promotion.getInstitution().getId().equals(form.institutionId())) {
             throw new BusinessRuleException("No se puede mover una promoción a otra institución.");
         }
@@ -182,11 +196,13 @@ public class SchoolPromotionManagementService {
 
     @Transactional
     public void setPromotionActive(Long promotionId, boolean active, Long actorId) {
-        requireAdministrator(actorId);
         SchoolPromotion promotion = getPromotionEntity(promotionId);
-        if (active && !promotion.getInstitution().isActive()) {
-            throw new BusinessRuleException("La institución debe estar activa antes de activar la promoción.");
-        }
+        authorizationService.requireOperationalRole(
+                promotion.getInstitution(),
+                actorId,
+                InstitutionMembershipRole.OWNER,
+                InstitutionMembershipRole.ADMIN,
+                InstitutionMembershipRole.EVENT_MANAGER);
         if (active) {
             promotion.activate();
         } else {
@@ -195,16 +211,13 @@ public class SchoolPromotionManagementService {
         promotionRepository.save(promotion);
     }
 
+    private SchoolInstitution getInstitutionEntity(Long institutionId) {
+        return institutionRepository.findById(institutionId)
+                .orElseThrow(() -> new ResourceNotFoundException("No se encontró la institución."));
+    }
+
     private SchoolPromotion getPromotionEntity(Long promotionId) {
         return promotionRepository.findById(promotionId)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró la promoción escolar."));
-    }
-
-    private void requireAdministrator(Long actorId) {
-        User actor = userRepository.findById(actorId)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró el usuario autenticado."));
-        if (actor.getRole().getName() != RoleName.ADMINISTRATOR) {
-            throw new BusinessRuleException("Solo un administrador puede gestionar promociones escolares.");
-        }
     }
 }

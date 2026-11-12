@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Seleccionar asientos')}"></head>
+<body>
+<aside th:replace="~{fragments/sidebar :: sidebar('events')}"></aside>
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+<main class="app-main">
+    <div th:replace="~{fragments/messages :: messages}"></div>
+    <div class="mb-4">
+        <a class="text-decoration-none small"
+           th:href="@{/my/checkout/events/{id}(id=${eventId},ticketTypeId=${ticketTypeId})}">
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver al checkout
+        </a>
+        <h1 class="page-title mt-3 mb-1">Seleccionar asientos</h1>
+        <p class="page-subtitle">Elige tus asientos. Al confirmar, Eventix los retendrá durante 10 minutos.</p>
+    </div>
+    <section class="content-card mb-4" th:if="${holdToken != null}">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="text-success fw-semibold d-block">Retención activa</span>
+                <strong th:text="|${#lists.size(heldSeatIds)} asiento(s) retenido(s)|">Asientos retenidos</strong>
+                <div class="mt-2 d-flex flex-wrap align-items-center gap-2">
+                    <span class="small text-secondary">Tiempo restante:</span>
+                    <strong id="seat-hold-countdown"
+                            class="text-success font-monospace"
+                            aria-live="polite"
+                            th:attr="data-expires-at=${holdExpiresAt}">10:00</strong>
+                </div>
+                <div class="small text-secondary mt-1"
+                     th:text="|Expira: ${#temporals.format(holdExpiresAt, 'dd/MM/yyyy HH:mm:ss')}|">Expira</div>
+                <div class="small text-secondary mt-1">
+                    La retención está vinculada a tu cuenta y se recupera al volver a esta pantalla.
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-success"
+                   id="seat-hold-checkout-link"
+                   th:href="@{/my/checkout/events/{id}(id=${eventId},holdToken=${holdToken},ticketTypeId=${ticketTypeId})}">
+                    <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>Continuar al checkout
+                </a>
+                <form th:action="@{/my/checkout/events/{id}/seats/release(id=${eventId})}" method="post">
+                    <input type="hidden" name="holdToken" th:value="${holdToken}">
+                    <input type="hidden" name="ticketTypeId" th:value="${ticketTypeId}" th:if="${ticketTypeId != null}">
+                    <button class="btn btn-outline-danger" type="submit">
+                        <i class="bi bi-x-circle me-2" aria-hidden="true"></i>Liberar asientos
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+    <section class="content-card mb-4" th:unless="${#lists.isEmpty(inventory)}">
+        <div class="row g-4 align-items-end">
+            <div class="col-12 col-lg-5">
+                <span class="badge text-bg-primary mb-2">Best Available</span>
+                <h2 class="h5 mb-2">Déjale la selección a Eventix</h2>
+                <p class="text-secondary mb-0">
+                    Buscaremos un bloque contiguo dentro de la sección de tu tipo de entrada, priorizando posiciones centrales y evitando ocupar espacios accesibles salvo que los solicites.
+                </p>
+            </div>
+            <div class="col-12 col-lg-7">
+                <form class="row g-3 align-items-end"
+                      th:action="@{/my/checkout/events/{id}/seats/best-available(id=${eventId})}"
+                      method="post">
+                    <input type="hidden" name="ticketTypeId" th:value="${ticketTypeId}">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label" for="bestAvailableQuantity">Cantidad</label>
+                        <input class="form-control"
+                               id="bestAvailableQuantity"
+                               type="number"
+                               name="quantity"
+                               min="1"
+                               max="10"
+                               value="2"
+                               required
+                               th:disabled="${holdToken != null}">
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-check mt-md-4 pt-md-2">
+                            <input class="form-check-input"
+                                   id="accessibilityRequired"
+                                   type="checkbox"
+                                   name="accessibilityRequired"
+                                   value="true"
+                                   th:disabled="${holdToken != null}">
+                            <label class="form-check-label" for="accessibilityRequired">
+                                Necesito ubicación accesible
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 d-grid">
+                        <button class="btn btn-primary"
+                                type="submit"
+                                th:disabled="${holdToken != null}">
+                            <i class="bi bi-stars me-2" aria-hidden="true"></i>Buscar mejores
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+    <form th:action="@{/my/checkout/events/{id}/seats(id=${eventId})}" th:object="${seatSelectionForm}" method="post">
+        <input type="hidden" name="ticketTypeId" th:value="${ticketTypeId}">
+        <section class="content-card">
+            <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors()}">
+                <div th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</div>
+            </div>
+            <div class="text-danger small mb-3" th:if="${#fields.hasErrors('seatIds')}" th:errors="*{seatIds}"></div>
+            <div class="empty-state" th:if="${#lists.isEmpty(inventory)}">
+                <i class="bi bi-grid-3x3-gap fs-1 d-block mb-3" aria-hidden="true"></i>
+                <h2 class="h5 text-dark">No hay asientos configurados</h2>
+                <p class="mb-0">La sección asignada a esta entrada todavía no tiene inventario de asientos reservados.</p>
+            </div>
+            <div th:unless="${#lists.isEmpty(inventory)}">
+                <div class="d-flex flex-wrap gap-2 mb-4" aria-label="Leyenda de estados">
+                    <span class="badge text-bg-success">Disponible</span>
+                    <span class="badge text-bg-warning">Retenido</span>
+                    <span class="badge text-bg-secondary">Vendido</span>
+                    <span class="badge text-bg-dark">Bloqueado</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-6 col-md-4 col-lg-3 col-xl-2" th:each="seat : ${inventory}">
+                        <label class="border rounded-3 p-3 d-block h-100"
+                               th:classappend="${seat.status.name() == 'AVAILABLE' ? ' bg-body' : ' bg-body-tertiary text-secondary'}">
+                            <div class="d-flex align-items-start justify-content-between gap-2">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       th:field="*{seatIds}"
+                                       th:value="${seat.seatId}"
+                                       th:disabled="${seat.status.name() != 'AVAILABLE' or holdToken != null}">
+                                <span class="badge"
+                                      th:classappend="${seat.status.name() == 'AVAILABLE' ? ' text-bg-success' : (seat.status.name() == 'HELD' ? ' text-bg-warning' : (seat.status.name() == 'SOLD' ? ' text-bg-secondary' : ' text-bg-dark'))}"
+                                      th:text="${holdToken != null and #lists.contains(heldSeatIds, seat.seatId) ? 'TU HOLD' : seat.status}">AVAILABLE</span>
+                            </div>
+                            <strong class="d-block mt-3" th:text="${seat.label}">A-12</strong>
+                            <small class="text-secondary d-block" th:text="|${seat.sectionName} · fila ${seat.rowCode}|">VIP · A</small>
+                            <small class="text-primary d-block mt-1" th:if="${seat.accessible}">Accesible</small>
+                        </label>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end mt-4">
+                    <button class="btn btn-success btn-lg" type="submit" th:disabled="${holdToken != null}">
+                        <i class="bi bi-lock-fill me-2" aria-hidden="true"></i>Retener selección
+                    </button>
+                </div>
+            </div>
+        </section>
+    </form>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
+</main>
+<th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+<script th:src="@{/js/seat-hold-countdown.js}"></script>
+</body>
+</html>

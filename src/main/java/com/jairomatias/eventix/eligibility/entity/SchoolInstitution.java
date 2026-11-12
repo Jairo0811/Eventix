@@ -4,6 +4,8 @@ import com.jairomatias.eventix.shared.entity.AuditableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
 @Entity
@@ -22,11 +24,22 @@ public class SchoolInstitution extends AuditableEntity {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private SchoolInstitutionStatus status = SchoolInstitutionStatus.ACTIVE;
+
     protected SchoolInstitution() {
     }
 
     public SchoolInstitution(String name, String code) {
         update(name, code);
+    }
+
+    public static SchoolInstitution pendingRegistration(String name, String code) {
+        SchoolInstitution institution = new SchoolInstitution(name, code);
+        institution.active = false;
+        institution.status = SchoolInstitutionStatus.PENDING_VERIFICATION;
+        return institution;
     }
 
     public void update(String name, String code) {
@@ -47,10 +60,25 @@ public class SchoolInstitution extends AuditableEntity {
 
     public void activate() {
         this.active = true;
+        this.status = SchoolInstitutionStatus.ACTIVE;
     }
 
     public void deactivate() {
+        suspend();
+    }
+
+    public void approve() {
+        activate();
+    }
+
+    public void reject() {
         this.active = false;
+        this.status = SchoolInstitutionStatus.REJECTED;
+    }
+
+    public void suspend() {
+        this.active = false;
+        this.status = SchoolInstitutionStatus.SUSPENDED;
     }
 
     public String getName() {
@@ -63,6 +91,14 @@ public class SchoolInstitution extends AuditableEntity {
 
     public boolean isActive() {
         return active;
+    }
+
+    public SchoolInstitutionStatus getStatus() {
+        return status;
+    }
+
+    public boolean isOperational() {
+        return active && status == SchoolInstitutionStatus.ACTIVE;
     }
 
     private String requireText(String value, String message) {

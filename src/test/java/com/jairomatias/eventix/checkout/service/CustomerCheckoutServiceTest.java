@@ -50,6 +50,9 @@ import com.jairomatias.eventix.sale.service.TransactionReferenceGenerator;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.user.entity.User;
 import com.jairomatias.eventix.user.repository.UserRepository;
+import com.jairomatias.eventix.venue.dto.TicketSeatingRule;
+import com.jairomatias.eventix.venue.service.EventSeatInventoryService;
+import com.jairomatias.eventix.venue.service.EventSectionPricingService;
 
 @ExtendWith(MockitoExtension.class)
 class CustomerCheckoutServiceTest {
@@ -70,6 +73,8 @@ class CustomerCheckoutServiceTest {
     @Mock private PromotionService promotionService;
     @Mock private EventEligibilityService eligibilityService;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private EventSeatInventoryService seatInventoryService;
+    @Mock private EventSectionPricingService sectionPricingService;
     @Mock private User customer;
     @Mock private Role customerRole;
     @Mock private Event event;
@@ -94,7 +99,16 @@ class CustomerCheckoutServiceTest {
                 promotionService,
                 eligibilityService,
                 eventPublisher,
+                seatInventoryService,
+                sectionPricingService,
                 "DOP");
+
+        org.mockito.Mockito.lenient()
+                .when(sectionPricingService.resolveRule(any(Event.class), any(TicketType.class)))
+                .thenReturn(new TicketSeatingRule(
+                        false,
+                        null,
+                        new BigDecimal("500.00")));
     }
 
     @Test
@@ -127,7 +141,6 @@ class CustomerCheckoutServiceTest {
         when(ticketType.getId()).thenReturn(31L);
         when(ticketType.getName()).thenReturn("General");
         when(ticketType.getCategory()).thenReturn(TicketTypeCategory.GENERAL);
-        when(ticketType.getPrice()).thenReturn(new BigDecimal("500.00"));
         when(ticketType.getCapacity()).thenReturn(50);
         when(saleItemRepository.sumAllocatedQuantity(31L)).thenReturn(7L);
 
@@ -137,13 +150,34 @@ class CustomerCheckoutServiceTest {
         assertThat(checkout.ticketTypes()).singleElement()
                 .satisfies(option -> {
                     assertThat(option.id()).isEqualTo(31L);
+                    assertThat(option.price()).isEqualByComparingTo("500.00");
                     assertThat(option.availableQuantity()).isEqualTo(43);
                 });
     }
 
     @Test
-    void completesFreeEligibilityPurchaseWithoutCallingGateway() {
-        preparePurchaseBase();
+    void mixedGeneralAdmissionTicketCompletesWithoutSeatHold() {
+        prepareCustomer();
+        when(customer.getEmail()).thenReturn(CUSTOMER_LOGIN);
+        preparePublishedEvent();
+        prepareTicketType();
+        when(eventRepository.findDetailedByIdForUpdate(10L))
+                .thenReturn(Optional.of(event));
+        when(ticketTypeRepository.findDetailedByIdForUpdate(31L))
+                .thenReturn(Optional.of(ticketType));
+        when(reservationRepository.sumOccupiedSeats(any(), any()))
+                .thenReturn(0L);
+        when(saleItemRepository.sumAllocatedQuantity(31L)).thenReturn(0L);
+        when(reservationRepository.existsActiveDuplicate(
+                any(), any(), any(), any())).thenReturn(false);
+        when(reservationReferenceGenerator.generate())
+                .thenReturn("RSV-ABCDEFGH2345");
+        when(reservationRepository.existsByReferenceCode("RSV-ABCDEFGH2345"))
+                .thenReturn(false);
+        when(transactionReferenceGenerator.generateSaleReference())
+                .thenReturn("SAL-ABCDEFGH2345");
+        when(saleRepository.existsByReferenceCode("SAL-ABCDEFGH2345"))
+                .thenReturn(false);
         when(transactionReferenceGenerator.generatePaymentReference())
                 .thenReturn("PAY-ABCDEFGH2345");
         when(paymentRepository.existsByTransactionReference("PAY-ABCDEFGH2345"))
@@ -171,7 +205,7 @@ class CustomerCheckoutServiceTest {
                 CUSTOMER_LOGIN);
 
         assertThat(saleId).isEqualTo(55L);
-        verifyNoInteractions(gatewayRegistry);
+        verifyNoInteractions(gatewayRegistry, seatInventoryService);
         verify(paymentRepository).save(any(PaymentTransaction.class));
     }
 
@@ -200,6 +234,81 @@ class CustomerCheckoutServiceTest {
 
         verify(saleRepository, never()).save(any(Sale.class));
         verifyNoInteractions(promotionService, gatewayRegistry);
+    }
+
+    @Test
+    void reservedSeatingDerivesQuantityFromHoldAndUsesSectionPrice() {
+        prepareCustomer();
+        when(customer.getEmail()).thenReturn(CUSTOMER_LOGIN);
+        preparePublishedEvent();
+        prepareTicketType();
+        when(eventRepository.findDetailedByIdForUpdate(10L))
+                .thenReturn(Optional.of(event));
+        when(ticketTypeRepository.findDetailedByIdForUpdate(31L))
+                .thenReturn(Optional.of(ticketType));
+        when(sectionPricingService.resolveRule(event, ticketType))
+                .thenReturn(new TicketSeatingRule(
+                        true,
+                        501L,
+                        new BigDecimal("650.00")));
+        when(seatInventoryService.validateActiveHold(
+                10L,
+                "hold-abc",
+                501L,
+                CUSTOMER_LOGIN))
+                .thenReturn(2);
+        when(reservationRepository.sumOccupiedSeats(any(), any()))
+                .thenReturn(0L);
+        when(saleItemRepository.sumAllocatedQuantity(31L)).thenReturn(0L);
+        when(reservationRepository.existsActiveDuplicate(
+                any(), any(), any(), any())).thenReturn(false);
+        when(reservationReferenceGenerator.generate())
+                .thenReturn("RSV-HOLDTEST2345");
+        when(reservationRepository.existsByReferenceCode("RSV-HOLDTEST2345"))
+                .thenReturn(false);
+        when(transactionReferenceGenerator.generateSaleReference())
+                .thenReturn("SAL-HOLDTEST2345");
+        when(saleRepository.existsByReferenceCode("SAL-HOLDTEST2345"))
+                .thenReturn(false);
+        when(transactionReferenceGenerator.generatePaymentReference())
+                .thenReturn("PAY-HOLDTEST2345");
+        when(paymentRepository.existsByTransactionReference("PAY-HOLDTEST2345"))
+                .thenReturn(false);
+        when(reservationProperties.getHoldDuration())
+                .thenReturn(Duration.ofMinutes(15));
+        when(eligibilityService.resolveMonetaryDiscount(
+                event,
+                customer,
+                31L,
+                new BigDecimal("1300.00")))
+                .thenReturn(Optional.of(new EligibilityDiscountDecision(
+                        99L,
+                        EligibilityBenefitType.FREE_ENTRY,
+                        BigDecimal.ZERO,
+                        new BigDecimal("1300.00"))));
+        when(saleRepository.save(any(Sale.class)))
+                .thenAnswer(invocation -> {
+                    Sale sale = invocation.getArgument(0);
+                    assertThat(sale.getItems()).singleElement()
+                            .satisfies(item -> assertThat(item.getUnitPrice())
+                                    .isEqualByComparingTo("650.00"));
+                    ReflectionTestUtils.setField(sale, "id", 77L);
+                    return sale;
+                });
+
+        CustomerCheckoutForm form = validForm(1);
+        form.setHoldToken("hold-abc");
+
+        Long saleId = service.purchase(10L, form, CUSTOMER_LOGIN);
+
+        assertThat(saleId).isEqualTo(77L);
+        org.mockito.Mockito.verify(seatInventoryService)
+                .validateActiveHold(10L, "hold-abc", 501L, CUSTOMER_LOGIN);
+        org.mockito.Mockito.verify(seatInventoryService)
+                .confirmSale(10L, "hold-abc", 77L, CUSTOMER_LOGIN);
+        org.mockito.Mockito.verify(reservationRepository)
+                .save(org.mockito.ArgumentMatchers.argThat(
+                        reservation -> reservation.getQuantity() == 2));
     }
 
     @Test
@@ -268,7 +377,6 @@ class CustomerCheckoutServiceTest {
         when(ticketType.isActive()).thenReturn(true);
         when(ticketType.getCapacity()).thenReturn(100);
         when(ticketType.getName()).thenReturn("General");
-        when(ticketType.getPrice()).thenReturn(new BigDecimal("500.00"));
     }
 
     private CustomerCheckoutForm validForm(int quantity) {

@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.jairomatias.eventix.auth.dto.ForgotPasswordForm;
 import com.jairomatias.eventix.auth.dto.ResetPasswordForm;
 import com.jairomatias.eventix.auth.service.PasswordRecoveryService;
+import com.jairomatias.eventix.security.EventixSecurityProperties;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.user.dto.ChangePasswordForm;
 import com.jairomatias.eventix.user.service.UserService;
@@ -30,25 +31,37 @@ public class AuthController {
 
     private final UserService userService;
     private final PasswordRecoveryService passwordRecoveryService;
+    private final EventixSecurityProperties securityProperties;
 
     public AuthController(
             UserService userService,
-            PasswordRecoveryService passwordRecoveryService) {
+            PasswordRecoveryService passwordRecoveryService,
+            EventixSecurityProperties securityProperties) {
         this.userService = userService;
         this.passwordRecoveryService = passwordRecoveryService;
+        this.securityProperties = securityProperties;
     }
 
     @GetMapping("/login")
-    public String login(Authentication authentication) {
+    public String login(Authentication authentication, Model model) {
         boolean authenticated =
                 authentication != null
                 && authentication.isAuthenticated()
                 && !(authentication
                         instanceof AnonymousAuthenticationToken);
 
-        return authenticated
-                ? "redirect:/dashboard"
-                : "auth/login";
+        if (authenticated) {
+            return "redirect:/dashboard";
+        }
+
+        EventixSecurityProperties.Social social = securityProperties.getSocial();
+        model.addAttribute(
+                "googleLoginEnabled",
+                social.isEnabled() && social.getGoogle().isConfigured());
+        model.addAttribute(
+                "appleLoginEnabled",
+                social.isEnabled() && social.getApple().isConfigured());
+        return "auth/login";
     }
 
     @GetMapping("/login/forgot-password")

@@ -45,10 +45,15 @@ public class CustomerCheckoutController {
     @GetMapping("/my/checkout/events/{eventId}")
     public String checkout(
             @PathVariable Long eventId,
+            @RequestParam(required = false) String holdToken,
+            @RequestParam(required = false) Long ticketTypeId,
             Authentication authentication,
             Model model) {
         if (!model.containsAttribute("checkoutForm")) {
-            model.addAttribute("checkoutForm", checkoutService.getForm(authentication.getName()));
+            CustomerCheckoutForm form = checkoutService.getForm(authentication.getName());
+            form.setHoldToken(holdToken);
+            form.setTicketTypeId(ticketTypeId);
+            model.addAttribute("checkoutForm", form);
         }
         prepareModel(eventId, authentication, model);
         return "checkout/form";
