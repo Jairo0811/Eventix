@@ -1,6 +1,7 @@
 package com.jairomatias.eventix.event.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -91,6 +92,39 @@ public class EventCoverImageStorage {
                 || !EXTENSIONS_BY_CONTENT_TYPE.containsKey(contentType.toLowerCase(Locale.ROOT))) {
             throw new BusinessRuleException("La portada debe ser JPG, PNG o WEBP.");
         }
+        if (!hasExpectedSignature(file, contentType.toLowerCase(Locale.ROOT))) {
+            throw new BusinessRuleException("El archivo no es una imagen válida del tipo indicado.");
+        }
+    }
+
+    /** El Content-Type lo controla el cliente: se comprueban los primeros bytes reales. */
+    private boolean hasExpectedSignature(MultipartFile file, String contentType) {
+        byte[] header = new byte[12];
+        int read;
+        try (InputStream input = file.getInputStream()) {
+            read = input.readNBytes(header, 0, header.length);
+        } catch (IOException exception) {
+            return false;
+        }
+        return switch (contentType) {
+            case MediaType.IMAGE_JPEG_VALUE -> read >= 3
+                    && startsWith(header, 0, new int[] {0xFF, 0xD8, 0xFF});
+            case MediaType.IMAGE_PNG_VALUE -> read >= 8
+                    && startsWith(header, 0, new int[] {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A});
+            case "image/webp" -> read >= 12
+                    && startsWith(header, 0, new int[] {0x52, 0x49, 0x46, 0x46})
+                    && startsWith(header, 8, new int[] {0x57, 0x45, 0x42, 0x50});
+            default -> false;
+        };
+    }
+
+    private static boolean startsWith(byte[] data, int offset, int[] expected) {
+        for (int i = 0; i < expected.length; i++) {
+            if ((data[offset + i] & 0xFF) != expected[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private Path resolve(String filename) {
