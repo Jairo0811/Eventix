@@ -1,5 +1,6 @@
 package com.jairomatias.eventix.security;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -43,7 +44,48 @@ class BootstrapAdministratorInitializerTest {
         verify(fixture.user).setMustChangePassword(true);
     }
 
+    @Test
+    void refusesTemporaryPasswordWhenBaseUrlIsHttpsEvenIfDefaultIsAllowed() {
+        Fixture fixture = fixture("https://eventix.example.com");
+        fixture.properties.setAllowDefaultBootstrapAdministrator(true);
+
+        assertThatThrownBy(() -> fixture.initializer.run(
+                new DefaultApplicationArguments()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("HTTPS")
+                .hasMessageContaining("EVENTIX_BOOTSTRAP_ADMIN_PASSWORD");
+    }
+
+    @Test
+    void allowsTemporaryPasswordOnLocalHttpWhenExplicitlyEnabled() {
+        Fixture fixture = fixture("http://localhost:8080");
+        fixture.properties.setAllowDefaultBootstrapAdministrator(true);
+
+        assertThatCode(() -> fixture.initializer.run(
+                new DefaultApplicationArguments()))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void httpsDeploymentStillStartsWhenPasswordIsRotated() {
+        Fixture fixture = fixture("https://eventix.example.com");
+        fixture.properties.setAllowDefaultBootstrapAdministrator(true);
+        fixture.properties.setBootstrapAdministratorPassword(
+                "NuevaClave2026#Segura");
+        when(fixture.passwordEncoder.encode(anyString()))
+                .thenReturn("encoded-password");
+
+        assertThatCode(() -> fixture.initializer.run(
+                new DefaultApplicationArguments()))
+                .doesNotThrowAnyException();
+        verify(fixture.user).setPasswordHash("encoded-password");
+    }
+
     private Fixture fixture() {
+        return fixture("");
+    }
+
+    private Fixture fixture(String baseUrl) {
         UserRepository repository = mock(UserRepository.class);
         PasswordEncoder encoder = mock(PasswordEncoder.class);
         EventixSecurityProperties properties = new EventixSecurityProperties();
@@ -56,7 +98,7 @@ class BootstrapAdministratorInitializerTest {
                 .thenReturn(true);
         return new Fixture(
                 new BootstrapAdministratorInitializer(
-                        repository, encoder, properties),
+                        repository, encoder, properties, baseUrl),
                 encoder,
                 properties,
                 user);
