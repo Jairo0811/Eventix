@@ -1,0 +1,68 @@
+/* Tienda pública de Eventix (listado y detalle de eventos). */
+.skip-link { position: absolute; left: .5rem; top: .5rem; z-index: 50; background: #fff; color: #071820; padding: .5rem .75rem; border-radius: .5rem; }
+.public-page { background: #071820; }
+
+.public-nav-search { display: none; flex: 1 1 auto; max-width: 420px; margin: 0 1rem; gap: .5rem; }
+@media (min-width: 992px) { .public-nav-search { display: flex; } }
+
+.public-hero { padding: 3.5rem 0 2.5rem; background: radial-gradient(1200px 400px at 20% -10%, #0e392f 0%, #071820 70%); }
+.public-hero h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); font-weight: 800; margin: 0 0 .5rem; }
+.public-hero p { color: #c9dad8; max-width: 38rem; margin-bottom: 1.5rem; }
+.public-search { display: grid; gap: .75rem; grid-template-columns: 1fr; }
+@media (min-width: 768px) { .public-search { grid-template-columns: 2fr 1fr auto; } }
+
+.public-surface { background: #edf5f1; color: #0f172a; padding: 2.5rem 0 5rem; min-height: 40vh; }
+.public-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.public-chips a { border: 1px solid #c3d6cd; background: #fff; color: #0f172a; border-radius: 999px; padding: .4rem .95rem; text-decoration: none; font-size: .92rem; }
+.public-chips a:hover { border-color: #15803d; }
+.public-chips a.is-active { background: #15803d; border-color: #15803d; color: #fff; font-weight: 600; }
+.public-count { color: #475569; margin-bottom: 1rem; }
+
+.public-card-link { color: inherit; display: block; height: 100%; text-decoration: none; }
+.public-card-link:focus-visible { outline: 3px solid #15803d; outline-offset: 3px; border-radius: 1.25rem; }
+.public-card-cta { color: #15803d; font-weight: 700; }
+.home-event-card-media img { aspect-ratio: 16 / 9; height: auto; object-fit: cover; width: 100%; }
+.public-pagination { align-items: center; display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; }
+.public-empty { text-align: center; padding: 3rem 1rem; }
+.public-empty i { color: #15803d; font-size: 2.5rem; }
+
+.public-event-hero { padding: 1.5rem 0 2.5rem; background: linear-gradient(135deg, #071c24, #0e392f); }
+.public-back { color: #c9dad8; text-decoration: none; font-size: .92rem; }
+.public-event-grid { display: grid; gap: 1.5rem; margin-top: 1rem; grid-template-columns: 1fr; }
+@media (min-width: 992px) { .public-event-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: center; } }
+.public-event-cover { background: #0b2a33; border-radius: 1.25rem; overflow: hidden; aspect-ratio: 16 / 9; }
+.public-event-cover img { display: block; height: 100%; object-fit: cover; width: 100%; }
+.public-event-summary h1 { font-size: clamp(1.7rem, 3.4vw, 2.5rem); font-weight: 800; margin: .35rem 0 1rem; }
+.public-facts { list-style: none; margin: 0 0 1.25rem; padding: 0; display: grid; gap: .9rem; }
+.public-facts li { display: flex; gap: .8rem; align-items: flex-start; }
+.public-facts i { color: #86efac; font-size: 1.25rem; margin-top: .1rem; }
+.public-facts small { color: #c9dad8; display: block; }
+.public-share { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+.public-card { background: #fff; border: 1px solid #dbe7e1; border-radius: 1.25rem; margin-bottom: 1.25rem; padding: 1.5rem; }
+.public-description { white-space: pre-line; margin: 0; }
+
+.buy-box { background: #fff; border: 1px solid #dbe7e1; border-radius: 1.25rem; box-shadow: 0 18px 50px rgb(15 23 42 / 10%); padding: 1.5rem; position: sticky; top: 96px; }
+.ticket-list { list-style: none; margin: 0; padding: 0; }
+.ticket-row { align-items: center; border-bottom: 1px solid #e5ece8; display: flex; gap: 1rem; justify-content: space-between; padding: .8rem 0; }
+.ticket-row:last-child { border-bottom: 0; }
+.ticket-row.is-soldout { opacity: .55; }
+.ticket-price { color: #15803d; white-space: nowrap; }
+@media (max-width: 991.98px) { .buy-box { position: static; } }
+
+@media (prefers-reduced-motion: reduce) { .public-page * { scroll-behavior: auto !important; transition: none !important; } }
+
+/* Portada orientada al comprador. */
+.home-hero-buyer { padding: 4rem 0 3rem; }
+.home-hero-buyer h1 { max-width: 24ch; }
+.home-hero-search { margin: 2rem 0 1.25rem; max-width: 58rem; }
+.home-hero-quick { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.75rem; }
+.home-hero-quick a { border: 1px solid rgb(255 255 255 / 18%); border-radius: 999px; color: #dff1ea; font-size: .9rem; padding: .4rem .9rem; text-decoration: none; }
+.home-hero-quick a:hover, .home-hero-quick a:focus-visible { background: rgb(255 255 255 / 8%); border-color: #4ade80; }
+.home-hero-quick .home-hero-quick-all { border-color: #4ade80; color: #86efac; font-weight: 700; }
+.home-see-all { color: #15803d; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.home-see-all:hover { text-decoration: underline; }
+.home-organizer-section { background: #f7faf9; }
+.home-workflow-inline { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-top: 3rem; }
+/* Coherencia con las tarjetas del catálogo, que recortan en lugar de dejar franjas. */
+.home-featured-media img { object-fit: cover; }

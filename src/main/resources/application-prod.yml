@@ -7,7 +7,11 @@ spring:
     password: ${FLYWAY_DB_PASSWORD}
 
 server:
-  forward-headers-strategy: framework
+  # native: Tomcat resuelve la IP real (X-Forwarded-For) solo si el peer es un proxy
+  # interno (por defecto rangos privados). Ajusta SERVER_TOMCAT_REMOTEIP_INTERNAL_PROXIES
+  # si tu proxy usa otra red. Para volver al comportamiento anterior:
+  # SERVER_FORWARD_HEADERS_STRATEGY=framework
+  forward-headers-strategy: ${SERVER_FORWARD_HEADERS_STRATEGY:native}
   servlet:
     session:
       cookie:

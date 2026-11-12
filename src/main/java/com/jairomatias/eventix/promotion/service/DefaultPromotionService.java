@@ -39,6 +39,29 @@ public class DefaultPromotionService implements PromotionService {
     }
 
     @Override
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY)
+    public BigDecimal quoteDiscount(
+            String couponCode,
+            Sale sale,
+            LocalDateTime at) {
+        String normalizedCode = normalizeCode(couponCode);
+        if (normalizedCode == null) {
+            return BigDecimal.ZERO.setScale(MONEY_SCALE, MONEY_ROUNDING);
+        }
+
+        Coupon coupon = couponRepository.findByCode(normalizedCode)
+                .orElseThrow(() -> new BusinessRuleException(
+                        "El cupón indicado no existe."));
+        validateCoupon(coupon, sale, at);
+        BigDecimal discount = calculateDiscount(coupon, sale.getSubtotal());
+        if (discount.compareTo(BigDecimal.ZERO) == 0) {
+            throw new BusinessRuleException(
+                    "El cupón no genera descuento para esta venta.");
+        }
+        return discount;
+    }
+
+    @Override
     @Transactional(propagation = Propagation.MANDATORY)
     public void reserveForSale(
             String couponCode,

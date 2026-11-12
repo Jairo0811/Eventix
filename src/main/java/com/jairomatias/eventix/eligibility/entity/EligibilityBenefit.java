@@ -43,6 +43,10 @@ public class EligibilityBenefit extends AuditableEntity {
     @Column(name = "early_access_at")
     private LocalDateTime earlyAccessAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "system_key", length = 50)
+    private EligibilityBenefitSystemKey systemKey;
+
     @Column(nullable = false)
     private boolean active = true;
 
@@ -57,7 +61,21 @@ public class EligibilityBenefit extends AuditableEntity {
             Integer reservedInventory,
             TicketType ticketType,
             LocalDateTime earlyAccessAt) {
+        this(group, benefitType, discountValue, maxTicketsPerPurchase, reservedInventory,
+                ticketType, earlyAccessAt, null);
+    }
+
+    public EligibilityBenefit(
+            EligibilityGroup group,
+            EligibilityBenefitType benefitType,
+            BigDecimal discountValue,
+            Integer maxTicketsPerPurchase,
+            Integer reservedInventory,
+            TicketType ticketType,
+            LocalDateTime earlyAccessAt,
+            EligibilityBenefitSystemKey systemKey) {
         this.group = group;
+        this.systemKey = systemKey;
         update(benefitType, discountValue, maxTicketsPerPurchase, reservedInventory, ticketType, earlyAccessAt);
     }
 
@@ -110,6 +128,10 @@ public class EligibilityBenefit extends AuditableEntity {
 
     public LocalDateTime getEarlyAccessAt() {
         return earlyAccessAt;
+    }
+
+    public EligibilityBenefitSystemKey getSystemKey() {
+        return systemKey;
     }
 
     public boolean isActive() {

@@ -48,7 +48,7 @@
         simulatedForm.closest('section').after(section);
         const container = section.querySelector('[data-wallet-buttons]');
 
-        if (config.googleGatewayMerchantId) {
+        if (config.googlePayEnabled) {
             loadGooglePay(config, container);
         }
         if (config.applePayEnabled) {
@@ -68,10 +68,17 @@
         if (!window.google?.payments?.api) {
             return;
         }
+
+        const production = config.environment === 'PRODUCTION';
+        const merchantInfo = {
+            merchantName: config.merchantDisplayName || 'Eventix'
+        };
+        if (production) {
+            merchantInfo.merchantId = config.googleMerchantId;
+        }
+
         const client = new google.payments.api.PaymentsClient({
-            environment: config.environment === 'PRODUCTION'
-                ? 'PRODUCTION'
-                : 'TEST'
+            environment: production ? 'PRODUCTION' : 'TEST'
         });
         const baseCard = {
             type: 'CARD',
@@ -105,7 +112,7 @@
                     apiVersion: 2,
                     apiVersionMinor: 0,
                     allowedPaymentMethods: [paymentMethod],
-                    merchantInfo: {merchantName: 'Eventix'},
+                    merchantInfo,
                     transactionInfo: {
                         totalPriceStatus: 'FINAL',
                         totalPrice: config.totalPrice,

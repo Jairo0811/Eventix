@@ -119,4 +119,39 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             @Param("visibleStatuses")
             Collection<EventStatus> visibleStatuses,
             Pageable pageable);
+
+    @EntityGraph(attributePaths = {"category", "organizer"})
+    @Query(
+            value = """
+                    SELECT e FROM Event e
+                    WHERE e.status = :status
+                    AND e.startAt >= :fromAt
+                    AND e.startAt < :toAt
+                    AND (
+                        :term = '' OR
+                        LOWER(e.title) LIKE LOWER(CONCAT('%', :term, '%')) OR
+                        LOWER(e.venue) LIKE LOWER(CONCAT('%', :term, '%'))
+                    )
+                    AND (:categoryId IS NULL OR e.category.id = :categoryId)
+                    ORDER BY e.startAt ASC
+                    """,
+            countQuery = """
+                    SELECT COUNT(e) FROM Event e
+                    WHERE e.status = :status
+                    AND e.startAt >= :fromAt
+                    AND e.startAt < :toAt
+                    AND (
+                        :term = '' OR
+                        LOWER(e.title) LIKE LOWER(CONCAT('%', :term, '%')) OR
+                        LOWER(e.venue) LIKE LOWER(CONCAT('%', :term, '%'))
+                    )
+                    AND (:categoryId IS NULL OR e.category.id = :categoryId)
+                    """)
+    Page<Event> searchPublished(
+            @Param("status") EventStatus status,
+            @Param("fromAt") LocalDateTime fromAt,
+            @Param("toAt") LocalDateTime toAt,
+            @Param("term") String term,
+            @Param("categoryId") Long categoryId,
+            Pageable pageable);
 }

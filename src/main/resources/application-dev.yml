@@ -15,6 +15,9 @@ spring:
     cache: false
 
 eventix:
+  security:
+    # Solo desarrollo local: conserva el administrador sembrado por Flyway.
+    allow-default-bootstrap-administrator: ${EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN:true}
   identity:
     dev-records: ${EVENTIX_IDENTITY_DEV_RECORDS:}
 
