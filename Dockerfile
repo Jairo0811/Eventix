@@ -11,6 +11,7 @@ RUN mvn --batch-mode --no-transfer-progress -DskipTests package
 FROM eclipse-temurin:21-jre-jammy
 
 RUN apt-get update \
+    && apt-get upgrade --yes --no-install-recommends \
     && apt-get install --yes --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --system eventix \
