@@ -454,23 +454,30 @@ public class CustomerCheckoutService {
             TicketType ticketType,
             String couponCode,
             Sale sale) {
-        eligibilityService.resolveMonetaryDiscount(
-                        event,
-                        customer,
-                        ticketType.getId(),
-                        sale.getSubtotal())
-                .ifPresent(decision -> {
-                    if (!isBlank(couponCode)) {
-                        throw new BusinessRuleException(
-                                "Los beneficios monetarios de elegibilidad no se combinan con cupones todavía. "
-                                        + "Retira el cupón para usar el beneficio automático.");
-                    }
-                    sale.applyEligibilityDiscount(
-                            decision.benefitId(),
-                            decision.benefitType(),
-                            decision.configuredValue(),
-                            decision.discountAmount());
-                });
+        var discountDecision = eligibilityService.resolveMonetaryDiscount(
+                event,
+                customer,
+                ticketType.getId(),
+                sale.getSubtotal());
+        if (discountDecision.isEmpty()) {
+            return;
+        }
+
+        ensureCouponCompatibleWithEligibilityDiscount(couponCode);
+        var decision = discountDecision.orElseThrow();
+        sale.applyEligibilityDiscount(
+                decision.benefitId(),
+                decision.benefitType(),
+                decision.configuredValue(),
+                decision.discountAmount());
+    }
+
+    private void ensureCouponCompatibleWithEligibilityDiscount(String couponCode) {
+        if (!isBlank(couponCode)) {
+            throw new BusinessRuleException(
+                    "Los beneficios monetarios de elegibilidad no se combinan con cupones todavía. "
+                            + "Retira el cupón para usar el beneficio automático.");
+        }
     }
 
     private void ensureQuantity(int quantity) {

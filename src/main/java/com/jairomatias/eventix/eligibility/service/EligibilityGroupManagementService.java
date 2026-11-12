@@ -74,6 +74,7 @@ public class EligibilityGroupManagementService {
     public void update(Long groupId, EligibilityGroupForm form, Long actorId) {
         EligibilityGroup group = getGroupForUpdate(groupId);
         authorize(actorId, group.getEvent());
+        requireUserManaged(group);
         validateForm(form);
         String normalizedName = form.name().trim();
         if (groupRepository.existsByEvent_IdAndNameIgnoreCaseAndIdNot(
@@ -98,6 +99,7 @@ public class EligibilityGroupManagementService {
     public void setActive(Long groupId, boolean active, Long actorId) {
         EligibilityGroup group = getGroupForUpdate(groupId);
         authorize(actorId, group.getEvent());
+        requireUserManaged(group);
         if (active) {
             group.activate();
         } else {
@@ -133,6 +135,13 @@ public class EligibilityGroupManagementService {
     private EligibilityGroup getGroupForUpdate(Long groupId) {
         return groupRepository.findDetailedByIdForUpdate(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró el grupo de elegibilidad."));
+    }
+
+    private void requireUserManaged(EligibilityGroup group) {
+        if (group.getSystemKey() != null) {
+            throw new BusinessRuleException(
+                    "Este grupo es administrado automáticamente desde la configuración del evento.");
+        }
     }
 
     private void authorize(Long actorId, Event event) {
