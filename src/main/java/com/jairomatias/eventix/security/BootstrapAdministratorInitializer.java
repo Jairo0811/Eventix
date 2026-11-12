@@ -1,9 +1,12 @@
 package com.jairomatias.eventix.security;
 
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,14 +28,25 @@ public class BootstrapAdministratorInitializer implements ApplicationRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EventixSecurityProperties properties;
+    private final String baseUrl;
 
     public BootstrapAdministratorInitializer(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             EventixSecurityProperties properties) {
+        this(userRepository, passwordEncoder, properties, "");
+    }
+
+    @Autowired
+    public BootstrapAdministratorInitializer(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            EventixSecurityProperties properties,
+            @Value("${app.base-url:}") String baseUrl) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.properties = properties;
+        this.baseUrl = baseUrl;
     }
 
     @Override
@@ -72,8 +86,22 @@ public class BootstrapAdministratorInitializer implements ApplicationRunner {
                     "Define EVENTIX_BOOTSTRAP_ADMIN_PASSWORD antes de iniciar "
                     + "Eventix en producción.");
         }
+        if (isPublicHttpsDeployment()) {
+            // Red de seguridad por si se olvidó SPRING_PROFILES_ACTIVE=prod: una URL
+            // HTTPS indica un despliegue público, nunca un entorno local de desarrollo.
+            throw new IllegalStateException(
+                    "APP_BASE_URL usa HTTPS (despliegue público) y el administrador "
+                    + "inicial conserva la contraseña temporal. Define "
+                    + "EVENTIX_BOOTSTRAP_ADMIN_PASSWORD y verifica "
+                    + "SPRING_PROFILES_ACTIVE=prod.");
+        }
         LOGGER.warn(
                 "El administrador de desarrollo conserva su contraseña temporal. "
                 + "Cámbiala antes de publicar el sistema.");
+    }
+
+    private boolean isPublicHttpsDeployment() {
+        return baseUrl != null
+                && baseUrl.trim().toLowerCase(Locale.ROOT).startsWith("https://");
     }
 }

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/public :: head(${event.title}, ${event.summary}, ${canonicalUrl}, ${ogImage})}"></head>
+<body class="home-page public-page">
+<script type="application/ld+json" th:inline="javascript">[[${jsonLd}]]</script>
+<header th:replace="~{fragments/public :: header('events')}"></header>
+<main id="main-content">
+    <section class="public-event-hero">
+        <div class="container">
+            <a class="public-back" th:href="@{/e}"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Todos los eventos</a>
+            <div class="public-event-grid">
+                <div class="public-event-cover">
+                    <img th:if="${event.coverImageUrl != null and !#strings.isEmpty(event.coverImageUrl)}"
+                         th:src="${event.coverImageUrl}" th:alt="${'Portada de ' + event.title}" width="1280" height="720">
+                    <img th:unless="${event.coverImageUrl != null and !#strings.isEmpty(event.coverImageUrl)}"
+                         th:src="@{/images/event-cover-default.svg}" alt="" width="1280" height="720">
+                </div>
+                <div class="public-event-summary">
+                    <span class="home-event-kicker" th:text="${event.categoryName}">Categoría</span>
+                    <h1 th:text="${event.title}">Nombre del evento</h1>
+                    <ul class="public-facts">
+                        <li><i class="bi bi-calendar3" aria-hidden="true"></i>
+                            <span><strong class="text-capitalize" th:text="${event.longDateLabel}">sábado 15 de agosto de 2026</strong>
+                                <small th:text="|${event.timeLabel} a ${event.endTimeLabel}|">8:00 PM a 11:00 PM</small></span></li>
+                        <li><i class="bi bi-geo-alt" aria-hidden="true"></i>
+                            <span><strong th:text="${event.venue}">Recinto</strong>
+                                <small th:if="${event.address != null}" th:text="${event.address}">Dirección</small></span></li>
+                    </ul>
+                    <div class="public-share" role="group" aria-label="Compartir y guardar">
+                        <a class="btn btn-outline-light btn-sm" th:href="@{/e/{id}/calendar.ics(id=${event.id})}">
+                            <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>Añadir al calendario</a>
+                        <a class="btn btn-outline-light btn-sm" target="_blank" rel="noopener noreferrer"
+                           th:href="${'https://wa.me/?text=' + #uris.escapeQueryParam(event.title + ' ' + shareUrl)}">
+                            <i class="bi bi-whatsapp me-1" aria-hidden="true"></i>WhatsApp</a>
+                        <button class="btn btn-outline-light btn-sm" type="button" data-share-link
+                                th:attr="data-url=${shareUrl},data-title=${event.title}">
+                            <i class="bi bi-link-45deg me-1" aria-hidden="true"></i><span data-share-label>Copiar enlace</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="public-surface">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-7 col-xl-8">
+                    <article class="public-card">
+                        <h2 class="h4">Acerca del evento</h2>
+                        <p class="public-description" th:text="${event.description}">Descripción.</p>
+                    </article>
+                    <article class="public-card" th:if="${event.address != null}">
+                        <h2 class="h4">Lugar</h2>
+                        <p class="mb-2"><strong th:text="${event.venue}">Recinto</strong><br>
+                            <span class="text-secondary" th:text="${event.address}">Dirección</span></p>
+                        <a class="btn btn-outline-dark btn-sm" th:if="${event.googleMapsUrl != null}"
+                           th:href="${event.googleMapsUrl}" target="_blank" rel="noopener noreferrer">
+                            <i class="bi bi-map me-1" aria-hidden="true"></i>Ver en Google Maps</a>
+                    </article>
+                </div>
+                <div class="col-lg-5 col-xl-4">
+                    <aside class="buy-box" aria-labelledby="buy-title">
+                        <h2 class="h5" id="buy-title">Entradas</h2>
+                        <p class="text-secondary small" th:if="${event.tickets.isEmpty()}">Las entradas se publicarán muy pronto.</p>
+                        <ul class="ticket-list" th:unless="${event.tickets.isEmpty()}">
+                            <li class="ticket-row" th:each="ticket : ${event.tickets}"
+                                th:classappend="${ticket.soldOut} ? ' is-soldout'">
+                                <div>
+                                    <strong th:text="${ticket.name}">General</strong>
+                                    <small class="d-block text-secondary" th:text="${ticket.category}">Categoría</small>
+                                    <span class="badge text-bg-warning" th:if="${ticket.lowStock}"
+                                          th:text="|Quedan ${ticket.available}|">Quedan 12</span>
+                                    <span class="badge text-bg-secondary" th:if="${ticket.soldOut}">Agotado</span>
+                                </div>
+                                <strong class="ticket-price"
+                                        th:text="${ticket.price == null or ticket.price.signum() == 0 ? 'Gratis' : 'RD$ ' + #numbers.formatDecimal(ticket.price, 1, 'COMMA', 2, 'POINT')}">RD$ 0.00</strong>
+                            </li>
+                        </ul>
+
+                        <div class="d-grid gap-2 mt-3">
+                            <th:block th:if="${event.onSale}">
+                                <a class="btn btn-success btn-lg" sec:authorize="hasRole('USER')"
+                                   th:href="@{/my/checkout/events/{id}(id=${event.id})}">
+                                    <i class="bi bi-bag-check me-2" aria-hidden="true"></i>Comprar entradas</a>
+                                <a class="btn btn-success btn-lg" sec:authorize="isAnonymous()"
+                                   th:href="@{/login(next=${'/my/checkout/events/' + event.id})}">
+                                    <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Inicia sesión para comprar</a>
+                                <a class="btn btn-outline-dark" sec:authorize="isAuthenticated() and !hasRole('USER')"
+                                   th:href="@{/events/{id}(id=${event.id})}">Ver en el panel</a>
+                            </th:block>
+                            <button class="btn btn-secondary btn-lg" type="button" disabled th:unless="${event.onSale}"
+                                    th:text="${event.finished ? 'Evento finalizado' : event.soldOut ? 'Agotado' : 'Venta no disponible'}">Agotado</button>
+                        </div>
+                        <p class="small text-secondary mt-3 mb-0">
+                            <i class="bi bi-shield-check text-success me-1" aria-hidden="true"></i>
+                            Boleta digital con código QR único. Recíbela al instante en tu cuenta.</p>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/public :: footer}"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/storefront.js}"></script>
+</body>
+</html>

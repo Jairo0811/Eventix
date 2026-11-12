@@ -39,6 +39,10 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
     @Query("SELECT c FROM Coupon c WHERE c.id = :id")
     Optional<Coupon> findDetailedById(@Param("id") Long id);
 
+    @EntityGraph(attributePaths = "applicableEvents")
+    @Query("SELECT c FROM Coupon c WHERE UPPER(c.code) = UPPER(:code)")
+    Optional<Coupon> findByCode(@Param("code") String code);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @EntityGraph(attributePaths = "applicableEvents")
     @Query("SELECT c FROM Coupon c WHERE UPPER(c.code) = UPPER(:code)")

@@ -18,6 +18,7 @@ import com.jairomatias.eventix.auth.dto.ForgotPasswordForm;
 import com.jairomatias.eventix.auth.dto.ResetPasswordForm;
 import com.jairomatias.eventix.auth.service.PasswordRecoveryService;
 import com.jairomatias.eventix.security.EventixSecurityProperties;
+import com.jairomatias.eventix.security.LoginRedirects;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.user.dto.ChangePasswordForm;
 import com.jairomatias.eventix.user.service.UserService;
@@ -43,16 +44,21 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String login(Authentication authentication, Model model) {
+    public String login(
+            Authentication authentication,
+            @RequestParam(required = false) String next,
+            Model model) {
         boolean authenticated =
                 authentication != null
                 && authentication.isAuthenticated()
                 && !(authentication
                         instanceof AnonymousAuthenticationToken);
 
+        var safeNext = LoginRedirects.safeNext(next);
         if (authenticated) {
-            return "redirect:/dashboard";
+            return "redirect:" + safeNext.orElse("/dashboard");
         }
+        model.addAttribute("next", safeNext.orElse(null));
 
         EventixSecurityProperties.Social social = securityProperties.getSocial();
         model.addAttribute(
