@@ -61,6 +61,7 @@ import com.jairomatias.eventix.venue.repository.VenueSectionRepository;
 class SeatHoldConcurrencyIntegrationTest {
 
     private static final String FIXTURE_TAG = "concurrency-seat-hold";
+    private static final String ORGANIZER = "concurrency.organizer@eventix.local";
     private static final String FIRST_BUYER = "concurrency.buyer.one@eventix.local";
     private static final String SECOND_BUYER = "concurrency.buyer.two@eventix.local";
 
@@ -84,16 +85,18 @@ class SeatHoldConcurrencyIntegrationTest {
     @BeforeEach
     void createCommittedFixture() {
         transactionTemplate.executeWithoutResult(status -> {
-            User organizer = saveUser(
-                    "Organizador",
-                    "Concurrencia",
-                    FIXTURE_TAG + ".organizer@eventix.local",
-                    RoleName.ORGANIZER);
+            User organizer = saveUser("Organizador", "Concurrencia", ORGANIZER, RoleName.ORGANIZER);
             saveUser("Primer", "Comprador", FIRST_BUYER, RoleName.USER);
             saveUser("Segundo", "Comprador", SECOND_BUYER, RoleName.USER);
 
-            EventCategory category = categoryRepository.save(
-                    new EventCategory(FIXTURE_TAG + " categoría", "Fixture de concurrencia"));
+            // Se reutiliza una categoría ya sembrada por Flyway: crear una nueva
+            // rompería flywaySeedsCurrentEventCategories, que exige el conjunto exacto.
+            EventCategory category = categoryRepository
+                    .findAllByActiveTrueOrderByNameAsc()
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "El perfil de pruebas debe tener categorías sembradas."));
 
             Venue venue = venueRepository.save(new Venue(
                     FIXTURE_TAG + " recinto",
@@ -115,7 +118,7 @@ class SeatHoldConcurrencyIntegrationTest {
                     FIXTURE_TAG + " evento",
                     "Evento creado para la prueba de concurrencia",
                     category,
-                    EventStatus.PUBLISHED,
+                    EventStatus.DRAFT,
                     LocalDateTime.now().plusDays(30),
                     LocalDateTime.now().plusDays(30).plusHours(3),
                     venue.getName(),
@@ -236,10 +239,10 @@ class SeatHoldConcurrencyIntegrationTest {
                     .forEach(rowRepository::delete);
             sectionRepository.findById(sectionId).ifPresent(sectionRepository::delete);
             venueRepository.findById(venueId).ifPresent(venueRepository::delete);
-            userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(FIRST_BUYER, FIRST_BUYER)
-                    .ifPresent(userRepository::delete);
-            userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(SECOND_BUYER, SECOND_BUYER)
-                    .ifPresent(userRepository::delete);
+            for (String login : List.of(FIRST_BUYER, SECOND_BUYER, ORGANIZER)) {
+                userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(login, login)
+                        .ifPresent(userRepository::delete);
+            }
         });
     }
 
