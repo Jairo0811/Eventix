@@ -1,5 +1,7 @@
 package com.jairomatias.eventix.venue.controller;
 
+import java.math.BigDecimal;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -8,8 +10,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 import com.jairomatias.eventix.shared.exception.DuplicateResourceException;
 import com.jairomatias.eventix.venue.dto.VenueRowForm;
 import com.jairomatias.eventix.venue.dto.VenueSeatForm;
@@ -154,5 +158,31 @@ public class VenueLayoutController {
             model.addAttribute("rowId", rowId);
             return "venues/seat-form";
         }
+    }
+
+    @PostMapping("/sections/{sectionId}/rows/{rowId}/seats/{seatId}/position")
+    public String updateSeatPosition(
+            @PathVariable Long venueId,
+            @PathVariable Long sectionId,
+            @PathVariable Long rowId,
+            @PathVariable Long seatId,
+            @RequestParam(required = false) BigDecimal xPosition,
+            @RequestParam(required = false) BigDecimal yPosition,
+            RedirectAttributes redirectAttributes) {
+        try {
+            layoutService.updateSeatPosition(
+                    venueId,
+                    sectionId,
+                    rowId,
+                    seatId,
+                    xPosition,
+                    yPosition);
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Posición del asiento actualizada correctamente.");
+        } catch (BusinessRuleException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/venues/" + venueId + "/layout";
     }
 }

@@ -582,6 +582,8 @@ public class DefaultEventSeatInventoryService implements EventSeatInventoryServi
                 item.getSeat().getSeatNumber(),
                 item.getSeat().getLabel(),
                 item.getSeat().isAccessible(),
+                item.getSeat().getXPosition(),
+                item.getSeat().getYPosition(),
                 item.getStatus(),
                 item.getHoldExpiresAt());
     }
