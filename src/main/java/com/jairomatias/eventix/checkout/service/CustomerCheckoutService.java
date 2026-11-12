@@ -301,7 +301,7 @@ public class CustomerCheckoutService {
         eligibilityService.assertPurchaseAllowed(
                 event, customer, ticketType.getId(), purchaseQuantity);
 
-        long occupiedSeats = reservationRepository.sumOccupiedSeats(eventId, now);
+        long occupiedSeats = reservationRepository.sumOccupiedSeats(eventId, currentTime);
         if (purchaseQuantity > event.getCapacity() - occupiedSeats) {
             throw new BusinessRuleException("No hay cupos suficientes para completar la compra.");
         }
@@ -312,7 +312,7 @@ public class CustomerCheckoutService {
         }
 
         String buyerEmail = customer.getEmail().trim().toLowerCase(Locale.ROOT);
-        if (reservationRepository.existsActiveDuplicate(eventId, buyerEmail, now, null)) {
+        if (reservationRepository.existsActiveDuplicate(eventId, buyerEmail, currentTime, null)) {
             throw new BusinessRuleException("Ya tienes una compra o reservación activa para este evento.");
         }
 
@@ -324,7 +324,7 @@ public class CustomerCheckoutService {
                 buyerEmail,
                 form.getPhone().trim(),
                 purchaseQuantity,
-                now.plus(reservationProperties.getHoldDuration()),
+                currentTime.plus(reservationProperties.getHoldDuration()),
                 customer);
         reservation.confirm(currentTime);
         reservationRepository.save(reservation);
@@ -358,7 +358,7 @@ public class CustomerCheckoutService {
                 currentTime);
 
         if (savedSale.getTotal().compareTo(BigDecimal.ZERO) == 0) {
-            completeFreeSale(savedSale, customer, now);
+            completeFreeSale(savedSale, customer, currentTime);
             if (seatingRule.requiresSeatHold()) {
                 seatInventoryService.confirmSale(
                         eventId,
