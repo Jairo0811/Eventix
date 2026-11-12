@@ -88,6 +88,14 @@
 
         try {
             const quote = await requestQuote();
+            // Con asientos reservados la cantidad cotizada es la de la
+            // retención. Se refleja en el formulario para que el comprador vea
+            // el mismo número que respalda el importe de la hoja de pago.
+            const quantityInput = form.querySelector('[name="quantity"]');
+            if (quantityInput && Number(quote.quantity) > 0
+                    && Number(quote.quantity) !== Number(quantityInput.value)) {
+                quantityInput.value = quote.quantity;
+            }
             if (Number(quote.total) <= 0) {
                 walletTokenInput.value = '';
                 form.requestSubmit();
@@ -153,7 +161,10 @@
             body: JSON.stringify({
                 ticketTypeId: Number(ticketType.value),
                 quantity: Number(form.querySelector('[name="quantity"]').value),
-                couponCode: form.querySelector('[name="couponCode"]').value
+                couponCode: form.querySelector('[name="couponCode"]').value,
+                // Con asientos reservados manda la retención, no este campo:
+                // sin el token la cotización y el cobro podrían no coincidir.
+                holdToken: form.querySelector('[name="holdToken"]')?.value || null
             })
         });
         if (!response.ok) {

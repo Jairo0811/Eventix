@@ -184,7 +184,6 @@ public class CustomerCheckoutService {
         if (request == null || request.ticketTypeId() == null) {
             throw new BusinessRuleException("Selecciona un tipo de entrada.");
         }
-        ensureQuantity(request.quantity());
 
         User customer = findCustomer(authenticatedLogin);
         LocalDateTime quotedAt = now();
@@ -198,12 +197,26 @@ public class CustomerCheckoutService {
                 .findDetailedById(request.ticketTypeId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No se encontró el tipo de entrada."));
+        // La compra sobreescribe la cantidad con la de los asientos retenidos
+        // cuando el tipo de entrada los exige. La cotización debe hacer lo mismo
+        // y con el mismo método, o mostraría un importe que luego no se cobra.
+        TicketSeatingRule quoteSeatingRule = sectionPricingService.resolveRule(event, ticketType);
+        int quotedQuantity = request.quantity();
+        if (quoteSeatingRule.requiresSeatHold()) {
+            quotedQuantity = seatInventoryService.validateActiveHold(
+                    eventId,
+                    request.holdToken(),
+                    quoteSeatingRule.sectionId(),
+                    authenticatedLogin);
+        }
+        ensureQuantity(quotedQuantity);
+
         ensureTicketAvailable(
                 eventId,
                 event,
                 customer,
                 ticketType,
-                request.quantity(),
+                quotedQuantity,
                 quotedAt);
 
         Reservation quoteReservation = new Reservation(
@@ -213,7 +226,7 @@ public class CustomerCheckoutService {
                 customer.getLastName(),
                 customer.getEmail().trim().toLowerCase(Locale.ROOT),
                 customer.getPhone() == null ? "" : customer.getPhone(),
-                request.quantity(),
+                quotedQuantity,
                 quotedAt.plus(reservationProperties.getHoldDuration()),
                 customer);
         Sale quoteSale = new Sale(
@@ -223,8 +236,7 @@ public class CustomerCheckoutService {
                 customer);
         // La cotización debe usar el mismo precio unitario que aplicará la compra:
         // con asientos reservados manda el precio de la sección, no el del tipo.
-        TicketSeatingRule quoteSeatingRule = sectionPricingService.resolveRule(event, ticketType);
-        quoteSale.addItem(ticketType, request.quantity(), quoteSeatingRule.unitPrice());
+        quoteSale.addItem(ticketType, quotedQuantity, quoteSeatingRule.unitPrice());
         applyAutomaticEligibilityDiscount(
                 event,
                 customer,
@@ -244,7 +256,8 @@ public class CustomerCheckoutService {
                 quoteSale.getSubtotal(),
                 discount,
                 total,
-                currency);
+                currency,
+                quotedQuantity);
     }
 
     @Transactional
