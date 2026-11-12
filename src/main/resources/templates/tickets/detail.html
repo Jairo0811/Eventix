@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/head :: head('Detalle de boleta')}"></head>
 <body>
 <aside th:replace="~{fragments/sidebar :: sidebar('tickets')}"></aside>
@@ -9,7 +10,10 @@
     <div th:replace="~{fragments/messages :: messages}"></div>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
-            <a class="text-decoration-none small" th:href="@{/tickets}">
+            <a class="text-decoration-none small" sec:authorize="hasRole('USER')" th:href="@{/my/tickets}">
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver a mis boletas
+            </a>
+            <a class="text-decoration-none small" sec:authorize="!hasRole('USER')" th:href="@{/tickets}">
                 <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver a boletas
             </a>
             <h1 class="page-title mt-2">Boleta digital</h1>
@@ -76,7 +80,10 @@
                 <p class="small mb-1" th:text="|Ed25519 · ${ticket.signatureKeyId}|">Firma</p>
                 <code th:text="|Huella ${ticket.signatureFingerprint}…|">Huella</code>
                 <p class="detail-label mt-3">Venta</p>
-                <a th:href="@{/sales/{id}(id=${ticket.saleId})}" th:text="${ticket.saleReference}">SAL-</a>
+                <a sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')"
+                   th:href="@{/sales/{id}(id=${ticket.saleId})}" th:text="${ticket.saleReference}">SAL-</a>
+                <span sec:authorize="!hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')"
+                      th:text="${ticket.saleReference}">SAL-</span>
             </section>
         </div>
     </div>
