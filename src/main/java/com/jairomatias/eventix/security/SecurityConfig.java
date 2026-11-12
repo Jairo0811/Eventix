@@ -77,6 +77,7 @@ public class SecurityConfig {
                                 "/oauth2/**", "/login/oauth2/**",
                                 "/css/**", "/js/**", "/images/**", "/error/**",
                                 "/events/media/**",
+                                "/e", "/e/**", "/sitemap.xml", "/robots.txt",
                                 "/.well-known/apple-developer-merchantid-domain-association",
                                 "/actuator/health", "/actuator/health/**")
                         .permitAll()
