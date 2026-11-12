@@ -1,5 +1,6 @@
 package com.jairomatias.eventix.checkout.controller;
 
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,14 +9,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.jairomatias.eventix.checkout.dto.CustomerCheckoutForm;
+import com.jairomatias.eventix.checkout.dto.CustomerCheckoutQuote;
+import com.jairomatias.eventix.checkout.dto.CustomerCheckoutQuoteRequest;
 import com.jairomatias.eventix.checkout.service.CustomerCheckoutService;
 import com.jairomatias.eventix.eligibility.dto.SchoolEligibilityResult;
 import com.jairomatias.eventix.eligibility.service.SchoolAlumniBenefitService;
 import com.jairomatias.eventix.payment.entity.PaymentProvider;
+import com.jairomatias.eventix.payment.gateway.azul.AzulWalletProperties;
 import com.jairomatias.eventix.shared.exception.BusinessRuleException;
 
 import jakarta.validation.Valid;
@@ -33,12 +39,15 @@ public class CustomerCheckoutController {
     };
 
     private final CustomerCheckoutService checkoutService;
+    private final AzulWalletProperties walletProperties;
     private final SchoolAlumniBenefitService schoolAlumniBenefitService;
 
     public CustomerCheckoutController(
             CustomerCheckoutService checkoutService,
+            AzulWalletProperties walletProperties,
             SchoolAlumniBenefitService schoolAlumniBenefitService) {
         this.checkoutService = checkoutService;
+        this.walletProperties = walletProperties;
         this.schoolAlumniBenefitService = schoolAlumniBenefitService;
     }
 
@@ -59,6 +68,21 @@ public class CustomerCheckoutController {
         return "checkout/form";
     }
 
+    @PostMapping(
+            value = "/my/checkout/events/{eventId}/quote",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public CustomerCheckoutQuote quote(
+            @PathVariable Long eventId,
+            @RequestBody CustomerCheckoutQuoteRequest request,
+            Authentication authentication) {
+        return checkoutService.quote(
+                eventId,
+                request,
+                authentication.getName());
+    }
+
     @PostMapping("/my/checkout/events/{eventId}")
     public String purchase(
             @PathVariable Long eventId,
@@ -68,17 +92,24 @@ public class CustomerCheckoutController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
+            clearWalletData(form);
             prepareModel(eventId, authentication, model);
             return "checkout/form";
         }
         try {
-            checkoutService.purchase(eventId, form, authentication.getName());
+            checkoutService.purchase(
+                    eventId,
+                    form,
+                    authentication.getName());
             redirectAttributes.addFlashAttribute(
                     "successMessage",
                     "Compra aprobada. Tus boletas ya están disponibles.");
             return "redirect:/my/tickets";
         } catch (BusinessRuleException exception) {
-            bindingResult.reject("checkout.purchase", exception.getMessage());
+            clearWalletData(form);
+            bindingResult.reject(
+                    "checkout.purchase",
+                    exception.getMessage());
             prepareModel(eventId, authentication, model);
             return "checkout/form";
         }
@@ -102,9 +133,25 @@ public class CustomerCheckoutController {
         return "redirect:/my/checkout/events/" + eventId;
     }
 
+    private void clearWalletData(CustomerCheckoutForm form) {
+        form.setWalletToken(null);
+        if (form.getProvider() != null && form.getProvider().isDigitalWallet()) {
+            form.setProvider(PaymentProvider.CARDNET);
+        }
+    }
+
     private void prepareModel(Long eventId, Authentication authentication, Model model) {
         model.addAttribute("checkout", checkoutService.getCheckout(eventId, authentication.getName()));
         model.addAttribute("paymentProviders", CUSTOMER_PAYMENT_PROVIDERS);
+        model.addAttribute(
+                "googlePay",
+                new GooglePayCheckoutConfig(
+                        walletProperties.isGooglePayReady(),
+                        walletProperties.getEnvironment().name(),
+                        walletProperties.googleGatewayMerchantId(),
+                        walletProperties.googlePayMerchantId(),
+                        walletProperties.getMerchantDisplayName(),
+                        "DO"));
         model.addAttribute(
                 "schoolAlumniBenefit",
                 schoolAlumniBenefitService.getCheckoutView(
@@ -139,5 +186,14 @@ public class CustomerCheckoutController {
                     "errorMessage",
                     "No fue posible validar el beneficio para egresados.");
         }
+    }
+
+    public record GooglePayCheckoutConfig(
+            boolean enabled,
+            String environment,
+            String gatewayMerchantId,
+            String merchantId,
+            String merchantName,
+            String countryCode) {
     }
 }
