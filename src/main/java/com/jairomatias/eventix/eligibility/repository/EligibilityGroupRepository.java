@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.jairomatias.eventix.eligibility.entity.EligibilityGroup;
+import com.jairomatias.eventix.eligibility.entity.EligibilityGroupSystemKey;
 import com.jairomatias.eventix.eligibility.entity.EligibilityGroupType;
 
 import jakarta.persistence.LockModeType;
@@ -22,6 +23,11 @@ public interface EligibilityGroupRepository extends JpaRepository<EligibilityGro
     boolean existsByEvent_IdAndNameIgnoreCase(Long eventId, String name);
 
     boolean existsByEvent_IdAndNameIgnoreCaseAndIdNot(Long eventId, String name, Long id);
+
+    @EntityGraph(attributePaths = {"event", "event.category", "event.organizer", "schoolPromotion", "schoolPromotion.institution"})
+    Optional<EligibilityGroup> findByEvent_IdAndSystemKey(
+            Long eventId,
+            EligibilityGroupSystemKey systemKey);
 
     @EntityGraph(attributePaths = {"event", "schoolPromotion"})
     List<EligibilityGroup> findAllBySchoolPromotion_IdAndGroupTypeAndActiveTrue(

@@ -303,6 +303,38 @@ public class CustomerCheckoutService {
         return savedSale.getId();
     }
 
+    private void applyAutomaticEligibilityDiscount(
+            Event event,
+            User customer,
+            TicketType ticketType,
+            Sale sale,
+            String couponCode) {
+        var discountDecision = eligibilityService.resolveMonetaryDiscount(
+                event,
+                customer,
+                ticketType.getId(),
+                sale.getSubtotal());
+        if (discountDecision.isEmpty()) {
+            return;
+        }
+
+        ensureCouponCompatibleWithEligibilityDiscount(couponCode);
+        var decision = discountDecision.orElseThrow();
+        sale.applyEligibilityDiscount(
+                decision.benefitId(),
+                decision.benefitType(),
+                decision.configuredValue(),
+                decision.discountAmount());
+    }
+
+    private void ensureCouponCompatibleWithEligibilityDiscount(String couponCode) {
+        if (!isBlank(couponCode)) {
+            throw new BusinessRuleException(
+                    "Los beneficios monetarios de elegibilidad no se combinan con cupones todavía. "
+                            + "Retira el cupón para usar el beneficio automático.");
+        }
+    }
+
     private void completeFreeSale(Sale sale, User customer, LocalDateTime processedAt) {
         sale.markPaid(processedAt);
         paymentRepository.save(new PaymentTransaction(
