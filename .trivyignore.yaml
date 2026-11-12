@@ -1,0 +1,57 @@
+# Excepciones de Trivy para Eventix.
+#
+# Cada entrada necesita evidencia verificable de no explotabilidad y una fecha
+# de caducidad: al expirar, Trivy vuelve a bloquear el pipeline y obliga a
+# revisar la decisión. No se añaden excepciones para silenciar ruido.
+vulnerabilities:
+  - id: CVE-2026-47884
+    statement: >-
+      Spring Framework, XsltView (CWE-918 / CWE-22, CVSS 9.8). Afecta a
+      6.2.0-6.2.19 y solo tiene corrección pública en 7.0.9, es decir en Spring
+      Boot 4; la línea 6.2.x no recibirá el parche en abierto.
+
+      No es alcanzable con la configuración real de Eventix. La vulnerabilidad
+      requiere que la aplicación resuelva vistas con XsltView o
+      XsltViewResolver y que un mapeo /** renderice una vista sin nombre
+      explícito.
+
+      Evidencia (sobre src/main, en la revision bd2b85e):
+      - Sin coincidencias de XsltView, XsltViewResolver, xslt,
+        TransformerFactory ni javax.xml.transform.
+      - Sin ViewResolver propio ni setViewClass: la unica tecnologia de vistas
+        es Thymeleaf (spring-boot-starter-thymeleaf).
+      - Sin spring-boot-starter-webflux.
+      Spring Boot no autoconfigura XsltView: hay que declararlo a mano.
+
+      Pendiente de decision arquitectonica: la migracion a Spring Boot 4 y
+      Spring Framework 7 es la unica via publica para cerrar este CVE. Debe
+      evaluarse como propuesta independiente, no como parte de este cambio.
+
+      Verificar de nuevo esta excepcion si se introduce cualquier vista XSLT.
+    expired_at: 2026-12-31
+
+  - id: CVE-2026-47890
+    statement: >-
+      Spring Framework, corrupcion del flujo Server-Sent Events al renderizar
+      fragmentos de vista (CVSS 9.8). Afecta a 6.2.0-6.2.19 y a 7.0.0-7.0.8.
+
+      NVD acota la linea 6.2 en 6.2.20, pero ese artefacto no existe en Maven
+      Central: fijar spring-framework.version=6.2.20 hace fallar el build con
+      "Non-resolvable import POM: org.springframework:spring-framework-bom:
+      pom:6.2.20 (absent)". La linea 6.2.x esta en fin de vida para codigo
+      abierto, asi que no hay correccion publica aplicable sin migrar a
+      Spring Boot 4.
+
+      No es alcanzable con la configuracion real de Eventix. La vulnerabilidad
+      exige un endpoint que renderice fragmentos de vista dentro de un flujo
+      SSE.
+
+      Evidencia (sobre src/main, en la revision bd2b85e):
+      - Sin coincidencias de SseEmitter, ResponseBodyEmitter,
+        StreamingResponseBody, text/event-stream ni ServerSentEvent.
+      - Sin spring-boot-starter-webflux: la aplicacion es Spring MVC con
+        Thymeleaf y respuestas sincronas.
+
+      Verificar de nuevo esta excepcion si se anade cualquier endpoint SSE o
+      de streaming.
+    expired_at: 2026-12-31
