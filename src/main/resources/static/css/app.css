@@ -985,3 +985,297 @@ a:hover {
         word-break: break-all;
     }
 }
+
+/* Digital ticket presentation (scoped to the ticket details page). */
+.ticket-detail-page .ticket-pass {
+    overflow: hidden;
+    padding: 0;
+}
+
+.ticket-pass-heading {
+    background: linear-gradient(125deg, #052e25 0%, #0a3737 58%, #125b47 100%);
+    color: #f4fff9;
+    padding: 2rem;
+}
+
+.ticket-pass-kicker {
+    color: #b2f7d8;
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.7rem;
+}
+
+.ticket-pass-heading h2 {
+    font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.16;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.ticket-pass-subtitle {
+    color: #d6f5e6;
+    margin: 0.6rem 0 0;
+}
+
+.ticket-pass-facts {
+    display: grid;
+    gap: 1.35rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 1.7rem 2rem;
+}
+
+.ticket-pass-facts div {
+    min-width: 0;
+}
+
+.ticket-pass-facts dt {
+    color: #566879;
+    font-size: 0.82rem;
+    font-weight: 650;
+    margin-bottom: 0.35rem;
+}
+
+.ticket-pass-facts dd {
+    color: #102330;
+    font-weight: 750;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.ticket-pass-divider {
+    border-top: 2px dashed #b9ccd0;
+    margin: 0 1.8rem;
+}
+
+.ticket-pass-qr-block {
+    padding: 1.6rem 2rem 1.8rem;
+    text-align: center;
+}
+
+.ticket-pass-instruction {
+    color: #133325;
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.ticket-pass-qr-image {
+    background: #ffffff;
+    border: 1px solid #94a3b8;
+    border-radius: 0.8rem;
+    display: block;
+    height: auto;
+    margin: 0 auto;
+    max-width: 100%;
+    padding: 0.75rem;
+    width: 270px;
+}
+
+.ticket-pass-help {
+    color: #46596a;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    margin: 1rem auto;
+    max-width: 32rem;
+}
+
+.ticket-pass-open-qr {
+    min-height: 46px;
+}
+
+.ticket-pass-unavailable {
+    align-items: center;
+    background: #fff4f4;
+    border: 1px solid #efb8b8;
+    border-radius: 0.9rem;
+    color: #821c24;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1.5rem;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.ticket-pass-unavailable i {
+    font-size: 2rem;
+}
+
+.ticket-pass-code {
+    align-items: center;
+    background: #f0f6f3;
+    border-top: 1px solid #dae8df;
+    color: #345747;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.84rem;
+    gap: 0.5rem 1rem;
+    justify-content: space-between;
+    padding: 1.1rem 2rem;
+}
+
+.ticket-pass-code code {
+    color: #12532d;
+    font-size: 0.94rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.ticket-pass-actions .btn {
+    min-height: 46px;
+}
+
+.ticket-pass-technical {
+    border-top: 1px solid var(--eventix-border);
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+}
+
+.ticket-pass-technical summary {
+    color: #116b38;
+    cursor: pointer;
+    font-weight: 750;
+    padding: 0.3rem 0;
+}
+
+.ticket-pass-technical summary:focus-visible {
+    outline: 3px solid #15803d;
+    outline-offset: 4px;
+}
+
+.ticket-pass-technical-list {
+    display: grid;
+    gap: 1rem;
+    margin: 1.25rem 0 0;
+}
+
+.ticket-pass-technical-list dt {
+    color: #526577;
+    font-size: 0.78rem;
+    margin-bottom: 0.2rem;
+}
+
+.ticket-pass-technical-list dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.ticket-pass-technical-list code {
+    display: inline-block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.ticket-qr-dialog {
+    background: #ffffff;
+    border: 1px solid #a9bcc3;
+    border-radius: 1.15rem;
+    box-shadow: 0 24px 75px rgb(0 0 0 / 40%);
+    color: #122632;
+    max-height: calc(100dvh - 1.5rem);
+    max-width: min(95vw, 560px);
+    padding: 0;
+    width: 100%;
+}
+
+.ticket-qr-dialog::backdrop {
+    background: rgb(0 12 20 / 88%);
+}
+
+.ticket-qr-dialog-content {
+    padding: 1.3rem;
+    text-align: center;
+}
+
+.ticket-qr-dialog-topbar {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.ticket-qr-dialog-topbar button {
+    min-height: 42px;
+}
+
+.ticket-qr-dialog-event {
+    font-size: 1.1rem;
+    font-weight: 750;
+    margin: 1.1rem 0;
+    overflow-wrap: anywhere;
+}
+
+.ticket-qr-dialog-image {
+    aspect-ratio: 1;
+    background: #ffffff;
+    border: 1px solid #64748b;
+    border-radius: 0.65rem;
+    display: block;
+    height: auto;
+    margin: 0 auto;
+    max-width: 100%;
+    object-fit: contain;
+    padding: 0.7rem;
+    width: min(80vw, 400px);
+}
+
+.ticket-qr-dialog-hint {
+    color: #425768;
+    font-size: 0.89rem;
+    line-height: 1.5;
+    margin: 1rem auto 0.5rem;
+    max-width: 26rem;
+}
+
+.ticket-qr-dialog-code {
+    color: #214537;
+    font-family: monospace;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 575.98px) {
+    .ticket-pass-heading,
+    .ticket-pass-facts,
+    .ticket-pass-qr-block {
+        padding-left: 1.1rem;
+        padding-right: 1.1rem;
+    }
+
+    .ticket-pass-facts {
+        gap: 1rem;
+        grid-template-columns: 1fr;
+    }
+
+    .ticket-pass-code {
+        padding-left: 1.1rem;
+        padding-right: 1.1rem;
+    }
+
+    .ticket-pass-divider {
+        margin: 0 1.1rem;
+    }
+
+    .ticket-qr-dialog-content {
+        padding: 1rem;
+    }
+
+    .ticket-qr-dialog-image {
+        width: min(80vw, 350px);
+    }
+}
+
+@media (forced-colors: active) {
+    .ticket-pass-unavailable,
+    .ticket-pass-qr-image,
+    .ticket-qr-dialog-image,
+    .ticket-pass-technical summary {
+        border: 1px solid CanvasText;
+    }
+}

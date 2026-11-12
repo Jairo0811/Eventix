@@ -2,12 +2,13 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/head :: head('Detalle de boleta')}"></head>
-<body>
+<body class="ticket-detail-page">
 <aside th:replace="~{fragments/sidebar :: sidebar('tickets')}"></aside>
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-<main class="app-main">
+<main class="app-main ticket-detail-main">
     <div th:replace="~{fragments/messages :: messages}"></div>
+
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
             <a class="text-decoration-none small" sec:authorize="hasRole('USER')" th:href="@{/my/tickets}">
@@ -16,74 +17,136 @@
             <a class="text-decoration-none small" sec:authorize="!hasRole('USER')" th:href="@{/tickets}">
                 <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Volver a boletas
             </a>
-            <h1 class="page-title mt-2">Boleta digital</h1>
-            <p class="page-subtitle" th:text="${ticket.eventTitle}">Evento</p>
+            <h1 class="page-title mt-2">Tu boleta digital</h1>
+            <p class="page-subtitle">Guárdala y tenla disponible al llegar al recinto.</p>
         </div>
         <span class="badge-status fs-6"
               th:classappend="| badge-ticket-${#strings.toLowerCase(ticket.status.name())}|"
               th:text="${ticket.status.displayName}">Estado</span>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4 align-items-start">
         <div class="col-lg-7">
-            <section class="content-card h-100 ticket-detail-card">
-                <div class="d-flex flex-wrap justify-content-between gap-3">
-                    <div>
-                        <p class="detail-label">Código único</p>
-                        <code class="ticket-code fs-5" th:text="${ticket.uniqueCode}">EVX-</code>
-                    </div>
-                    <img class="ticket-qr" th:src="@{/tickets/{id}/qr(id=${ticket.id})}"
-                         alt="Código QR firmado de la boleta">
+            <section class="content-card ticket-pass" aria-labelledby="ticket-event-title">
+                <div class="ticket-pass-heading">
+                    <span class="ticket-pass-kicker"><i class="bi bi-ticket-perforated me-1" aria-hidden="true"></i> EVENTIX · ENTRADA DIGITAL</span>
+                    <h2 id="ticket-event-title" th:text="${ticket.eventTitle}">Nombre del evento</h2>
+                    <p class="ticket-pass-subtitle" th:text="${ticket.ticketTypeName}">Entrada general</p>
                 </div>
-                <div class="row g-4 mt-1">
-                    <div class="col-md-6"><p class="detail-label">Asistente</p><p class="detail-value" th:text="${ticket.attendeeName}">Nombre</p></div>
-                    <div class="col-md-6"><p class="detail-label">Correo</p><p class="detail-value" th:text="${ticket.attendeeEmail}">Correo</p></div>
-                    <div class="col-md-6"><p class="detail-label">Tipo de entrada</p><p class="detail-value" th:text="${ticket.ticketTypeName}">General</p></div>
-                    <div class="col-md-6" th:if="${ticket.zone != null}">
-                        <p class="detail-label">Zona / sección</p>
-                        <p class="detail-value" th:text="${ticket.zone}">VIP</p>
+
+                <dl class="ticket-pass-facts">
+                    <div>
+                        <dt><i class="bi bi-calendar-event me-1" aria-hidden="true"></i>Fecha y hora</dt>
+                        <dd th:text="${#temporals.format(ticket.eventStartAt, 'dd/MM/yyyy · HH:mm')}">31/12/2030 · 21:00</dd>
                     </div>
-                    <div class="col-md-6" th:if="${ticket.seat != null}">
-                        <p class="detail-label">Asiento</p>
-                        <p class="detail-value fw-bold" th:text="${ticket.seat}">A-12</p>
+                    <div>
+                        <dt><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>Recinto</dt>
+                        <dd th:text="${ticket.venue}">Recinto</dd>
                     </div>
-                    <div class="col-md-6"><p class="detail-label">Fecha</p><p class="detail-value" th:text="${#temporals.format(ticket.eventStartAt, 'dd/MM/yyyy HH:mm')}">Fecha</p></div>
-                    <div class="col-md-6"><p class="detail-label">Lugar</p><p class="detail-value" th:text="${ticket.venue}">Lugar</p></div>
-                    <div class="col-md-6"><p class="detail-label">Organizador</p><p class="detail-value" th:text="${ticket.organizerName}">Organizador</p></div>
+                    <div th:if="${ticket.zone != null}">
+                        <dt>Zona / sección</dt>
+                        <dd th:text="${ticket.zone}">VIP</dd>
+                    </div>
+                    <div th:if="${ticket.seat != null}">
+                        <dt>Asiento</dt>
+                        <dd th:text="${ticket.seat}">A-12</dd>
+                    </div>
+                    <div>
+                        <dt>Asistente</dt>
+                        <dd th:text="${ticket.attendeeName}">Nombre del asistente</dd>
+                    </div>
+                </dl>
+
+                <div class="ticket-pass-divider" aria-hidden="true"></div>
+
+                <div class="ticket-pass-qr-block" th:if="${ticket.status.name() == 'ACTIVE'}">
+                    <p class="ticket-pass-instruction">Presenta este QR en el acceso</p>
+                    <img class="ticket-pass-qr-image"
+                         th:src="@{/tickets/{id}/qr(id=${ticket.id})}"
+                         alt="Código QR único de acceso para esta boleta"
+                         width="248" height="248">
+                    <p class="ticket-pass-help">El personal comprobará la validez de la entrada al escanearla. No compartas tu código.</p>
+                    <a class="btn btn-primary ticket-pass-open-qr"
+                       th:href="@{/tickets/{id}/qr(id=${ticket.id})}"
+                       target="_blank" rel="noopener noreferrer"
+                       aria-haspopup="dialog" aria-controls="ticket-qr-dialog"
+                       data-ticket-qr-open>
+                        <i class="bi bi-arrows-fullscreen me-2" aria-hidden="true"></i>Ampliar código QR
+                    </a>
+                </div>
+
+                <div class="ticket-pass-unavailable" th:if="${ticket.status.name() != 'ACTIVE'}" role="status">
+                    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                    <strong>Esta boleta no está activa.</strong>
+                    <p class="mb-0">No puede presentarse como acceso. Consulta su estado y el motivo, si corresponde.</p>
+                </div>
+
+                <div class="ticket-pass-code">
+                    <span>Código de boleta</span>
+                    <code th:text="${ticket.uniqueCode}">EVX-</code>
                 </div>
             </section>
         </div>
+
         <div class="col-lg-5">
-            <section class="content-card h-100">
-                <h2 class="h5 fw-bold mb-4">Descargar y guardar</h2>
+            <section class="content-card ticket-pass-actions" aria-labelledby="ticket-actions-title">
+                <h2 class="h5 fw-bold mb-3" id="ticket-actions-title">Guardar tu entrada</h2>
+                <p class="text-secondary small">Conserva una copia de tu boleta para consultarla cuando la necesites.</p>
                 <div class="d-grid gap-2">
                     <a class="btn btn-primary" th:href="@{/tickets/{id}/pdf(id=${ticket.id})}">
                         <i class="bi bi-file-earmark-pdf me-2" aria-hidden="true"></i>Descargar PDF
                     </a>
-                    <a class="btn btn-outline-dark" th:if="${ticket.googleWalletAvailable}"
+                    <a class="btn btn-outline-dark"
+                       th:if="${ticket.status.name() == 'ACTIVE' and ticket.googleWalletAvailable}"
                        th:href="@{/tickets/{id}/wallet/google(id=${ticket.id})}">
                         <i class="bi bi-wallet2 me-2" aria-hidden="true"></i>Agregar a Google Wallet
                     </a>
-                    <a class="btn btn-dark" th:if="${ticket.appleWalletAvailable}"
+                    <a class="btn btn-dark"
+                       th:if="${ticket.status.name() == 'ACTIVE' and ticket.appleWalletAvailable}"
                        th:href="@{/tickets/{id}/wallet/apple(id=${ticket.id})}">
                         <i class="bi bi-apple me-2" aria-hidden="true"></i>Agregar a Apple Wallet
                     </a>
                 </div>
-                <p class="small text-secondary mt-3 mb-0"
-                   th:if="${!ticket.googleWalletAvailable || !ticket.appleWalletAvailable}">
-                    Los botones de wallet aparecen cuando sus credenciales están configuradas.
+                <p class="text-secondary small mt-3 mb-0"
+                   th:if="${ticket.status.name() == 'ACTIVE' and (!ticket.googleWalletAvailable or !ticket.appleWalletAvailable)}">
+                    Las opciones Wallet aparecen únicamente cuando están configuradas y disponibles.
                 </p>
-                <hr>
-                <p class="detail-label">Código antifraude</p>
-                <code th:text="${ticket.antiFraudCode}">Código</code>
-                <p class="detail-label mt-3">Firma digital</p>
-                <p class="small mb-1" th:text="|Ed25519 · ${ticket.signatureKeyId}|">Firma</p>
-                <code th:text="|Huella ${ticket.signatureFingerprint}…|">Huella</code>
-                <p class="detail-label mt-3">Venta</p>
-                <a sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')"
-                   th:href="@{/sales/{id}(id=${ticket.saleId})}" th:text="${ticket.saleReference}">SAL-</a>
-                <span sec:authorize="!hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')"
-                      th:text="${ticket.saleReference}">SAL-</span>
+
+                <details class="ticket-pass-technical">
+                    <summary>Ver información técnica y de la compra</summary>
+                    <dl class="ticket-pass-technical-list">
+                        <div>
+                            <dt>Correo del asistente</dt>
+                            <dd th:text="${ticket.attendeeEmail}">correo@example.com</dd>
+                        </div>
+                        <div>
+                            <dt>Organizador</dt>
+                            <dd th:text="${ticket.organizerName}">Organizador</dd>
+                        </div>
+                        <div>
+                            <dt>Código antifraude</dt>
+                            <dd><code th:text="${ticket.antiFraudCode}">Código</code></dd>
+                        </div>
+                        <div>
+                            <dt>Identificador de firma Ed25519</dt>
+                            <dd><code th:text="${ticket.signatureKeyId}">ID de clave</code></dd>
+                        </div>
+                        <div>
+                            <dt>Huella de la firma</dt>
+                            <dd><code th:text="${ticket.signatureFingerprint}">Huella</code></dd>
+                        </div>
+                        <div>
+                            <dt>Referencia de venta</dt>
+                            <dd>
+                                <a sec:authorize="hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')"
+                                   th:href="@{/sales/{id}(id=${ticket.saleId})}"
+                                   th:text="${ticket.saleReference}">SAL-</a>
+                                <span sec:authorize="!hasAnyRole('ADMINISTRATOR', 'OPERATOR', 'ORGANIZER')"
+                                      th:text="${ticket.saleReference}">SAL-</span>
+                            </dd>
+                        </div>
+                    </dl>
+                </details>
             </section>
         </div>
     </div>
@@ -91,8 +154,34 @@
     <div class="alert alert-danger mt-4" th:if="${ticket.cancellationReason != null}">
         <strong>Motivo de cancelación:</strong> <span th:text="${ticket.cancellationReason}">Motivo</span>
     </div>
+
     <footer th:replace="~{fragments/footer :: footer}"></footer>
 </main>
+
+<dialog id="ticket-qr-dialog" class="ticket-qr-dialog"
+        th:if="${ticket.status.name() == 'ACTIVE'}"
+        data-ticket-qr-dialog aria-labelledby="ticket-qr-dialog-title"
+        aria-describedby="ticket-qr-dialog-instructions">
+    <div class="ticket-qr-dialog-content">
+        <form method="dialog" class="ticket-qr-dialog-topbar">
+            <strong id="ticket-qr-dialog-title">Código de acceso</strong>
+            <button class="btn btn-outline-secondary" type="submit" data-ticket-qr-close>
+                <i class="bi bi-x-lg me-1" aria-hidden="true"></i>Cerrar
+            </button>
+        </form>
+        <p class="ticket-qr-dialog-event" th:text="${ticket.eventTitle}">Evento</p>
+        <img class="ticket-qr-dialog-image"
+             th:src="@{/tickets/{id}/qr(id=${ticket.id})}"
+             alt="Código QR ampliado de esta boleta"
+             width="420" height="420">
+        <p id="ticket-qr-dialog-instructions" class="ticket-qr-dialog-hint">
+            Muestra este código al personal de acceso. No lo compartas con terceros.
+        </p>
+        <span class="ticket-qr-dialog-code" th:text="${ticket.uniqueCode}">EVX-</span>
+    </div>
+</dialog>
+
 <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+<script th:src="@{/js/ticket-presentation.js}"></script>
 </body>
 </html>
