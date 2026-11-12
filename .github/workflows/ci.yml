@@ -119,6 +119,8 @@ jobs:
           ignore-unfixed: true
           severity: CRITICAL,HIGH
           exit-code: "1"
+          # Excepciones justificadas y con caducidad; al expirar vuelven a bloquear.
+          trivyignores: .trivyignore.yaml
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0.23.1

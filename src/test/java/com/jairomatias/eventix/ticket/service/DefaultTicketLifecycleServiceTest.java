@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import com.jairomatias.eventix.event.entity.Event;
+import com.jairomatias.eventix.event.entity.EventSeatingMode;
 import com.jairomatias.eventix.sale.entity.Sale;
 import com.jairomatias.eventix.sale.entity.SaleItem;
 import com.jairomatias.eventix.sale.entity.SaleStatus;
@@ -29,6 +30,8 @@ import com.jairomatias.eventix.ticket.entity.DigitalTicket;
 import com.jairomatias.eventix.ticket.repository.DigitalTicketRepository;
 import com.jairomatias.eventix.ticket.security.SignedTicketPayload;
 import com.jairomatias.eventix.ticket.security.TicketCryptographyService;
+import com.jairomatias.eventix.venue.entity.EventSeatInventory;
+import com.jairomatias.eventix.venue.repository.EventSeatInventoryRepository;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultTicketLifecycleServiceTest {
@@ -38,6 +41,7 @@ class DefaultTicketLifecycleServiceTest {
     @Mock private TicketCodeGenerator codeGenerator;
     @Mock private TicketCryptographyService cryptographyService;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private EventSeatInventoryRepository seatInventoryRepository;
     @Mock private Sale sale;
     @Mock private SaleItem saleItem;
     @Mock private Event event;
@@ -55,6 +59,7 @@ class DefaultTicketLifecycleServiceTest {
                 codeGenerator,
                 cryptographyService,
                 eventPublisher,
+                seatInventoryRepository,
                 clock);
     }
 
@@ -101,6 +106,49 @@ class DefaultTicketLifecycleServiceTest {
                             .isEqualTo("buyer@example.com");
                     assertThat(ticket.getSignatureKeyId())
                             .isEqualTo("test-key");
+                });
+    }
+
+    @Test
+    void issuesReservedTicketFromImmutableInventorySnapshot() {
+        preparePaidSale();
+        when(sale.getItems()).thenReturn(List.of(saleItem));
+        when(sale.getReferenceCode()).thenReturn("SAL-RESERVED2345");
+        when(sale.getBuyerName()).thenReturn("María Pérez");
+        when(sale.getBuyerEmail()).thenReturn("buyer@example.com");
+        when(sale.getEvent()).thenReturn(event);
+        when(event.getId()).thenReturn(8L);
+        when(event.getSeatingMode()).thenReturn(EventSeatingMode.RESERVED_SEATING);
+        when(saleItem.getQuantity()).thenReturn(1);
+        when(saleItem.getTicketTypeName()).thenReturn("VIP");
+
+        EventSeatInventory soldSeat = org.mockito.Mockito.mock(EventSeatInventory.class);
+        when(soldSeat.getSectionNameSnapshot()).thenReturn("VIP Norte original");
+        when(soldSeat.getSeatLabelSnapshot()).thenReturn("A-12 original");
+        when(seatInventoryRepository
+                .findAllBySale_IdOrderBySeat_Row_Section_SortOrderAscSeat_Row_SortOrderAscSeat_SeatNumberAsc(55L))
+                .thenReturn(List.of(soldSeat));
+
+        when(codeGenerator.generateTicketCode())
+                .thenReturn("TKT-RESERVED23456789");
+        when(codeGenerator.generateAntiFraudCode())
+                .thenReturn("AF-RESERVED234567890");
+        when(cryptographyService.sign(any()))
+                .thenReturn(new SignedTicketPayload(
+                        "b".repeat(64),
+                        "signature",
+                        "test-key"));
+
+        service.issueForPaidSale(55L);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<DigitalTicket>> captor =
+                ArgumentCaptor.forClass(List.class);
+        verify(ticketRepository).saveAll(captor.capture());
+        assertThat(captor.getValue()).singleElement()
+                .satisfies(ticket -> {
+                    assertThat(ticket.getZone()).isEqualTo("VIP Norte original");
+                    assertThat(ticket.getSeat()).isEqualTo("A-12 original");
                 });
     }
 

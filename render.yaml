@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: eventix
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
+      - key: EVENTIX_ELIGIBILITY_HMAC_SECRET
+        generateValue: true
+      - key: TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY
+        value: true
+      - key: EVENTIX_EMAIL_ENABLED
+        value: false
+      - key: AZUL_WALLET_ENABLED
+        value: false
+      - key: GOOGLE_WALLET_ENABLED
+        value: false
+      - key: APPLE_WALLET_ENABLED
+        value: false

@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/ITLA-2017--C2-0057B8?style=for-the-badge" alt="ITLA 2017-C2">
+  <img src="https://img.shields.io/badge/ITLA-SOF--004-0057B8?style=for-the-badge" alt="ITLA SOF-004">
 </p>
 
 **Plataforma web modular para gestión integral de eventos, reservaciones, ventas, ticketing digital, elegibilidad, promociones escolares, cuentas institucionales y control de acceso.**
@@ -28,6 +28,17 @@
 </div>
 
 ---
+
+## 🎓 Información académica
+
+| Información | Detalle |
+|---|---|
+| 🏫 Institución | **Instituto Tecnológico de Las Américas (ITLA)** |
+| 📖 Asignatura | **Programación II (SOF-004)** |
+| 👨‍🏫 Profesor | **Raydelto Hernández Perera** |
+| 📅 Período académico | **2017-C2** |
+| 📁 Tipo de entrega | **Proyecto Final** |
+| 🛠️ Reconstrucción moderna | **Portafolio profesional** |
 
 ## 🧭 Continuidad académica
 
@@ -346,7 +357,26 @@ El dominio de pagos usa contratos desacoplados y Strategy. La release estable ac
 
 ---
 
-## 🧰 Stack tecnológico
+## 🧱 Stack tecnológico
+
+### ⚙️ Backend y plataforma
+
+<p>
+  <img src="https://skillicons.dev/icons?i=java,spring,maven" alt="Java, Spring y Maven" />
+</p>
+
+### 🎨 Frontend y UI
+
+<p>
+  <img src="https://skillicons.dev/icons?i=bootstrap,js,html,css" alt="Bootstrap, JavaScript, HTML y CSS" />
+</p>
+
+### 🗄️ Datos e infraestructura
+
+<p>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg" width="48" height="48" alt="Microsoft SQL Server" />
+  <img src="https://skillicons.dev/icons?i=docker,github,githubactions" alt="Docker, GitHub y GitHub Actions" />
+</p>
 
 | Capa | Tecnología |
 |---|---|

@@ -44,11 +44,22 @@ public class SaleItem {
     }
 
     SaleItem(Sale sale, TicketType ticketType, int quantity) {
+        this(sale, ticketType, quantity, ticketType.getPrice());
+    }
+
+    SaleItem(
+            Sale sale,
+            TicketType ticketType,
+            int quantity,
+            BigDecimal unitPrice) {
+        if (unitPrice == null || unitPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("El precio unitario no puede ser negativo.");
+        }
         this.sale = sale;
         this.ticketType = ticketType;
         this.ticketTypeName = ticketType.getName();
         this.quantity = quantity;
-        this.unitPrice = ticketType.getPrice();
+        this.unitPrice = unitPrice;
         this.subtotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
     }
 

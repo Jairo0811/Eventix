@@ -24,7 +24,7 @@ public class UserPrincipal implements UserDetails {
     private final UserStatus status;
     private final boolean mustChangePassword;
 
-    private UserPrincipal(
+    protected UserPrincipal(
             Long id,
             String fullName,
             String email,
@@ -93,4 +93,3 @@ public class UserPrincipal implements UserDetails {
         return mustChangePassword;
     }
 }
-
