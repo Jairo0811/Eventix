@@ -51,3 +51,18 @@
 @media (max-width: 991.98px) { .buy-box { position: static; } }
 
 @media (prefers-reduced-motion: reduce) { .public-page * { scroll-behavior: auto !important; transition: none !important; } }
+
+/* Portada orientada al comprador. */
+.home-hero-buyer { padding: 4rem 0 3rem; }
+.home-hero-buyer h1 { max-width: 24ch; }
+.home-hero-search { margin: 2rem 0 1.25rem; max-width: 58rem; }
+.home-hero-quick { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.75rem; }
+.home-hero-quick a { border: 1px solid rgb(255 255 255 / 18%); border-radius: 999px; color: #dff1ea; font-size: .9rem; padding: .4rem .9rem; text-decoration: none; }
+.home-hero-quick a:hover, .home-hero-quick a:focus-visible { background: rgb(255 255 255 / 8%); border-color: #4ade80; }
+.home-hero-quick .home-hero-quick-all { border-color: #4ade80; color: #86efac; font-weight: 700; }
+.home-see-all { color: #15803d; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.home-see-all:hover { text-decoration: underline; }
+.home-organizer-section { background: #f7faf9; }
+.home-workflow-inline { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-top: 3rem; }
+/* Coherencia con las tarjetas del catálogo, que recortan en lugar de dejar franjas. */
+.home-featured-media img { object-fit: cover; }
