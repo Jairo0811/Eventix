@@ -45,13 +45,36 @@ class RateLimitingFilterTest {
                 .isEqualTo(429);
     }
 
+    @Test
+    void countsEachClientAddressSeparately() throws Exception {
+        EventixSecurityProperties properties = new EventixSecurityProperties();
+        properties.getRateLimit().setLoginRequestsPerMinute(1);
+        RateLimitingFilter filter = new RateLimitingFilter(
+                properties,
+                Clock.fixed(Instant.parse("2026-08-08T12:00:10Z"), ZoneOffset.UTC));
+
+        assertThat(execute(filter, "/login", "192.0.2.10").getStatus()).isEqualTo(200);
+        assertThat(execute(filter, "/login", "192.0.2.10").getStatus()).isEqualTo(429);
+        // Otro cliente no comparte el cupo. En produccion esto exige que
+        // request.getRemoteAddr() sea la IP real (forward-headers-strategy: native).
+        assertThat(execute(filter, "/login", "192.0.2.11").getStatus()).isEqualTo(200);
+    }
+
     private MockHttpServletResponse execute(
             RateLimitingFilter filter,
             String path)
             throws Exception {
+        return execute(filter, path, "192.0.2.10");
+    }
+
+    private MockHttpServletResponse execute(
+            RateLimitingFilter filter,
+            String path,
+            String remoteAddress)
+            throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest(
                 "POST", path);
-        request.setRemoteAddr("192.0.2.10");
+        request.setRemoteAddr(remoteAddress);
         MockHttpServletResponse response = new MockHttpServletResponse();
         filter.doFilter(request, response, new MockFilterChain());
         return response;

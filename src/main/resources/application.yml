@@ -123,7 +123,7 @@ eventix:
     hmac-secret: ${EVENTIX_ELIGIBILITY_HMAC_SECRET:}
 
   security:
-    allow-default-bootstrap-administrator: ${EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN:true}
+    allow-default-bootstrap-administrator: ${EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN:false}
     bootstrap-administrator-password: ${EVENTIX_BOOTSTRAP_ADMIN_PASSWORD:}
     rate-limit:
       enabled: ${EVENTIX_RATE_LIMIT_ENABLED:true}
