@@ -1,49 +1,56 @@
-# Eventix — pruebas reales de navegador en CI
+# Eventix — CI de navegador y compra simulada
 
-Este módulo es exclusivo del `docker compose` **efímero de GitHub Actions**. No se puede
-ejecutar contra servicios públicos ni de producción: el script restringe explícitamente
-la URL a localhost/127.0.0.1, puerto 8080.
+Este módulo solo se ejecuta dentro del entorno **efímero de GitHub Actions**.
+El script rechaza cualquier URL distinta de `localhost:8080` o
+`127.0.0.1:8080`; el código de creación de escenarios exige además
+`GITHUB_ACTIONS=true`.
 
-## Alcance verificado por Chromium
+## Cobertura automatizada
 
-- Capturas *reales* de portada pública, catálogo, login, dashboard administrativo,
-  reportes, inicio del comprador, sus boletas y dashboard de organizador (8 páginas ×
-  5 anchos: 360, 390, 768, 1024 y 1440 px = **40 capturas**).
-- Búsqueda pública y acceso protegido: visitante sin sesión se redirige al login para
-  `/dashboard` y `/my/checkout/events/999999`.
-- Inicio de sesión del administrador sembrado **solo en la base SQL Server del CI**,
-  cambio obligatorio de contraseña temporal a una nueva contraseña aleatoria,
-  reinicio de sesión y acceso a `/dashboard` y `/reports`.
-- El administrador crea **solo en la base de CI** un comprador y un organizador
-  sintéticos, ambos completan el cambio obligatorio de contraseña y acceden a
-  sus paneles correspondientes. El comprador no puede abrir `/dashboard` y el
-  organizador no puede abrir `/users/new`.
-- En 390 px: abrir el menú lateral, cerrar con Escape recuperando el foco, y cerrar
-  con el botón interno.
-- Manifiesto JSON con commit, ruta, resolución, título y métricas de ancho de documento.
+- **55 capturas** con Chromium/Playwright: portada pública, catálogo, login,
+  dashboard administrativo, reportes, inicio de comprador, mis boletas,
+  dashboard organizador, checkout de demostración, mapa de asientos y
+  detalle de boleta con QR, en 360, 390, 768, 1024 y 1440 px.
+- Autenticación del administrador, cambio obligatorio de contraseña temporal,
+  pruebas de acceso por rol `USER` y `ORGANIZER` y menú móvil con teclado.
+- Creación de datos sintéticos a través de los **formularios reales**:
+  categoría, recinto, sección `RESERVED_SEATING`, fila, tres asientos
+  posicionados, evento de prueba asignado a un organizador, entrada VIP,
+  inventario y tarifa por sección.
+- Un comprador sintético selecciona y **retiene un asiento real** en el
+  inventario SQL Server temporal; continúa al checkout y registra una venta
+  aprobada por el componente `SimulatedPaymentGateway` con proveedor
+  `CARDNET`. No se contactan gateways de cobro reales.
+- Tras la venta, se exige una boleta del comprador, QR PNG visible y
+  servido con HTTP 200 y PDF descargable con cabecera `%PDF`.
+- Se valida que el mapa móvil muestre inicialmente un asiento seleccionable,
+  que el correo permanezca ligado a la cuenta en modo lectura y que
+  ninguna de las páginas provoque overflow horizontal global.
 
-## Alcance expresamente NO cubierto
+## Seguridad y límites
 
-No inventar eventos ni compras; el catálogo puede estar vacío. Los usuarios
-comprador y organizador del CI son registros sintéticos creados exclusivamente en la
-base efímera de esta ejecución. No se ejecutan compras, devoluciones, pasarelas
-bancarias, Apple/Google Wallet, selección de asientos, ni pruebas de privacidad
-entre distintos organizadores. Tampoco se cubren OPERATOR o ACCESS_STAFF.
+**Todos los usuarios, recintos, eventos, asientos y ventas son ficticios y
+solo existen en el SQL Server temporal del CI.** El entorno se destruye al
+terminar el workflow. Las contraseñas se generan aleatoriamente y se
+enmascaran en los logs. Ninguna credencial se guarda en el repositorio.
 
-Las capturas no equivalen a la **revisión visual manual**. Hasta que se inspeccionen las
-imágenes y se complete la matriz por rol, no declarar liberación estable ni mergear
-el PR.
+El test no cubre dinero real, devoluciones, Apple/Google Wallet, proveedor
+bancario en producción, reconocimiento físico del código QR en un control de
+acceso, pruebas con dos compradores simultáneos ni permisos de los roles
+`OPERATOR` y `ACCESS_STAFF`. La aprobación del CI **no equivale a aceptar
+Eventix para producción**.
 
-## Evidencia y seguridad
+El artifact `eventix-browser-<SHA>` guarda las capturas y `manifest.json`
+durante 14 días. GitHub Actions debe notificar fallo si una de las
+comprobaciones no se cumple. Una revisión manual de las imágenes sigue
+siendo necesaria antes de fusionar.
 
-- El CI genera contraseñas aleatorias para esta ejecución; no se suben al repositorio,
-  no se imprimen y no se incluyen en capturas.
-- El servidor se ejecuta con SQL Server Developer **solo como entorno efímero de CI**.
-  No reutilizar ni dirigir el script a bases persistentes.
-- El artifact `eventix-browser-<SHA>` contiene PNG y `manifest.json` durante 14 días.
-- En caso de error, GitHub Actions mantiene el registro y sube las capturas que se
-  hayan logrado antes del fallo; la ausencia de archivos no se interpreta como éxito.
+## Ejecución
 
-Para ejecutar manualmente hace falta un `docker compose` descartable en localhost con
-`EVENTIX_BOOTSTRAP_ADMIN_PASSWORD` y `EVENTIX_BROWSER_NEXT_PASSWORD` definidos
-mediante un canal seguro, Node.js y Chromium instalados con Playwright 1.65.0.
+Se integra en `.github/workflows/ci.yml`. El workflow prepara un
+`docker compose` aislado y seis contraseñas aleatorias para administrador,
+comprador y organizador (iniciales y definitivas). Node.js utiliza
+Playwright 1.65.0 + Chromium.
+
+No ejecutar la prueba sobre el sitio público, una base persistente, Render,
+Netlify ni un entorno compartido.
