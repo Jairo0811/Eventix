@@ -2,6 +2,7 @@ package com.jairomatias.eventix.demo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -53,12 +54,20 @@ class RenderDemoProfileIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("DEMOSTRACIÓN")))
                 .andExpect(content().string(containsString("noindex, nofollow")))
-                .andExpect(content().string(containsString("Eventix Tech Experience")));
+                .andExpect(content().string(containsString("Eventix Tech Experience")))
+                .andExpect(content().string(containsString("Explora Eventix con eventos de demostración.")))
+                .andExpect(content().string(not(containsString("href=\"/login\""))));
 
         mockMvc.perform(get("/e"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Noche de Música")))
                 .andExpect(content().string(containsString("Encuentro Creativo")))
                 .andExpect(content().string(containsString("no se realizan cobros reales")));
+
+        Long eventId = eventRepository.findAll().get(0).getId();
+        mockMvc.perform(get("/e/" + eventId))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Solo demostración.")))
+                .andExpect(content().string(not(containsString("Inicia sesión para comprar"))));
     }
 }
