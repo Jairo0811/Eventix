@@ -59,6 +59,21 @@
             </div>
         </section>
 
+        <nav class="dashboard-jump-nav" aria-label="Ir a secciones del panel" sec:authorize="hasRole('ORGANIZER')">
+            <span class="dashboard-jump-label">Ir a:</span>
+            <a href="#organizer-commercial-title">Resumen comercial</a>
+            <a href="#organizer-events-title">Próximos eventos</a>
+            <a href="#organizer-finance-title">Finanzas y liquidaciones</a>
+        </nav>
+        <nav class="dashboard-jump-nav" aria-label="Ir a secciones del panel" sec:authorize="hasRole('ADMINISTRATOR')">
+            <span class="dashboard-jump-label">Ir a:</span>
+            <a href="#executive-title">Resumen ejecutivo</a>
+            <a href="#performance-title">Rendimiento</a>
+            <a href="#operations-title">Operaciones</a>
+            <a href="#users-title">Usuarios</a>
+            <a href="#quick-actions-title">Accesos rápidos</a>
+        </nav>
+
         <section sec:authorize="hasRole('ORGANIZER')"
                  aria-labelledby="organizer-commercial-title">
             <div class="dashboard-section-heading mb-3">
@@ -150,9 +165,17 @@
                 <a class="btn btn-sm btn-outline-primary" th:href="@{/events}">Ver todos</a>
             </div>
             <article class="dashboard-panel">
-                <div class="table-responsive" th:if="${!#lists.isEmpty(organizerSummary.upcoming)}">
+                <p class="table-scroll-hint" id="organizer-events-table-hint"
+                   th:if="${!#lists.isEmpty(organizerSummary.upcoming)}">
+                    Desliza horizontalmente o usa las flechas del teclado para recorrer las columnas.
+                </p>
+                <div class="table-responsive dashboard-table-scroll" role="region" tabindex="0"
+                     aria-label="Próximos eventos del organizador"
+                     aria-describedby="organizer-events-table-hint"
+                     th:if="${!#lists.isEmpty(organizerSummary.upcoming)}">
                     <table class="table align-middle">
-                        <thead><tr><th>Evento</th><th>Fecha</th><th>Vendidas</th><th>Reservaciones</th><th>Ocupación</th><th class="text-end">Neto estimado</th></tr></thead>
+                        <caption class="visually-hidden">Próximos eventos: ventas, reservaciones, ocupación y neto estimado.</caption>
+                        <thead><tr><th scope="col">Evento</th><th>Fecha</th><th>Vendidas</th><th>Reservaciones</th><th>Ocupación</th><th class="text-end">Neto estimado</th></tr></thead>
                         <tbody><tr th:each="event : ${organizerSummary.upcoming}">
                             <td><a class="fw-semibold text-decoration-none" th:href="@{/events/{id}(id=${event.id})}" th:text="${event.title}">Evento</a></td>
                             <td th:text="${#temporals.format(event.startAt, 'dd/MM/yyyy HH:mm')}">Fecha</td>
@@ -327,11 +350,17 @@
                             </div>
                             <a class="btn btn-sm btn-outline-primary" th:href="@{/reports}">Ver detalle</a>
                         </div>
-                        <div class="table-responsive">
+                        <p class="table-scroll-hint" id="top-events-table-hint">
+                            Desliza horizontalmente o usa las flechas del teclado para ver todas las métricas.
+                        </p>
+                        <div class="table-responsive dashboard-table-scroll" role="region" tabindex="0"
+                             aria-label="Eventos con mayor rendimiento"
+                             aria-describedby="top-events-table-hint">
                             <table class="table align-middle">
+                                <caption class="visually-hidden">Rendimiento por evento: entradas vendidas, asistentes e ingresos.</caption>
                                 <thead>
                                 <tr>
-                                    <th>Evento</th>
+                                    <th scope="col">Evento</th>
                                     <th>Entradas</th>
                                     <th>Asistentes</th>
                                     <th class="text-end">Ingresos</th>
