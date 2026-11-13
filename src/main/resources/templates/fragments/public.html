@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${title + ' · Eventix'}">Eventix</title>
     <meta name="description" th:content="${description}">
+    <meta name="robots" content="noindex, nofollow" th:if="${eventixDemoMode}">
     <link rel="canonical" th:if="${canonical != null}" th:href="${canonical}">
     <meta property="og:site_name" content="Eventix">
     <meta property="og:type" content="website">
@@ -44,13 +45,23 @@
         </form>
         <div class="d-flex align-items-center gap-2">
             <a class="btn btn-link home-nav-link" th:classappend="${active == 'events'} ? ' fw-bold'" th:href="@{/e}">Eventos</a>
-            <a class="btn btn-outline-light" sec:authorize="isAnonymous()" th:href="@{/login}">Iniciar sesión</a>
+            <a class="btn btn-outline-light" sec:authorize="isAnonymous()"
+               th:unless="${eventixDemoMode}" th:href="@{/login}">Iniciar sesión</a>
+            <a class="btn btn-outline-light" sec:authorize="isAnonymous()"
+               th:if="${eventixDemoMode}" th:href="@{/e}">Explorar demo</a>
             <a class="btn btn-outline-light" sec:authorize="hasRole('USER')" th:href="@{/my/tickets}">
                 <i class="bi bi-ticket-perforated me-1" aria-hidden="true"></i>Mis boletas
             </a>
             <a class="btn btn-success" sec:authorize="isAuthenticated() and !hasRole('USER')" th:href="@{/dashboard}">Ir al panel</a>
         </div>
     </nav>
+    <div class="eventix-demo-notice" role="note" th:if="${eventixDemoMode}">
+        <div class="container">
+            <strong>DEMOSTRACIÓN</strong>
+            <span>Eventos y recintos ficticios; no se realizan cobros reales.
+                  Las boletas no dan acceso a eventos y los datos pueden reiniciarse.</span>
+        </div>
+    </div>
 </header>
 <footer class="home-footer" th:fragment="footer">
     <div class="container">
@@ -59,7 +70,8 @@
                 <a class="home-footer-brand" th:href="@{/}" aria-label="Eventix, inicio">
                     <img th:src="@{/images/eventix-logo.png}" alt="Eventix" width="148" height="99" loading="lazy">
                 </a>
-                <p class="home-footer-description">Compra boletas digitales para tus eventos favoritos y llévalas siempre contigo, con código QR y Apple o Google Wallet.</p>
+                <p class="home-footer-description" th:unless="${eventixDemoMode}">Compra boletas digitales para tus eventos favoritos y llévalas siempre contigo, con código QR y Apple o Google Wallet.</p>
+                <p class="home-footer-description" th:if="${eventixDemoMode}">Versión de demostración con eventos ficticios y sin dinero real. El catálogo se reinicia al arrancar el servidor.</p>
             </div>
             <div class="col-6 col-lg-3 offset-lg-1">
                 <h2>Explorar</h2>
@@ -72,7 +84,8 @@
             <div class="col-6 col-lg-2">
                 <h2>Tu cuenta</h2>
                 <nav class="home-footer-links" aria-label="Tu cuenta">
-                    <a sec:authorize="isAnonymous()" th:href="@{/login}">Iniciar sesión</a>
+                    <a sec:authorize="isAnonymous()" th:unless="${eventixDemoMode}" th:href="@{/login}">Iniciar sesión</a>
+                    <a sec:authorize="isAnonymous()" th:if="${eventixDemoMode}" th:href="@{/e}">Explorar catálogo</a>
                     <a sec:authorize="hasRole('USER')" th:href="@{/my/tickets}">Mis boletas</a>
                     <a sec:authorize="isAuthenticated()" th:href="@{/profile}">Mi perfil</a>
                 </nav>

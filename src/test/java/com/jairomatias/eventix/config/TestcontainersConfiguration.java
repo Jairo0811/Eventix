@@ -3,10 +3,12 @@ package com.jairomatias.eventix.config;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @Configuration(proxyBeanMethods = false)
+@Profile("!render")
 public class TestcontainersConfiguration {
 
     private static final DockerImageName SQL_SERVER_IMAGE =

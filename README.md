@@ -29,6 +29,25 @@
 
 ---
 
+## 🌐 Demostración pública — sin cobros reales
+
+- **[Aplicación en Render](https://eventix-n09c.onrender.com):** Spring Boot y
+  Thymeleaf con el perfil `render`, H2 **en memoria**, eventos ficticios
+  y métodos de pago **simulados**, sin conexión a bancos.
+- **[Portada en Netlify](https://eventixrd.netlify.app):** presentación
+  estática, sin backend ni acceso a compras.
+- Los tres eventos de muestra se recrean automáticamente en Render, con
+  etiquetas **DEMO** y aviso visible; no representan actuaciones reales.
+- Los datos del entorno gratuito no son persistentes: no debe usarse
+  para guardar clientes, reservas, operaciones económicas o boletas reales.
+
+**Importante:** la aprobación del CI no certifica pagos de producción.
+La última publicación formal en GitHub permanece en **v1.3.4** hasta
+alinear la versión Maven y las notas de release. Consulta
+[la matriz de aceptación de Eventix Demo](docs/eventix-demo-acceptance-2026-11-13.md).
+
+---
+
 ## 🎓 Información académica
 
 | Información | Detalle |
