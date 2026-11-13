@@ -51,7 +51,9 @@ jobs:
           echo "EVENTIX_DB_PASSWORD=Ev$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
           echo "EVENTIX_MIGRATOR_PASSWORD=Mg$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
           echo "EVENTIX_ELIGIBILITY_HMAC_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
-          echo "EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN=true" >> "$GITHUB_ENV"
+          echo "EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN=false" >> "$GITHUB_ENV"
+          echo "EVENTIX_BOOTSTRAP_ADMIN_PASSWORD=Bs$(openssl rand -hex 16)!As" >> "$GITHUB_ENV"
+          echo "EVENTIX_BROWSER_NEXT_PASSWORD=Bt$(openssl rand -hex 16)!At" >> "$GITHUB_ENV"
           echo "TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY=true" >> "$GITHUB_ENV"
 
       - name: Verify with Maven
@@ -98,6 +100,28 @@ jobs:
             -S localhost -U eventix_migrator -P "$EVENTIX_MIGRATOR_PASSWORD" \
             -C -b -d EventixDb -Q "SELECT 1"
           curl --fail --silent --show-error http://localhost:8080/actuator/health/readiness
+
+      - name: Install Chromium for browser smoke evidence
+        timeout-minutes: 8
+        run: |
+          npm install --prefix ci/browser --ignore-scripts --no-audit --no-fund --package-lock=false
+          ./ci/browser/node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Verify public pages and administrator UX in Chromium
+        timeout-minutes: 8
+        env:
+          EVENTIX_BROWSER_BASE_URL: http://127.0.0.1:8080
+          EVENTIX_BROWSER_OUTPUT: target/browser-evidence
+        run: node ci/browser/smoke.mjs
+
+      - name: Upload actual browser screenshots and viewport manifest
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: eventix-browser-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: target/browser-evidence/**
 
       - name: Show Docker diagnostics after failure
         if: ${{ failure() && steps.start_eventix.outcome != 'skipped' }}
