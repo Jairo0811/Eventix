@@ -84,7 +84,8 @@
             <div class="col-6 col-lg-2">
                 <h2>Tu cuenta</h2>
                 <nav class="home-footer-links" aria-label="Tu cuenta">
-                    <a sec:authorize="isAnonymous()" th:href="@{/login}">Iniciar sesión</a>
+                    <a sec:authorize="isAnonymous()" th:unless="${eventixDemoMode}" th:href="@{/login}">Iniciar sesión</a>
+                    <a sec:authorize="isAnonymous()" th:if="${eventixDemoMode}" th:href="@{/e}">Explorar catálogo</a>
                     <a sec:authorize="hasRole('USER')" th:href="@{/my/tickets}">Mis boletas</a>
                     <a sec:authorize="isAuthenticated()" th:href="@{/profile}">Mi perfil</a>
                 </nav>
