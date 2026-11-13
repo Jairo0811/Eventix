@@ -80,3 +80,26 @@
     .ticket-price { font-size: .875rem; }
     .home-event-card-footer { flex-wrap: wrap; gap: .5rem; }
 }
+
+/* Render public showcase: explicit non-commercial status, not shown in prod. */
+.eventix-demo-notice {
+    background: #fff7db;
+    color: #61410d;
+    border-bottom: 1px solid #ebd29d;
+    font-size: .85rem;
+    line-height: 1.5;
+}
+.eventix-demo-notice .container {
+    padding-top: .65rem;
+    padding-bottom: .65rem;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: .25rem .6rem;
+}
+.eventix-demo-notice strong {
+    text-transform: uppercase;
+    letter-spacing: .045em;
+    white-space: nowrap;
+    font-size: .75rem;
+}
