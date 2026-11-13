@@ -10,13 +10,20 @@ import { chromium } from 'playwright';
 const baseUrl = process.env.EVENTIX_BROWSER_BASE_URL ?? 'http://127.0.0.1:8080';
 const initialPassword = process.env.EVENTIX_BOOTSTRAP_ADMIN_PASSWORD;
 const nextPassword = process.env.EVENTIX_BROWSER_NEXT_PASSWORD;
+const buyerPassword = process.env.EVENTIX_BROWSER_BUYER_PASSWORD;
+const buyerNextPassword = process.env.EVENTIX_BROWSER_BUYER_NEXT_PASSWORD;
+const organizerPassword = process.env.EVENTIX_BROWSER_ORGANIZER_PASSWORD;
+const organizerNextPassword = process.env.EVENTIX_BROWSER_ORGANIZER_NEXT_PASSWORD;
 const outputDir = resolve(process.env.EVENTIX_BROWSER_OUTPUT ?? 'target/browser-evidence');
 const viewports = [360, 390, 768, 1024, 1440];
 const snapshots = [];
 const browserErrors = [];
 
-if (!initialPassword || !nextPassword || initialPassword === nextPassword) {
-    throw new Error('Isolated CI administrator passwords must be configured and distinct.');
+if ([initialPassword, nextPassword, buyerPassword, buyerNextPassword,
+    organizerPassword, organizerNextPassword].some(password => !password)
+    || new Set([initialPassword, nextPassword, buyerPassword, buyerNextPassword,
+        organizerPassword, organizerNextPassword]).size !== 6) {
+    throw new Error('All isolated CI test passwords must be configured and distinct.');
 }
 if (!/^https?:\/\/(?:localhost|127\.0\.0\.1):8080\/?$/.test(baseUrl)) {
     throw new Error('Browser smoke tests only accept the local CI application on port 8080.');
@@ -67,6 +74,15 @@ try {
                 visibleWidth: document.documentElement.clientWidth,
                 pageTitle: document.title
             }));
+            assert.ok(metrics.documentWidth <= metrics.visibleWidth + 1,
+                'Document unexpectedly overflows horizontally at ' + path + ' ' + width + 'px');
+            if (slug === 'reportes-administrador' && width === 360) {
+                const messages = await page.locator('section[aria-labelledby="events-report-title"] .dashboard-empty').allTextContents();
+                assert.ok(messages.some(message => message.includes('No hay datos para el período seleccionado')),
+                    'Empty report feedback should be visible without scrolling sideways');
+                assert.equal(await page.locator('section[aria-labelledby="events-report-title"] .dashboard-table-scroll').count(),
+                    0, 'Empty report should not leave an unusable table scroll region');
+            }
             snapshots.push({ route: path, viewport: width, filename, ...metrics });
             process.stdout.write('Captured ' + slug + ' at ' + width + 'px\n');
         }
@@ -153,6 +169,84 @@ try {
     await capture('dashboard-administrador', '/dashboard', /Hola/);
     await capture('reportes-administrador', '/reports', /Reportes y estadísticas/);
 
+    // Create test-only accounts through the real admin UI on this discarded CI database.
+    // No payment, reservation, entitlement, or external wallet is created.
+    async function createLocalAccount({ firstName, role, username, password }) {
+        await openPage('/users/new', /Crear usuario/);
+        await page.locator('#firstName').fill(firstName);
+        await page.locator('#lastName').fill('Pruebas');
+        await page.locator('#email').fill(username + '@eventix.local');
+        await page.locator('#username').fill(username);
+        await page.locator('#roleName').selectOption(role);
+        await page.locator('#password').fill(password);
+        await page.locator('form[action$="/users"] button[type="submit"]').click();
+        await page.waitForURL(url => /^\/users\/\d+$/.test(url.pathname), {
+            timeout: 20_000
+        });
+    }
+
+    async function logoutAccount() {
+        await page.locator('.app-topbar .dropdown > button').click();
+        await page.locator('button[form="eventix-logout-form"]').click();
+        await page.waitForURL(url => url.pathname === '/login' && url.searchParams.has('logout'), {
+            timeout: 20_000
+        });
+    }
+
+    async function loginFreshAccount(username, temporaryPassword, newPassword, destination) {
+        await openPage('/login', /Inicia sesión/);
+        await page.locator('#username').fill(username);
+        await page.locator('#password').fill(temporaryPassword);
+        await page.locator('form[action$="/login"] button[type="submit"]').click();
+        await page.waitForURL(url => url.pathname === '/auth/change-password', {
+            timeout: 20_000
+        });
+        await page.locator('#currentPassword').fill(temporaryPassword);
+        await page.locator('#newPassword').fill(newPassword);
+        await page.locator('#confirmPassword').fill(newPassword);
+        await page.locator('form[action$="/auth/change-password"] button[type="submit"]').click();
+        await page.waitForURL(
+            url => url.pathname === '/login' && url.searchParams.has('passwordChanged'),
+            { timeout: 20_000 }
+        );
+        await page.locator('#username').fill(username);
+        await page.locator('#password').fill(newPassword);
+        await page.locator('form[action$="/login"] button[type="submit"]').click();
+        await page.waitForURL(url => url.pathname === destination, { timeout: 20_000 });
+    }
+
+    await createLocalAccount({
+        firstName: 'Comprador', role: 'USER',
+        username: 'ci_buyer', password: buyerPassword
+    });
+    await createLocalAccount({
+        firstName: 'Organizador', role: 'ORGANIZER',
+        username: 'ci_organizer', password: organizerPassword
+    });
+    await logoutAccount();
+    await loginFreshAccount('ci_buyer', buyerPassword, buyerNextPassword, '/my');
+    await capture('inicio-comprador', '/my', /Hola/);
+    await capture('mis-boletas', '/my/tickets', /Mis boletas/);
+
+    // Check access boundaries in the browser, not only as static contract assertions.
+    const buyerDashboard = await page.goto(new URL('/dashboard', baseUrl).toString(), {
+        waitUntil: 'domcontentloaded'
+    });
+    assert.ok(buyerDashboard?.status() === 403 || /access-denied/.test(page.url()),
+        'A USER must not be able to open the back-office dashboard');
+    await openPage('/my/tickets', /Mis boletas/);
+    await logoutAccount();
+
+    await loginFreshAccount('ci_organizer', organizerPassword, organizerNextPassword, '/dashboard');
+    await capture('dashboard-organizador', '/dashboard', /Hola/);
+    const restricted = await page.goto(new URL('/users/new', baseUrl).toString(), {
+        waitUntil: 'domcontentloaded'
+    });
+    assert.ok(restricted?.status() === 403 || /access-denied/.test(page.url()),
+        'An ORGANIZER must not be able to create administrators');
+
+    assert.equal(browserErrors.length, 0, 'Unexpected browser JavaScript errors');
+
     await writeFile(resolve(outputDir, 'manifest.json'), JSON.stringify({
         generatedAt: new Date().toISOString(),
         source: 'Ephemeral GitHub Actions Docker Compose environment',
@@ -161,7 +255,9 @@ try {
         snapshots,
         browserErrors,
         unauthenticatedCheckout: 'redirect-to-login',
-        authenticatedRole: 'ADMINISTRATOR',
+        authenticatedRoles: ['ADMINISTRATOR', 'USER', 'ORGANIZER'],
+        isolatedTestAccountsCreated: 2,
+        roleBoundariesVerified: true,
         paymentGatewayExercised: false,
         reservedSeatFlowExercised: false,
         screenshotsReviewedManually: false
