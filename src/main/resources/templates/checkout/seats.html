@@ -130,7 +130,7 @@
                     <p id="seat-map-instructions" class="text-secondary small mb-2">
                         Desplázate horizontalmente para recorrer el mapa. Puedes usar el teclado para acceder a los asientos.
                     </p>
-                    <div class="seat-map-scroll border rounded-4" role="region" tabindex="0"
+                    <div class="seat-map-scroll border rounded-4" data-seat-map-scroll role="region" tabindex="0"
                          aria-label="Mapa de asientos desplazable" aria-describedby="seat-map-instructions">
                         <div class="seat-map-canvas position-relative bg-body-tertiary">
                             <div class="seat-map-stage bg-dark text-white rounded-bottom px-4 py-2 small fw-semibold">
@@ -202,6 +202,7 @@
     <footer th:replace="~{fragments/footer :: footer}"></footer>
 </main>
 <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+<script th:src="@{/js/seat-map-initial-view.js}"></script>
 <script th:src="@{/js/seat-hold-countdown.js}"></script>
 </body>
 </html>
