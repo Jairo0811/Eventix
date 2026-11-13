@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -36,6 +37,7 @@ class RenderDemoProfileIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private EventRepository eventRepository;
+    @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private UserRepository userRepository;
 
     @Test
@@ -46,6 +48,12 @@ class RenderDemoProfileIntegrationTest {
                 "organizador-demo@eventix.local", "eventix_demo")).isPresent()
                 .get().extracting(user -> user.getStatus().name())
                 .isEqualTo("INACTIVE");
+    }
+
+    @Test
+    void renderSchemaContainsCouponsWithoutReservedKeywordDdlFailure() {
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM coupons", Integer.class);
+        assertThat(count).isZero();
     }
 
     @Test
