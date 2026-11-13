@@ -294,6 +294,13 @@
     padding: 1.35rem;
 }
 
+/* Direct panels follow their section heading. A 100% height here
+   includes the heading in the containing section's height and can overlap
+   the next grid row (organizer upcoming-events panel). */
+.dashboard-shell > section > .dashboard-panel {
+    height: auto;
+}
+
 .dashboard-panel-title {
     align-items: center;
     display: flex;
