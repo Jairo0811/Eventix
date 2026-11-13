@@ -93,12 +93,17 @@
 
     <section class="content-card mb-4" aria-labelledby="events-report-title">
         <h2 class="h5 fw-bold" id="events-report-title">Resultados por evento</h2>
-        <p class="table-scroll-hint" id="events-report-table-hint">
+        <p class="dashboard-empty mb-0" role="status" th:if="${#lists.isEmpty(report.byEvent)}">
+            No hay datos para el período seleccionado.
+        </p>
+        <p class="table-scroll-hint" id="events-report-table-hint"
+           th:unless="${#lists.isEmpty(report.byEvent)}">
             Desliza horizontalmente o usa las flechas del teclado para consultar todas las columnas.
         </p>
         <div class="table-responsive dashboard-table-scroll" role="region" tabindex="0"
-             aria-labelledby="events-report-title" aria-describedby="events-report-table-hint">
-            <table class="table">
+             aria-labelledby="events-report-title" aria-describedby="events-report-table-hint"
+             th:unless="${#lists.isEmpty(report.byEvent)}">
+            <table class="table report-table-wide">
                 <caption class="visually-hidden">Resultados por evento: ventas, entradas, reservaciones, asistentes e ingresos.</caption>
                 <thead><tr><th>Evento</th><th>Categoría</th><th>Organizador</th><th>Ventas</th><th>Entradas</th><th>Reservaciones</th><th>Asistentes</th><th>Ingresos</th></tr></thead>
                 <tbody>
@@ -112,7 +117,6 @@
                     <td th:text="${row.attendees}">0</td>
                     <td th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">DOP 0.00</td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(report.byEvent)}"><td colspan="8" class="empty-state">No hay datos para el período seleccionado.</td></tr>
                 </tbody>
             </table>
         </div>
@@ -122,10 +126,13 @@
         <div class="col-xl-6">
             <section class="content-card h-100" aria-labelledby="category-report-title">
                 <h2 class="h5 fw-bold" id="category-report-title">Por categoría</h2>
-                <p class="table-scroll-hint" id="category-report-table-hint">Desliza horizontalmente para ver todas las columnas.</p>
+                <p class="dashboard-empty mb-0" role="status" th:if="${#lists.isEmpty(report.byCategory)}">No hay resultados por categoría en el período seleccionado.</p>
+                <p class="table-scroll-hint" id="category-report-table-hint"
+                   th:unless="${#lists.isEmpty(report.byCategory)}">Desliza horizontalmente para ver todas las columnas.</p>
                 <div class="table-responsive dashboard-table-scroll" role="region" tabindex="0"
-                     aria-labelledby="category-report-title" aria-describedby="category-report-table-hint">
-                    <table class="table">
+                     aria-labelledby="category-report-title" aria-describedby="category-report-table-hint"
+                     th:unless="${#lists.isEmpty(report.byCategory)}">
+                    <table class="table report-table-compact">
                         <caption class="visually-hidden">Resultados por categoría: eventos, entradas e ingresos.</caption>
                         <thead><tr><th>Categoría</th><th>Eventos</th><th>Entradas</th><th>Ingresos</th></tr></thead><tbody>
                 <tr th:each="row : ${report.byCategory}"><td th:text="${row.categoryName}">Categoría</td><td th:text="${row.events}">0</td><td th:text="${row.ticketsSold}">0</td><td th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</td></tr>
@@ -135,10 +142,13 @@
         <div class="col-xl-6">
             <section class="content-card h-100" aria-labelledby="monthly-report-title">
                 <h2 class="h5 fw-bold" id="monthly-report-title">Ingresos mensuales</h2>
-                <p class="table-scroll-hint" id="monthly-report-table-hint">Desliza horizontalmente para ver todas las columnas.</p>
+                <p class="dashboard-empty mb-0" role="status" th:if="${#lists.isEmpty(report.monthlyRevenue)}">No hay ingresos mensuales en el período seleccionado.</p>
+                <p class="table-scroll-hint" id="monthly-report-table-hint"
+                   th:unless="${#lists.isEmpty(report.monthlyRevenue)}">Desliza horizontalmente para ver todas las columnas.</p>
                 <div class="table-responsive dashboard-table-scroll" role="region" tabindex="0"
-                     aria-labelledby="monthly-report-title" aria-describedby="monthly-report-table-hint">
-                    <table class="table">
+                     aria-labelledby="monthly-report-title" aria-describedby="monthly-report-table-hint"
+                     th:unless="${#lists.isEmpty(report.monthlyRevenue)}">
+                    <table class="table report-table-compact">
                         <caption class="visually-hidden">Ingresos mensuales: ventas, entradas e ingresos por período.</caption>
                         <thead><tr><th>Período</th><th>Ventas</th><th>Entradas</th><th>Ingresos</th></tr></thead><tbody>
                 <tr th:each="row : ${report.monthlyRevenue}"><td th:text="${row.period}">Mes</td><td th:text="${row.sales}">0</td><td th:text="${row.ticketsSold}">0</td><td th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</td></tr>
@@ -149,10 +159,13 @@
 
     <section class="content-card mt-4" sec:authorize="hasRole('ADMINISTRATOR')" aria-labelledby="organizer-report-title">
         <h2 class="h5 fw-bold" id="organizer-report-title">Rendimiento por organizador</h2>
-        <p class="table-scroll-hint" id="organizer-report-table-hint">Desliza horizontalmente para ver todas las columnas.</p>
+        <p class="dashboard-empty mb-0" role="status" th:if="${#lists.isEmpty(report.byOrganizer)}">No hay actividad por organizador en el período seleccionado.</p>
+        <p class="table-scroll-hint" id="organizer-report-table-hint"
+           th:unless="${#lists.isEmpty(report.byOrganizer)}">Desliza horizontalmente para ver todas las columnas.</p>
         <div class="table-responsive dashboard-table-scroll" role="region" tabindex="0"
-             aria-labelledby="organizer-report-title" aria-describedby="organizer-report-table-hint">
-            <table class="table">
+             aria-labelledby="organizer-report-title" aria-describedby="organizer-report-table-hint"
+                     th:unless="${#lists.isEmpty(report.byOrganizer)}">
+            <table class="table report-table-wide">
                 <caption class="visually-hidden">Rendimiento por organizador: eventos, ventas, entradas, reservaciones, asistentes e ingresos.</caption>
                 <thead><tr><th>Organizador</th><th>Eventos</th><th>Ventas</th><th>Entradas</th><th>Reservaciones</th><th>Asistentes</th><th>Ingresos</th></tr></thead><tbody>
         <tr th:each="row : ${report.byOrganizer}"><td th:text="${row.organizerName}">Organizador</td><td th:text="${row.events}">0</td><td th:text="${row.sales}">0</td><td th:text="${row.ticketsSold}">0</td><td th:text="${row.reservations}">0</td><td th:text="${row.attendees}">0</td><td th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">0</td></tr>
