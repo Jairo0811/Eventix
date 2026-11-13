@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${title + ' · Eventix'}">Eventix</title>
     <meta name="description" th:content="${description}">
+    <meta name="robots" content="noindex, nofollow" th:if="${eventixDemoMode}">
     <link rel="canonical" th:if="${canonical != null}" th:href="${canonical}">
     <meta property="og:site_name" content="Eventix">
     <meta property="og:type" content="website">
@@ -51,6 +52,13 @@
             <a class="btn btn-success" sec:authorize="isAuthenticated() and !hasRole('USER')" th:href="@{/dashboard}">Ir al panel</a>
         </div>
     </nav>
+    <div class="eventix-demo-notice" role="note" th:if="${eventixDemoMode}">
+        <div class="container">
+            <strong>DEMOSTRACIÓN</strong>
+            <span>Eventos y recintos ficticios; no se realizan cobros reales.
+                  Las boletas no dan acceso a eventos y los datos pueden reiniciarse.</span>
+        </div>
+    </div>
 </header>
 <footer class="home-footer" th:fragment="footer">
     <div class="container">
