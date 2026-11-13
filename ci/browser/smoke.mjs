@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
+import { createReservedSeatDemo, completeSimulatedCheckout } from './checkout-flow.mjs';
 
 const baseUrl = process.env.EVENTIX_BROWSER_BASE_URL ?? 'http://127.0.0.1:8080';
 const initialPassword = process.env.EVENTIX_BOOTSTRAP_ADMIN_PASSWORD;
@@ -230,10 +231,15 @@ try {
         firstName: 'Organizador', role: 'ORGANIZER',
         username: 'ci_organizer', password: organizerPassword
     });
+    // All fixtures are created through the admin UI on the isolated SQL Server.
+    const demo = await createReservedSeatDemo(page);
     await logoutAccount();
     await loginFreshAccount('ci_buyer', buyerPassword, buyerNextPassword, '/my');
     await capture('inicio-comprador', '/my', /Hola/);
     await capture('mis-boletas', '/my/tickets', /Mis boletas/);
+    const simulatedPurchase = await completeSimulatedCheckout(page, demo, capture);
+    // The purchase is verified against an actual seat hold, persisted ticket,
+    // rendered QR image, and PDF response; no external charge is attempted.
 
     // Check access boundaries in the browser, not only as static contract assertions.
     const buyerDashboard = await page.goto(new URL('/dashboard', baseUrl).toString(), {
@@ -266,7 +272,10 @@ try {
         isolatedTestAccountsCreated: 2,
         roleBoundariesVerified: true,
         paymentGatewayExercised: false,
-        reservedSeatFlowExercised: false,
+        simulatedPaymentGatewayExercised: true,
+        reservedSeatFlowExercised: true,
+        simulatedPurchase,
+        realMoneyCharged: false,
         screenshotsReviewedManually: false
     }, null, 2));
     process.stdout.write(
