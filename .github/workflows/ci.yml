@@ -13,6 +13,12 @@ on:
 permissions:
   contents: read
 
+# Keep only the newest verification for a PR: intermediate commits otherwise
+# launch multiple expensive parallel SQL Server + Chromium environments.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   dependency-review:
     name: Dependency review
