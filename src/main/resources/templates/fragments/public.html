@@ -45,7 +45,10 @@
         </form>
         <div class="d-flex align-items-center gap-2">
             <a class="btn btn-link home-nav-link" th:classappend="${active == 'events'} ? ' fw-bold'" th:href="@{/e}">Eventos</a>
-            <a class="btn btn-outline-light" sec:authorize="isAnonymous()" th:href="@{/login}">Iniciar sesión</a>
+            <a class="btn btn-outline-light" sec:authorize="isAnonymous()"
+               th:unless="${eventixDemoMode}" th:href="@{/login}">Iniciar sesión</a>
+            <a class="btn btn-outline-light" sec:authorize="isAnonymous()"
+               th:if="${eventixDemoMode}" th:href="@{/e}">Explorar demo</a>
             <a class="btn btn-outline-light" sec:authorize="hasRole('USER')" th:href="@{/my/tickets}">
                 <i class="bi bi-ticket-perforated me-1" aria-hidden="true"></i>Mis boletas
             </a>
@@ -67,7 +70,8 @@
                 <a class="home-footer-brand" th:href="@{/}" aria-label="Eventix, inicio">
                     <img th:src="@{/images/eventix-logo.png}" alt="Eventix" width="148" height="99" loading="lazy">
                 </a>
-                <p class="home-footer-description">Compra boletas digitales para tus eventos favoritos y llévalas siempre contigo, con código QR y Apple o Google Wallet.</p>
+                <p class="home-footer-description" th:unless="${eventixDemoMode}">Compra boletas digitales para tus eventos favoritos y llévalas siempre contigo, con código QR y Apple o Google Wallet.</p>
+                <p class="home-footer-description" th:if="${eventixDemoMode}">Versión de demostración con eventos ficticios y sin dinero real. El catálogo se reinicia al arrancar el servidor.</p>
             </div>
             <div class="col-6 col-lg-3 offset-lg-1">
                 <h2>Explorar</h2>
