@@ -51,9 +51,7 @@ jobs:
           echo "EVENTIX_DB_PASSWORD=Ev$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
           echo "EVENTIX_MIGRATOR_PASSWORD=Mg$(openssl rand -hex 16)!" >> "$GITHUB_ENV"
           echo "EVENTIX_ELIGIBILITY_HMAC_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
-          echo "EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN=false" >> "$GITHUB_ENV"
-          echo "EVENTIX_BOOTSTRAP_ADMIN_PASSWORD=Bs$(openssl rand -hex 16)!As" >> "$GITHUB_ENV"
-          echo "EVENTIX_BROWSER_NEXT_PASSWORD=Bt$(openssl rand -hex 16)!At" >> "$GITHUB_ENV"
+          echo "EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN=true" >> "$GITHUB_ENV"
           echo "TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY=true" >> "$GITHUB_ENV"
 
       - name: Verify with Maven
@@ -71,6 +69,16 @@ jobs:
             target/site/jacoco/**
             target/surefire-reports/**
             target/checkstyle-*.xml
+
+      - name: Prepare isolated browser administrator after Maven verification
+        run: |
+          INITIAL_BROWSER_PASSWORD="Bs$(openssl rand -hex 16)!As1"
+          NEXT_BROWSER_PASSWORD="Bt$(openssl rand -hex 16)!At1"
+          echo "::add-mask::$INITIAL_BROWSER_PASSWORD"
+          echo "::add-mask::$NEXT_BROWSER_PASSWORD"
+          echo "EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN=false" >> "$GITHUB_ENV"
+          echo "EVENTIX_BOOTSTRAP_ADMIN_PASSWORD=$INITIAL_BROWSER_PASSWORD" >> "$GITHUB_ENV"
+          echo "EVENTIX_BROWSER_NEXT_PASSWORD=$NEXT_BROWSER_PASSWORD" >> "$GITHUB_ENV"
 
       - name: Start Eventix with Docker Compose
         id: start_eventix
