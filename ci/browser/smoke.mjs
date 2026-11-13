@@ -83,6 +83,13 @@ try {
                 assert.equal(await page.locator('section[aria-labelledby="events-report-title"] .dashboard-table-scroll').count(),
                     0, 'Empty report should not leave an unusable table scroll region');
             }
+            if (slug === 'dashboard-organizador' && (width === 360 || width === 1440)) {
+                const eventPanel = await page.locator('section[aria-labelledby="organizer-events-title"] > article.dashboard-panel').boundingBox();
+                const nextHeading = await page.locator('#organizer-finance-title').boundingBox();
+                assert.ok(eventPanel && nextHeading, 'Missing organizer panel/finance heading');
+                assert.ok(nextHeading.y >= eventPanel.y + eventPanel.height + 8,
+                    'Organizer events panel overlaps the following finance section at ' + width + 'px');
+            }
             snapshots.push({ route: path, viewport: width, filename, ...metrics });
             process.stdout.write('Captured ' + slug + ' at ' + width + 'px\n');
         }
