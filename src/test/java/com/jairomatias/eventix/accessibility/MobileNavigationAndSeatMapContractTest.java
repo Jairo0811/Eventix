@@ -70,6 +70,21 @@ class MobileNavigationAndSeatMapContractTest {
         assertThat(seats).contains("th:disabled=\"${seat.status.name() != 'AVAILABLE' or holdToken != null}\"");
     }
 
+    @Test
+    void mobileSeatMapInitiallyRevealsAnAvailableSeat() throws IOException {
+        String seats = resource("templates/checkout/seats.html");
+        String script = resource("static/js/seat-map-initial-view.js");
+
+        assertThat(seats)
+                .contains("data-seat-map-scroll role=\"region\"")
+                .contains("@{/js/seat-map-initial-view.js}");
+        assertThat(script)
+                .contains("requestAnimationFrame(")
+                .contains("map.scrollWidth <= map.clientWidth + 1")
+                .contains("!input.disabled")
+                .contains("map.scrollLeft = Math.max(");
+    }
+
     private String resource(String path) throws IOException {
         try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
             assertThat(stream).as("classpath resource %s", path).isNotNull();
