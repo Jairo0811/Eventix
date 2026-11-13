@@ -6,23 +6,29 @@ la URL a localhost/127.0.0.1, puerto 8080.
 
 ## Alcance verificado por Chromium
 
-- Capturas *reales* de portada pública, catálogo, login, dashboard administrativo y reportes,
-  para anchos 360, 390, 768, 1024 y 1440 px.
+- Capturas *reales* de portada pública, catálogo, login, dashboard administrativo,
+  reportes, inicio del comprador, sus boletas y dashboard de organizador (8 páginas ×
+  5 anchos: 360, 390, 768, 1024 y 1440 px = **40 capturas**).
 - Búsqueda pública y acceso protegido: visitante sin sesión se redirige al login para
   `/dashboard` y `/my/checkout/events/999999`.
 - Inicio de sesión del administrador sembrado **solo en la base SQL Server del CI**,
   cambio obligatorio de contraseña temporal a una nueva contraseña aleatoria,
   reinicio de sesión y acceso a `/dashboard` y `/reports`.
+- El administrador crea **solo en la base de CI** un comprador y un organizador
+  sintéticos, ambos completan el cambio obligatorio de contraseña y acceden a
+  sus paneles correspondientes. El comprador no puede abrir `/dashboard` y el
+  organizador no puede abrir `/users/new`.
 - En 390 px: abrir el menú lateral, cerrar con Escape recuperando el foco, y cerrar
   con el botón interno.
 - Manifiesto JSON con commit, ruta, resolución, título y métricas de ancho de documento.
 
 ## Alcance expresamente NO cubierto
 
-No inventar eventos ni compradores; el catálogo puede estar vacío. No se ejecutan
-compras, devoluciones, pasarelas bancarias, Apple/Google Wallet, selección de asientos
-ni pruebas de privacidad entre organizadores. Tampoco se comprueban las pantallas de
-compradores autenticados (rol USER), OPERATOR o ACCESS_STAFF.
+No inventar eventos ni compras; el catálogo puede estar vacío. Los usuarios
+comprador y organizador del CI son registros sintéticos creados exclusivamente en la
+base efímera de esta ejecución. No se ejecutan compras, devoluciones, pasarelas
+bancarias, Apple/Google Wallet, selección de asientos, ni pruebas de privacidad
+entre distintos organizadores. Tampoco se cubren OPERATOR o ACCESS_STAFF.
 
 Las capturas no equivalen a la **revisión visual manual**. Hasta que se inspeccionen las
 imágenes y se complete la matriz por rol, no declarar liberación estable ni mergear
