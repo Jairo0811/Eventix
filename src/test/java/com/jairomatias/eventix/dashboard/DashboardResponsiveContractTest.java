@@ -96,7 +96,9 @@ class DashboardResponsiveContractTest {
                 .contains(".dashboard-table-scroll .table.report-table-wide")
                 .contains("min-width: 1000px;")
                 .contains(".dashboard-table-scroll .table.report-table-compact")
-                .contains("min-width: 600px;");
+                .contains("min-width: 600px;")
+                .contains(".dashboard-shell > section > .dashboard-panel {")
+                .contains("height: auto;");
     }
 
     private String resource(String path) throws IOException {
