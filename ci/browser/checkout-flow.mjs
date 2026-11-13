@@ -227,7 +227,9 @@ export async function completeSimulatedCheckout(page, demo, capture) {
     // the quantity input lives in a hidden panel and retains its default 1.
     await page.locator('#firstName').fill('Comprador');
     await page.locator('#lastName').fill('Pruebas');
-    await page.locator('#email').fill('ci_buyer@eventix.local');
+    // The checkout email is intentionally readonly and bound to the account.
+    assert.equal(await page.locator('#email').inputValue(), 'ci_buyer@eventix.local');
+    assert.equal(await page.locator('#email').getAttribute('readonly'), '');
     await page.locator('#phone').fill('8095550101');
     await page.locator('#provider').selectOption('CARDNET');
     assert.match(await page.locator('body').innerText(), /Entorno de demostración/);
