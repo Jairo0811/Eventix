@@ -72,11 +72,11 @@
             </div>
 
             <nav class="public-pagination" aria-label="Paginación" th:if="${events.totalPages > 1}">
-                <a class="btn btn-outline-dark" th:if="${events.hasPrevious()}"
+                <a class="btn btn-outline-dark public-pagination-prev" th:if="${events.hasPrevious()}"
                    th:href="@{/e(term=${term},category=${selectedCategory},when=${when},page=${events.number - 1})}">
                     <i class="bi bi-arrow-left" aria-hidden="true"></i> Anterior</a>
                 <span th:text="|Página ${events.number + 1} de ${events.totalPages}|">Página 1 de 3</span>
-                <a class="btn btn-outline-dark" th:if="${events.hasNext()}"
+                <a class="btn btn-outline-dark public-pagination-next" th:if="${events.hasNext()}"
                    th:href="@{/e(term=${term},category=${selectedCategory},when=${when},page=${events.number + 1})}">
                     Siguiente <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
             </nav>

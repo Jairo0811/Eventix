@@ -2,7 +2,10 @@
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<aside class="app-sidebar" th:fragment="sidebar(activePage)" aria-label="Barra lateral de Eventix">
+<aside id="eventix-sidebar" class="app-sidebar" th:fragment="sidebar(activePage)" aria-label="Barra lateral de Eventix">
+    <button class="btn btn-outline-light sidebar-close-button" type="button" data-sidebar-close aria-label="Cerrar menú">
+        <i class="bi bi-x-lg" aria-hidden="true"></i><span>Cerrar</span>
+    </button>
     <a sec:authorize="!hasRole('USER')" th:href="@{/dashboard}" aria-label="Ir al dashboard de Eventix">
         <img class="sidebar-logo" th:src="@{/images/eventix-logo.png}" alt="Eventix">
     </a>

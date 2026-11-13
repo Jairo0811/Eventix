@@ -65,6 +65,27 @@ canvas {
         --eventix-topbar-height: 66px;
     }
 
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    body.sidebar-open::before {
+        background: rgb(2 6 23 / 58%);
+        content: "";
+        inset: 0;
+        position: fixed;
+        z-index: 1025;
+    }
+
+    .sidebar-close-button {
+        align-items: center;
+        display: inline-flex;
+        gap: .5rem;
+        justify-content: center;
+        margin: 0 0 1rem auto;
+        min-height: 44px;
+    }
+
     .app-sidebar {
         box-shadow: 18px 0 45px rgb(2 6 23 / 28%);
         max-width: min(86vw, 300px);

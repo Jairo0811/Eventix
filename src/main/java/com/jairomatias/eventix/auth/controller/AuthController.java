@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.logout.CookieClearingLogoutHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -192,6 +193,13 @@ public class AuthController {
                 request,
                 response,
                 authentication);
+
+        // The programmatic logout above invalidates the session but does not
+        // delete the browser's session cookie. Without this explicit deletion,
+        // the next GET /login is treated as an expired session, concealing
+        // the successful password-change confirmation.
+        new CookieClearingLogoutHandler("JSESSIONID")
+                .logout(request, response, authentication);
 
         return "redirect:/login?passwordChanged";
     }

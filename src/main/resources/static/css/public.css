@@ -18,11 +18,12 @@
 .public-chips a.is-active { background: #15803d; border-color: #15803d; color: #fff; font-weight: 600; }
 .public-count { color: #475569; margin-bottom: 1rem; }
 
-.public-card-link { color: inherit; display: block; height: 100%; text-decoration: none; }
+.public-card-link { color: inherit; display: block; height: 100%; overflow-wrap: anywhere; text-decoration: none; }
 .public-card-link:focus-visible { outline: 3px solid #15803d; outline-offset: 3px; border-radius: 1.25rem; }
 .public-card-cta { color: #15803d; font-weight: 700; }
 .home-event-card-media img { aspect-ratio: 16 / 9; height: auto; object-fit: cover; width: 100%; }
-.public-pagination { align-items: center; display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; }
+.public-pagination { align-items: center; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 2rem; }
+.public-pagination > span { white-space: nowrap; }
 .public-empty { text-align: center; padding: 3rem 1rem; }
 .public-empty i { color: #15803d; font-size: 2.5rem; }
 
@@ -46,8 +47,9 @@
 .ticket-list { list-style: none; margin: 0; padding: 0; }
 .ticket-row { align-items: center; border-bottom: 1px solid #e5ece8; display: flex; gap: 1rem; justify-content: space-between; padding: .8rem 0; }
 .ticket-row:last-child { border-bottom: 0; }
+.ticket-row > div { min-width: 0; overflow-wrap: anywhere; }
 .ticket-row.is-soldout { opacity: .55; }
-.ticket-price { color: #15803d; white-space: nowrap; }
+.ticket-price { color: #15803d; flex-shrink: 0; white-space: nowrap; }
 @media (max-width: 991.98px) { .buy-box { position: static; } }
 
 @media (prefers-reduced-motion: reduce) { .public-page * { scroll-behavior: auto !important; transition: none !important; } }
@@ -66,3 +68,15 @@
 .home-workflow-inline { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-top: 3rem; }
 /* Coherencia con las tarjetas del catálogo, que recortan en lugar de dejar franjas. */
 .home-featured-media img { object-fit: cover; }
+
+/* Catálogo y entradas: controles legibles en pantallas de 360 a 390 px. */
+@media (max-width: 575.98px) {
+    .public-pagination { display: grid; gap: .75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .public-pagination > span { grid-column: 1 / -1; grid-row: 1; text-align: center; }
+    .public-pagination .btn { width: 100%; }
+    .public-pagination-prev { grid-column: 1; }
+    .public-pagination-next { grid-column: 2; }
+    .ticket-row { gap: .5rem; }
+    .ticket-price { font-size: .875rem; }
+    .home-event-card-footer { flex-wrap: wrap; gap: .5rem; }
+}

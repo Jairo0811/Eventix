@@ -127,27 +127,36 @@
                         </div>
                         <span class="badge text-bg-light border">Vista del recinto</span>
                     </div>
-                    <div class="position-relative border rounded-4 bg-body-tertiary overflow-hidden" style="min-height:440px;">
-                        <div class="position-absolute top-0 start-50 translate-middle-x bg-dark text-white rounded-bottom px-4 py-2 small fw-semibold">
-                            ESCENARIO
-                        </div>
+                    <p id="seat-map-instructions" class="text-secondary small mb-2">
+                        Desplázate horizontalmente para recorrer el mapa. Puedes usar el teclado para acceder a los asientos.
+                    </p>
+                    <div class="seat-map-scroll border rounded-4" data-seat-map-scroll role="region" tabindex="0"
+                         aria-label="Mapa de asientos desplazable" aria-describedby="seat-map-instructions">
+                        <div class="seat-map-canvas position-relative bg-body-tertiary">
+                            <div class="seat-map-stage bg-dark text-white rounded-bottom px-4 py-2 small fw-semibold">
+                                ESCENARIO
+                            </div>
+                            <div class="seat-map-plane">
                         <label th:each="seat : ${inventory}"
                                th:if="${seat.xPosition != null and seat.yPosition != null}"
-                               class="position-absolute border rounded-3 p-2 bg-body shadow-sm"
+                               class="seat-map-option border rounded-3 p-2 bg-body shadow-sm"
                                th:classappend="${seat.status.name() == 'AVAILABLE' ? ' border-success' : (seat.status.name() == 'HELD' ? ' border-warning bg-warning-subtle' : (seat.status.name() == 'SOLD' ? ' border-secondary bg-body-tertiary text-secondary' : ' border-dark bg-body-tertiary text-secondary'))}"
-                               th:style="|left:${seat.xPosition}%; top:${seat.yPosition}%; transform:translate(-50%,-50%); min-width:72px;|"
+                               th:style="|left:${seat.xPosition}%; top:${seat.yPosition}%;|"
                                th:title="|${seat.sectionName} · fila ${seat.rowCode} · ${seat.label}|">
                             <span class="d-flex align-items-center justify-content-center gap-1">
                                 <input class="form-check-input m-0"
                                        type="checkbox"
                                        th:field="*{seatIds}"
                                        th:value="${seat.seatId}"
+                                       th:attr="aria-label=|Asiento ${seat.label}, fila ${seat.rowCode}, sección ${seat.sectionName}${seat.accessible ? ', accesible' : ''}|"
                                        th:disabled="${seat.status.name() != 'AVAILABLE' or holdToken != null}">
                                 <strong class="small" th:text="${seat.seatNumber}">12</strong>
                             </span>
                             <span class="d-block text-center mt-1 small"
                                   th:text="${holdToken != null and #lists.contains(heldSeatIds, seat.seatId) ? 'TU HOLD' : (seat.accessible ? 'Accesible' : seat.status)}">AVAILABLE</span>
                         </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -193,6 +202,7 @@
     <footer th:replace="~{fragments/footer :: footer}"></footer>
 </main>
 <th:block th:replace="~{fragments/scripts :: scripts}"></th:block>
+<script th:src="@{/js/seat-map-initial-view.js}"></script>
 <script th:src="@{/js/seat-hold-countdown.js}"></script>
 </body>
 </html>
