@@ -350,13 +350,19 @@
                             </div>
                             <a class="btn btn-sm btn-outline-primary" th:href="@{/reports}">Ver detalle</a>
                         </div>
-                        <p class="table-scroll-hint" id="top-events-table-hint">
+                        <p class="dashboard-empty mb-0" role="status"
+                           th:if="${#lists.isEmpty(summary.topEvents)}">
+                            Aún no hay actividad comercial este año.
+                        </p>
+                        <p class="table-scroll-hint" id="top-events-table-hint"
+                           th:unless="${#lists.isEmpty(summary.topEvents)}">
                             Desliza horizontalmente o usa las flechas del teclado para ver todas las métricas.
                         </p>
                         <div class="table-responsive dashboard-table-scroll" role="region" tabindex="0"
                              aria-label="Eventos con mayor rendimiento"
-                             aria-describedby="top-events-table-hint">
-                            <table class="table align-middle">
+                             aria-describedby="top-events-table-hint"
+                             th:unless="${#lists.isEmpty(summary.topEvents)}">
+                            <table class="table align-middle report-table-compact">
                                 <caption class="visually-hidden">Rendimiento por evento: entradas vendidas, asistentes e ingresos.</caption>
                                 <thead>
                                 <tr>
@@ -376,9 +382,6 @@
                                     <td th:text="${row.attendees}">0</td>
                                     <td class="text-end fw-bold text-success"
                                         th:text="|DOP ${#numbers.formatDecimal(row.revenue, 1, 'COMMA', 2, 'POINT')}|">DOP 0.00</td>
-                                </tr>
-                                <tr th:if="${#lists.isEmpty(summary.topEvents)}">
-                                    <td colspan="4" class="dashboard-empty">Aún no hay actividad comercial este año.</td>
                                 </tr>
                                 </tbody>
                             </table>
