@@ -70,6 +70,35 @@ class DashboardResponsiveContractTest {
                 .contains("grid-template-columns: minmax(0, 1fr);");
     }
 
+    @Test
+    void reportTablesKeepColumnNamesIntactAndShowEmptyStatesWithoutClipping() throws IOException {
+        String reports = resource("templates/reports/index.html");
+        String dashboard = resource("templates/dashboard/index.html");
+        String css = resource("static/css/dashboard.css");
+
+        assertThat(reports)
+                .contains("th:unless=\"${#lists.isEmpty(report.byEvent)}\"")
+                .contains("th:unless=\"${#lists.isEmpty(report.byCategory)}\"")
+                .contains("th:unless=\"${#lists.isEmpty(report.monthlyRevenue)}\"")
+                .contains("th:unless=\"${#lists.isEmpty(report.byOrganizer)}\"")
+                .contains("No hay datos para el período seleccionado.")
+                .contains("No hay resultados por categoría en el período seleccionado.")
+                .contains("No hay ingresos mensuales en el período seleccionado.")
+                .contains("No hay actividad por organizador en el período seleccionado.")
+                .contains("class=\"table report-table-wide\"")
+                .contains("class=\"table report-table-compact\"");
+        assertThat(dashboard)
+                .contains("th:unless=\"${#lists.isEmpty(summary.topEvents)}\"")
+                .contains("Aún no hay actividad comercial este año.");
+        assertThat(css)
+                .contains(".dashboard-table-scroll .table thead th")
+                .contains("white-space: nowrap;")
+                .contains(".dashboard-table-scroll .table.report-table-wide")
+                .contains("min-width: 1000px;")
+                .contains(".dashboard-table-scroll .table.report-table-compact")
+                .contains("min-width: 600px;");
+    }
+
     private String resource(String path) throws IOException {
         try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path)) {
             assertThat(stream).as("classpath resource %s", path).isNotNull();
