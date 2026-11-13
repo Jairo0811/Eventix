@@ -71,6 +71,32 @@
     -webkit-overflow-scrolling: touch;
 }
 
+/* Keep report headers intact: the scroll belongs inside the table region,
+   not across the document, and empty messages stay outside that region. */
+.dashboard-table-scroll .table thead th {
+    overflow-wrap: normal;
+    white-space: nowrap;
+    word-break: normal;
+}
+
+.dashboard-table-scroll .table tbody td {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 991.98px) {
+    .dashboard-table-scroll .table {
+        min-width: 640px;
+    }
+
+    .dashboard-table-scroll .table.report-table-compact {
+        min-width: 600px;
+    }
+
+    .dashboard-table-scroll .table.report-table-wide {
+        min-width: 1000px;
+    }
+}
+
 .dashboard-hero {
     background:
         radial-gradient(circle at 82% 24%, rgb(34 197 94 / 24%), transparent 20rem),
