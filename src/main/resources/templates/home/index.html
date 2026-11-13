@@ -12,7 +12,7 @@
             <div class="home-eyebrow">
                 <span class="home-live-dot" aria-hidden="true"></span>Boletas digitales con código QR
             </div>
-            <h1 th:text="${eventixDemoMode ? 'Explora Eventix con eventos de demostración.' : 'Compra boletas para tus eventos favoritos.'}">Compra boletas para tus eventos favoritos.</h1>
+            <h1 th:text="${eventixDemoMode == true ? 'Explora Eventix con eventos de demostración.' : 'Compra boletas para tus eventos favoritos.'}">Compra boletas para tus eventos favoritos.</h1>
             <p class="home-hero-copy" th:unless="${eventixDemoMode}">Conciertos, conferencias y experiencias. Compra en minutos y lleva tu boleta en el celular, sin imprimir nada.</p>
             <p class="home-hero-copy" th:if="${eventixDemoMode}">Descubre cómo funciona la plataforma con eventos ficticios. Los precios son ilustrativos y no hay cobros bancarios ni entradas reales.</p>
 
