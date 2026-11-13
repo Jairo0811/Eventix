@@ -12,8 +12,9 @@
             <div class="home-eyebrow">
                 <span class="home-live-dot" aria-hidden="true"></span>Boletas digitales con código QR
             </div>
-            <h1>Compra boletas para tus eventos favoritos.</h1>
-            <p class="home-hero-copy">Conciertos, conferencias y experiencias. Compra en minutos y lleva tu boleta en el celular, sin imprimir nada.</p>
+            <h1 th:text="${eventixDemoMode ? 'Explora Eventix con eventos de demostración.' : 'Compra boletas para tus eventos favoritos.'}">Compra boletas para tus eventos favoritos.</h1>
+            <p class="home-hero-copy" th:unless="${eventixDemoMode}">Conciertos, conferencias y experiencias. Compra en minutos y lleva tu boleta en el celular, sin imprimir nada.</p>
+            <p class="home-hero-copy" th:if="${eventixDemoMode}">Descubre cómo funciona la plataforma con eventos ficticios. Los precios son ilustrativos y no hay cobros bancarios ni entradas reales.</p>
 
             <form class="public-search home-hero-search" th:action="@{/e}" method="get" role="search">
                 <div>
@@ -41,10 +42,15 @@
                 <a class="home-hero-quick-all" th:href="@{/e}">Ver todos <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
             </nav>
 
-            <div class="home-trust-row">
+            <div class="home-trust-row" th:unless="${eventixDemoMode}">
                 <span><i class="bi bi-qr-code" aria-hidden="true"></i> Boleta con QR al instante</span>
                 <span><i class="bi bi-wallet2" aria-hidden="true"></i> Apple y Google Wallet</span>
                 <span><i class="bi bi-shield-check" aria-hidden="true"></i> Compra protegida</span>
+            </div>
+            <div class="home-trust-row" th:if="${eventixDemoMode}">
+                <span><i class="bi bi-calendar-event" aria-hidden="true"></i> Eventos ficticios</span>
+                <span><i class="bi bi-eye" aria-hidden="true"></i> Experiencia de solo lectura</span>
+                <span><i class="bi bi-shield-check" aria-hidden="true"></i> Sin pagos reales</span>
             </div>
         </div>
     </section>
