@@ -84,6 +84,16 @@ try {
                 assert.equal(await page.locator('section[aria-labelledby="events-report-title"] .dashboard-table-scroll').count(),
                     0, 'Empty report should not leave an unusable table scroll region');
             }
+            if (slug === 'asientos-demo-disponibles' && width === 360) {
+                const visibleSeat = await page.locator('.seat-map-option')
+                    .filter({ has: page.locator('input:not([disabled])') }).first()
+                    .boundingBox();
+                const mapBounds = await page.locator('[data-seat-map-scroll]').boundingBox();
+                assert.ok(visibleSeat && mapBounds, 'Mobile seating map should contain a visible seat');
+                assert.ok(visibleSeat.x >= mapBounds.x - 1
+                    && visibleSeat.x + visibleSeat.width <= mapBounds.x + mapBounds.width + 1,
+                    'A real available seat should be visible upon opening the mobile map');
+            }
             if (slug === 'dashboard-organizador' && (width === 360 || width === 1440)) {
                 const eventPanel = await page.locator('section[aria-labelledby="organizer-events-title"] > article.dashboard-panel').boundingBox();
                 const nextHeading = await page.locator('#organizer-finance-title').boundingBox();
