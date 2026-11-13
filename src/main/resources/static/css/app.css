@@ -908,8 +908,64 @@ a:hover {
     min-height: 122px;
 }
 
-.mobile-menu-button {
+.mobile-menu-button,
+.sidebar-close-button {
     display: none;
+}
+
+/* Seated events: give the map an independently scrollable viewport.
+   The inner plane pads its coordinate system so seats at 0%/100% stay visible. */
+.seat-map-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scroll-padding-inline: 1.5rem;
+}
+
+.seat-map-scroll:focus-visible {
+    outline: 3px solid var(--eventix-primary-dark);
+    outline-offset: 3px;
+}
+
+.seat-map-canvas {
+    min-height: 560px;
+    min-width: 880px;
+}
+
+.seat-map-stage {
+    left: 50%;
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+}
+
+.seat-map-plane {
+    bottom: 50px;
+    left: 58px;
+    position: absolute;
+    right: 58px;
+    top: 78px;
+}
+
+.seat-map-option {
+    cursor: pointer;
+    line-height: 1.25;
+    min-width: 88px;
+    position: absolute;
+    transform: translate(-50%, -50%);
+}
+
+.seat-map-option:focus-within {
+    outline: 3px solid var(--eventix-primary-dark);
+    outline-offset: 2px;
+    z-index: 1;
+}
+
+.seat-map-option .form-check-input {
+    min-height: 18px;
+    min-width: 18px;
 }
 
 @media (max-width: 991.98px) {
