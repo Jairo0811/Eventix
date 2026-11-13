@@ -223,7 +223,8 @@ export async function completeSimulatedCheckout(page, demo, capture) {
         'Checkout must carry the real seat hold token');
     assert.equal(await page.locator('input[name="ticketTypeId"]:checked').inputValue(),
         String(demo.ticketTypeId));
-    await page.locator('#quantity').fill('1');
+    // Reserved-seat quantity is derived server-side from the active hold;
+    // the quantity input lives in a hidden panel and retains its default 1.
     await page.locator('#firstName').fill('Comprador');
     await page.locator('#lastName').fill('Pruebas');
     await page.locator('#email').fill('ci_buyer@eventix.local');
