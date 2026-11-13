@@ -74,11 +74,20 @@ jobs:
         run: |
           INITIAL_BROWSER_PASSWORD="Bs$(openssl rand -hex 16)!As1"
           NEXT_BROWSER_PASSWORD="Bt$(openssl rand -hex 16)!At1"
-          echo "::add-mask::$INITIAL_BROWSER_PASSWORD"
-          echo "::add-mask::$NEXT_BROWSER_PASSWORD"
+          BUYER_BROWSER_PASSWORD="By$(openssl rand -hex 16)!Aa1"
+          BUYER_BROWSER_NEXT_PASSWORD="Bn$(openssl rand -hex 16)!Aa1"
+          ORGANIZER_BROWSER_PASSWORD="Or$(openssl rand -hex 16)!Aa1"
+          ORGANIZER_BROWSER_NEXT_PASSWORD="On$(openssl rand -hex 16)!Aa1"
+          for value in "$INITIAL_BROWSER_PASSWORD" "$NEXT_BROWSER_PASSWORD" "$BUYER_BROWSER_PASSWORD" "$BUYER_BROWSER_NEXT_PASSWORD" "$ORGANIZER_BROWSER_PASSWORD" "$ORGANIZER_BROWSER_NEXT_PASSWORD"; do
+            echo "::add-mask::$value"
+          done
           echo "EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN=false" >> "$GITHUB_ENV"
           echo "EVENTIX_BOOTSTRAP_ADMIN_PASSWORD=$INITIAL_BROWSER_PASSWORD" >> "$GITHUB_ENV"
           echo "EVENTIX_BROWSER_NEXT_PASSWORD=$NEXT_BROWSER_PASSWORD" >> "$GITHUB_ENV"
+          echo "EVENTIX_BROWSER_BUYER_PASSWORD=$BUYER_BROWSER_PASSWORD" >> "$GITHUB_ENV"
+          echo "EVENTIX_BROWSER_BUYER_NEXT_PASSWORD=$BUYER_BROWSER_NEXT_PASSWORD" >> "$GITHUB_ENV"
+          echo "EVENTIX_BROWSER_ORGANIZER_PASSWORD=$ORGANIZER_BROWSER_PASSWORD" >> "$GITHUB_ENV"
+          echo "EVENTIX_BROWSER_ORGANIZER_NEXT_PASSWORD=$ORGANIZER_BROWSER_NEXT_PASSWORD" >> "$GITHUB_ENV"
 
       - name: Start Eventix with Docker Compose
         id: start_eventix
