@@ -24,6 +24,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.jairomatias.eventix.checkout.dto.CustomerCheckoutForm;
 import com.jairomatias.eventix.checkout.dto.CustomerCheckoutPage;
+import com.jairomatias.eventix.checkout.dto.CustomerCheckoutQuote;
+import com.jairomatias.eventix.checkout.dto.CustomerCheckoutQuoteRequest;
 import com.jairomatias.eventix.eligibility.dto.EligibilityDiscountDecision;
 import com.jairomatias.eventix.eligibility.entity.EligibilityBenefitType;
 import com.jairomatias.eventix.eligibility.service.EventEligibilityService;
@@ -349,6 +351,103 @@ class CustomerCheckoutServiceTest {
                 .thenReturn(false);
         when(reservationProperties.getHoldDuration())
                 .thenReturn(Duration.ofMinutes(15));
+    }
+
+    @Test
+    void quotesTheHeldSeatsInsteadOfTheRequestedQuantity() {
+        prepareQuoteWithSeatHold(2);
+
+        CustomerCheckoutQuote quote = service.quote(
+                10L,
+                new CustomerCheckoutQuoteRequest(31L, 3, null, "HOLD-123"),
+                CUSTOMER_LOGIN);
+
+        // Se piden 3 pero solo hay 2 asientos retenidos: la compra cobraría 2,
+        // así que la cotización no puede anunciar 3.
+        assertThat(quote.quantity()).isEqualTo(2);
+        assertThat(quote.subtotal()).isEqualByComparingTo(new BigDecimal("1500.00"));
+        assertThat(quote.total()).isEqualByComparingTo(new BigDecimal("1500.00"));
+        verify(seatInventoryService).validateActiveHold(
+                10L,
+                "HOLD-123",
+                7L,
+                CUSTOMER_LOGIN);
+    }
+
+    @Test
+    void propagatesTheHoldFailureWhenTheTokenIsNotValid() {
+        // Este camino falla en la retención, antes de tocar el inventario o la
+        // identidad del evento, así que solo se prepara lo que llega a usarse.
+        prepareCustomer();
+        when(event.getStatus()).thenReturn(EventStatus.PUBLISHED);
+        when(event.getStartAt()).thenReturn(LocalDateTime.of(2099, 1, 1, 20, 0));
+        when(eventRepository.findDetailedById(10L)).thenReturn(Optional.of(event));
+        when(ticketTypeRepository.findDetailedById(31L)).thenReturn(Optional.of(ticketType));
+        when(sectionPricingService.resolveRule(event, ticketType))
+                .thenReturn(new TicketSeatingRule(true, 7L, new BigDecimal("750.00")));
+        when(seatInventoryService.validateActiveHold(10L, null, 7L, CUSTOMER_LOGIN))
+                .thenThrow(new BusinessRuleException(
+                        "Selecciona y retén tus asientos antes de continuar."));
+
+        assertThatThrownBy(() -> service.quote(
+                10L,
+                new CustomerCheckoutQuoteRequest(31L, 3, null, null),
+                CUSTOMER_LOGIN))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("retén tus asientos");
+    }
+
+    @Test
+    void keepsTheRequestedQuantityWhenNoSeatHoldIsRequired() {
+        prepareCustomer();
+        preparePublishedEvent();
+        prepareTicketType();
+        when(eventRepository.findDetailedById(10L)).thenReturn(Optional.of(event));
+        when(ticketTypeRepository.findDetailedById(31L)).thenReturn(Optional.of(ticketType));
+        when(reservationRepository.sumOccupiedSeats(any(), any())).thenReturn(0L);
+        when(saleItemRepository.sumAllocatedQuantity(31L)).thenReturn(0L);
+        when(reservationProperties.getHoldDuration()).thenReturn(Duration.ofMinutes(15));
+        prepareQuoteCustomerIdentity();
+        when(eligibilityService.resolveMonetaryDiscount(
+                any(), any(), any(), any())).thenReturn(Optional.empty());
+        when(promotionService.quoteDiscount(any(), any(), any()))
+                .thenReturn(BigDecimal.ZERO);
+
+        CustomerCheckoutQuote quote = service.quote(
+                10L,
+                new CustomerCheckoutQuoteRequest(31L, 3, null, null),
+                CUSTOMER_LOGIN);
+
+        assertThat(quote.quantity()).isEqualTo(3);
+        assertThat(quote.subtotal()).isEqualByComparingTo(new BigDecimal("1500.00"));
+        verifyNoInteractions(seatInventoryService);
+    }
+
+    private void prepareQuoteWithSeatHold(int heldSeats) {
+        prepareCustomer();
+        preparePublishedEvent();
+        prepareTicketType();
+        when(eventRepository.findDetailedById(10L)).thenReturn(Optional.of(event));
+        when(ticketTypeRepository.findDetailedById(31L)).thenReturn(Optional.of(ticketType));
+        when(sectionPricingService.resolveRule(event, ticketType))
+                .thenReturn(new TicketSeatingRule(true, 7L, new BigDecimal("750.00")));
+        when(seatInventoryService.validateActiveHold(10L, "HOLD-123", 7L, CUSTOMER_LOGIN))
+                .thenReturn(heldSeats);
+        when(reservationRepository.sumOccupiedSeats(any(), any())).thenReturn(0L);
+        when(saleItemRepository.sumAllocatedQuantity(31L)).thenReturn(0L);
+        when(reservationProperties.getHoldDuration()).thenReturn(Duration.ofMinutes(15));
+        prepareQuoteCustomerIdentity();
+        when(eligibilityService.resolveMonetaryDiscount(
+                any(), any(), any(), any())).thenReturn(Optional.empty());
+        when(promotionService.quoteDiscount(any(), any(), any()))
+                .thenReturn(BigDecimal.ZERO);
+    }
+
+    private void prepareQuoteCustomerIdentity() {
+        when(customer.getFirstName()).thenReturn("Ana");
+        when(customer.getLastName()).thenReturn("Pérez");
+        when(customer.getEmail()).thenReturn(CUSTOMER_LOGIN);
+        when(customer.getPhone()).thenReturn("8095550000");
     }
 
     private void prepareCustomer() {
