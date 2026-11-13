@@ -108,11 +108,24 @@ try {
     await page.locator('#currentPassword').fill(initialPassword);
     await page.locator('#newPassword').fill(nextPassword);
     await page.locator('#confirmPassword').fill(nextPassword);
-    await page.locator('form[action$="/auth/change-password"] button[type="submit"]').click();
-    await page.waitForURL(
-        url => url.pathname === '/login' && url.searchParams.has('passwordChanged'),
+    const passwordPostResponse = page.waitForResponse(response =>
+        new URL(response.url()).pathname === '/auth/change-password'
+        && response.request().method() === 'POST',
         { timeout: 20_000 }
     );
+    await page.locator('form[action$="/auth/change-password"] button[type="submit"]').click();
+    const changeResponse = await passwordPostResponse;
+    await page.waitForLoadState('domcontentloaded');
+    const changeUrl = new URL(page.url());
+    if (changeUrl.pathname !== '/login' || !changeUrl.searchParams.has('passwordChanged')) {
+        const feedback = await page.locator('[role="alert"], .invalid-feedback')
+            .allTextContents();
+        throw new Error(
+            'CI password-change flow failed: HTTP ' + changeResponse.status()
+            + '; route ' + changeUrl.pathname + changeUrl.search
+            + '; validation: ' + feedback.map(s => s.trim()).filter(Boolean).join(' | ').slice(0, 400)
+        );
+    }
     await page.locator('#username').fill('admin');
     await page.locator('#password').fill(nextPassword);
     await page.locator('form[action$="/login"] button[type="submit"]').click();
