@@ -26,6 +26,8 @@ logging:
     com.jairomatias.eventix: INFO
 
 eventix:
+  payments:
+    checkout-enabled: ${EVENTIX_CHECKOUT_ENABLED:false}
   security:
     allow-default-bootstrap-administrator: false
   ticketing:
