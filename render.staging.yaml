@@ -1,0 +1,62 @@
+# STAGING ONLY. Optional Render Blueprint: NOT linked or deployed automatically.
+# Creating this service/disk incurs charges. Approval and a dedicated external
+# SQL Server staging database (NOT production) are mandatory.
+services:
+  - type: web
+    name: eventix-staging
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: 1c-2g
+    autoDeployTrigger: off
+    healthCheckPath: /actuator/health/readiness
+    disk:
+      name: eventix-staging-covers
+      mountPath: /app/data
+      sizeGB: 5
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: APP_PORT
+        value: 10000
+      - key: APP_BASE_URL
+        sync: false
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: FLYWAY_DB_USERNAME
+        sync: false
+      - key: FLYWAY_DB_PASSWORD
+        sync: false
+      - key: EVENT_COVER_STORAGE_PATH
+        value: /app/data/event-covers
+      - key: EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN
+        value: false
+      - key: EVENTIX_CHECKOUT_ENABLED
+        value: false
+      - key: EVENTIX_RATE_LIMIT_ENABLED
+        value: true
+      - key: EVENTIX_ELIGIBILITY_HMAC_SECRET
+        sync: false
+      - key: TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY
+        value: false
+      - key: TICKETING_SIGNING_KEY_ID
+        sync: false
+      - key: TICKETING_SIGNING_PRIVATE_KEY
+        sync: false
+      - key: TICKETING_SIGNING_PUBLIC_KEY
+        sync: false
+      - key: EVENTIX_EMAIL_ENABLED
+        value: false
+      - key: EVENTIX_REMINDERS_ENABLED
+        value: false
+      - key: AZUL_WALLET_ENABLED
+        value: false
+      - key: AZUL_WALLET_ENVIRONMENT
+        value: TEST
+      - key: GOOGLE_WALLET_ENABLED
+        value: false
+      - key: APPLE_WALLET_ENABLED
+        value: false
