@@ -1,4 +1,4 @@
-# Eventix Demo — criterios de aceptación (13/11/2026)
+# Eventix Demo — criterios de aceptación (13/11/2026; revisión 19/11/2026)
 
 ## Propósito
 
@@ -52,20 +52,77 @@ Estas referencias no representan ofertas, reservas ni ventas reales.
   entradas verificables tras reinicios.
 - No introducir datos reales de participantes, clientes ni tarjetas en la demo.
 
+## Estado verificado en repositorio — 19/11/2026
+
+- `main`: `4920c775471a4013c8830bb8afd84c7c91c05c45` (PR #105).
+- PR #104 (catálogo ficticio Render) **fusionado**; PR #103 (UX móvil y E2E
+  simulado) y #105 (esquema H2) también integrados.
+- Ejecución [Eventix CI #43521476245](https://github.com/Jairo0811/Eventix/actions/runs/43521476245):
+  **success** sobre ese SHA. El commit registra 492 pruebas Java y 55 capturas
+  Chromium, más Docker, Trivy y SBOM.
+- La [release formal en GitHub](https://github.com/Jairo0811/Eventix/releases)
+  sigue siendo **v1.3.4**. El workflow de publicación posterior a #105 terminó
+  en success, pero **no generó una release nueva**.
+- El código contiene un catálogo exclusivo del perfil `render` con H2 en
+  memoria y acceso público informativo. Estos resultados de pruebas **no
+  verifican** por sí solos el estado real del servicio Render ni el deploy de
+  Netlify.
+- Al revisar desde este entorno no fue posible alcanzar de forma verificable
+  `eventix-n09c.onrender.com` ni `eventixrd.netlify.app`. No se inventa
+  evidencia de HTTP 200, de versión live o de capturas públicas.
+
 ## Matriz de aceptación
 
-- [ ] PR de catálogo render fusionado tras CI verde.
-- [ ] `main` CI: Maven completo, Docker con SQL Server, Playwright (55
-      capturas), Trivy y SBOM aprobados.
-- [ ] Render deploy del commit de `main` marcado `live`.
-- [ ] GET `/`: aparecen tres eventos ficticios y banda DEMOSTRACIÓN.
-- [ ] GET `/e`: muestra las tres categorías y la búsqueda por título.
-- [ ] GET `/e/{id}`: ficha del evento y su naturaleza ficticia.
-- [ ] GET `/actuator/health`: HTTP 200.
-- [ ] No aparecen claves ni contraseñas en commits, logs o artifacts.
-- [ ] Metadatos `noindex` presentes en perfiles Render.
-- [ ] Verificación visual de 360/390/768/1024/1440 px en Render real.
-- [ ] Confirmación explícita de que no existe flujo bancario productivo.
+**CI y código (verificables sin entrar a los paneles de hosting)**
+
+- [x] PR #104 de catálogo Render fusionado.
+- [x] `main` CI aprobado para `4920c775` (Maven, SQL Server/Docker,
+      Playwright, Trivy y SBOM según la ejecución enlazada).
+- [x] Garantías del modo demo cubiertas por tests: tres eventos ficticios,
+      organizador inactivo, perfil `render`, prohibición de SQL Server en el
+      inicializador, etiquetas DEMO y ausencia de compras en la ficha.
+- [x] Configuración del demo con wallets y proveedor de pago externo
+      deshabilitados por defecto. **Esto no verifica bancos reales**.
+- [x] Existe una verificación remota reutilizable de **solo lectura** en
+      `ci/browser/public-demo-smoke.mjs` y su workflow manual
+      `Public Eventix Demo Smoke`, con capturas en cinco resoluciones.
+
+**Despliegues públicos (pendientes hasta evidencia de una ejecución remota)**
+
+- [ ] Render deploy del commit `4920c775` o posterior marcado **live**
+      en el panel, con SHA exacto verificado.
+- [ ] GET `/` público: aparecen los eventos ficticios y banda DEMOSTRACIÓN.
+- [ ] GET `/e` público: tres tarjetas, tres categorías y búsqueda por título.
+- [ ] GET `/e/{id}` público: ficha ficticia sin botón de compra.
+- [ ] GET `/actuator/health` público: HTTP 200.
+- [ ] Netlify público: home estático actualizado, filtros y ficha ficticia
+      funcionando, sin enlaces a cuentas o pagos.
+- [ ] Metadatos `noindex,nofollow` comprobados en ambos orígenes.
+- [ ] Verificación real sin secretos expuestos en commits, logs y artifacts;
+      requiere revisión privada de los logs que no se publican.
+- [ ] Capturas reales en 360/390/768/1024/1440 px de **ambos despliegues**,
+      inspeccionadas visualmente con ausencia de overflow y errores.
+- [ ] QA manual: teclado, lector de pantalla, zoom 200 % y contraste.
+- [ ] Confirmación documentada del deploy y de la inexistencia de gateway
+      bancario productivo activo.
+
+## Cómo verificar la demo pública sin modificar datos
+
+1. Abrir [GitHub Actions → Public Eventix Demo Smoke](https://github.com/Jairo0811/Eventix/actions/workflows/public-demo-smoke.yml).
+2. Ejecutar **Run workflow** desde la rama predeterminada después de que
+   ambos despliegues estén publicados.
+3. Esperar el resultado y descargar el artifact
+   `eventix-public-demo-<run_id>`.
+4. Revisar `manifest.json` y las 20 capturas de Render (`/`, `/e`,
+   `/e/{id}`) y Netlify (`/`) en cinco anchos.
+5. Confirmar en el panel de Render que la **versión live** coincide con
+   el SHA esperado; Playwright no prueba esa correspondencia.
+6. Si un paso falla por suspensión o error de hosting, registrar causa,
+   fecha y URL. No sustituir el fallo por una casilla marcada.
+
+Este workflow nunca inicia sesión, modifica datos, intenta comprar ni carga
+credenciales productivas. En Render gratuito H2 puede reiniciarse; por ello
+la prueba consulta únicamente páginas públicas de muestra.
 
 ## Continuidad
 
