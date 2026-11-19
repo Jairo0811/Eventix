@@ -151,7 +151,7 @@ public class CustomerCheckoutController {
         model.addAttribute(
                 "googlePay",
                 new GooglePayCheckoutConfig(
-                        walletProperties.isGooglePayReady(),
+                        checkoutEnabled && walletProperties.isGooglePayReady(),
                         walletProperties.getEnvironment().name(),
                         walletProperties.googleGatewayMerchantId(),
                         walletProperties.googlePayMerchantId(),
