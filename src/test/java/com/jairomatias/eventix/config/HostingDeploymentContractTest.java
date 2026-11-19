@@ -82,6 +82,38 @@ class HostingDeploymentContractTest {
                 .doesNotContain("value: render");
     }
 
+    @Test
+    void stagingBlueprintUsesProductionGuardsButNeverProductionResources()
+            throws IOException {
+        String staging = read("render.staging.yaml");
+        String production = read("render.production.yaml");
+        String sqlInspection = read("scripts/sqlserver-staging-readiness.sql");
+
+        assertThat(staging)
+                .contains("name: eventix-staging")
+                .contains("SPRING_PROFILES_ACTIVE")
+                .contains("value: prod")
+                .contains("autoDeployTrigger: off")
+                .contains("EVENTIX_CHECKOUT_ENABLED")
+                .contains("EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN")
+                .contains("TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY")
+                .contains("FLYWAY_DB_USERNAME")
+                .contains("mountPath: /app/data")
+                .contains("value: false")
+                .doesNotContain("jdbc:h2:")
+                .doesNotContain("eventix-production")
+                .doesNotContain("eventix-covers\n");
+        assertThat(production)
+                .contains("name: eventix-production")
+                .doesNotContain("name: eventix-staging");
+        assertThat(sqlInspection)
+                .contains("SELECT")
+                .contains("flyway_schema_history")
+                .contains("payment_reconciliation_cases")
+                .doesNotContain("DROP TABLE")
+                .doesNotContain("DELETE FROM");
+    }
+
     private static String read(String path) throws IOException {
         return Files.readString(Path.of(path));
     }
