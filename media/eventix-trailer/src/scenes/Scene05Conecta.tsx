@@ -50,10 +50,37 @@ export const Scene05Conecta: React.FC<{vertical?: boolean}> = ({vertical = false
         backgroundColor: COLORS.elevated,
     };
 
+    /**
+     * Cada pieza encuadra una zona DISTINTA del producto. Sin `offsetY` las
+     * tres mostraban la misma cabecera y el mosaico parecía repetido; la
+     * columna móvil además necesita menos ancho y más escala para que su
+     * contenido se lea en lugar de cortarse a media palabra.
+     */
     const pieces = [
-        {src: 'screenshots/real/home-hero.png', delay: 4, label: 'Descubrimiento'},
-        {src: 'screenshots/real/home-explore.png', delay: 14, label: 'Catálogo'},
-        {src: 'screenshots/real/responsive-390.png', delay: 24, label: 'Móvil'},
+        {
+            src: 'screenshots/real/home-hero.png',
+            delay: 4,
+            label: 'Descubrimiento',
+            offsetY: 0,
+            zoom: 1.04,
+            flex: 1.18,
+        },
+        {
+            src: 'screenshots/real/home-full.png',
+            delay: 14,
+            label: 'Catálogo',
+            offsetY: vertical ? 1180 : 1010,
+            zoom: 1.04,
+            flex: 1.18,
+        },
+        {
+            src: 'screenshots/real/responsive-390.png',
+            delay: 24,
+            label: 'Móvil',
+            offsetY: 150,
+            zoom: 1.0,
+            flex: 0.64,
+        },
     ];
 
     const mosaic = (
@@ -72,7 +99,7 @@ export const Scene05Conecta: React.FC<{vertical?: boolean}> = ({vertical = false
                     style={{
                         ...cardStyle,
                         ...tile(piece.delay),
-                        flex: 1,
+                        flex: piece.flex,
                         height: vertical ? 520 : 440,
                         position: 'relative',
                     }}
@@ -82,7 +109,7 @@ export const Scene05Conecta: React.FC<{vertical?: boolean}> = ({vertical = false
                         style={{
                             width: '100%',
                             display: 'block',
-                            transform: 'scale(1.06)',
+                            transform: `translateY(${-piece.offsetY}px) scale(${piece.zoom})`,
                             transformOrigin: 'top center',
                         }}
                     />
@@ -90,8 +117,11 @@ export const Scene05Conecta: React.FC<{vertical?: boolean}> = ({vertical = false
                         style={{
                             position: 'absolute',
                             inset: 0,
+                            // El degradado debe cerrar casi opaco y empezar
+                            // antes: con 0.92 el rótulo se pisaba con el texto
+                            // de la página que queda debajo.
                             background:
-                                'linear-gradient(180deg, rgba(8,17,24,0) 44%, rgba(6,25,35,0.92) 100%)',
+                                'linear-gradient(180deg, rgba(8,17,24,0) 34%, rgba(6,25,35,0.80) 72%, rgba(4,16,22,0.99) 100%)',
                         }}
                     />
                     <div
