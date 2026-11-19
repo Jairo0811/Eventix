@@ -383,7 +383,14 @@ La categoría activa **`Promoción escolar`** se incorpora mediante Flyway V26.
 
 ### 💳 Pagos
 
-El dominio de pagos usa contratos desacoplados y Strategy. La release estable actual **no incluye todavía un gateway comercial productivo**. Los proveedores reales, webhooks, reconciliación y payouts corresponden al siguiente ciclo mayor de pagos.
+El dominio de pagos usa contratos desacoplados y Strategy. La release
+estable actual **no incluye todavía un gateway comercial productivo**.
+En `prod` se excluye la pasarela simulada y el checkout queda cerrado
+(`EVENTIX_CHECKOUT_ENABLED=false`) hasta validar con un proveedor autorizado.
+Se ha preparado una bandeja de notificaciones verificadas para evitar
+repeticiones; no existe todavía un webhook público ni conciliación bancaria.
+Ver [preparación v1.4](docs/v1.4-payments-production-readiness.md) para los
+criterios técnicos y comerciales pendientes.
 
 ---
 
