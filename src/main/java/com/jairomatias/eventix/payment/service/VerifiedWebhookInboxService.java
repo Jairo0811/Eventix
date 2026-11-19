@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -28,6 +29,7 @@ public class VerifiedWebhookInboxService {
     private final PaymentWebhookInboxRepository repository;
     private final Clock clock;
 
+    @Autowired
     public VerifiedWebhookInboxService(PaymentWebhookInboxRepository repository) {
         this(repository, Clock.system(ZoneId.of("America/Santo_Domingo")));
     }
