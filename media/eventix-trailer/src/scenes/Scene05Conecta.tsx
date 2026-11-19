@@ -73,21 +73,39 @@ export const Scene05Conecta: React.FC<{vertical?: boolean}> = ({vertical = false
             zoom: 1.04,
             flex: 1.18,
         },
-        {
-            src: 'screenshots/real/responsive-390.png',
-            delay: 24,
-            label: 'Móvil',
-            offsetY: 150,
-            zoom: 1.0,
-            flex: 0.64,
-        },
+        // En vertical la propia pieza ya es móvil, y una captura de 390 px
+        // estirada al ancho completo se veía vacía y blanda. Se muestra en su
+        // lugar la tercera sección real de la página: la de organizadores.
+        vertical
+            ? {
+                  src: 'screenshots/real/home-full.png',
+                  delay: 24,
+                  label: 'Organizadores',
+                  offsetY: 1760,
+                  zoom: 1.0,
+                  flex: 1,
+              }
+            : {
+                  src: 'screenshots/real/responsive-390.png',
+                  delay: 24,
+                  label: 'Móvil',
+                  offsetY: 150,
+                  zoom: 1.0,
+                  flex: 0.64,
+              },
     ];
 
+    /**
+     * En vertical el mosaico se apila. Puestas en fila dentro de 1080 px, las
+     * tres piezas quedaban reducidas hasta resultar ilegibles, que es
+     * justamente lo que hay que evitar en este formato.
+     */
     const mosaic = (
         <div
             style={{
                 display: 'flex',
-                gap: vertical ? 22 : 30,
+                flexDirection: vertical ? 'column' : 'row',
+                gap: vertical ? 26 : 30,
                 alignItems: 'stretch',
                 justifyContent: 'center',
                 width: '100%',
@@ -99,8 +117,9 @@ export const Scene05Conecta: React.FC<{vertical?: boolean}> = ({vertical = false
                     style={{
                         ...cardStyle,
                         ...tile(piece.delay),
-                        flex: piece.flex,
-                        height: vertical ? 520 : 440,
+                        flex: vertical ? 'none' : piece.flex,
+                        width: vertical ? '100%' : undefined,
+                        height: vertical ? 330 : 440,
                         position: 'relative',
                     }}
                 >

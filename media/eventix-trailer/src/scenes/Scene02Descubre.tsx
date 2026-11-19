@@ -22,11 +22,13 @@ export const Scene02Descubre: React.FC<{vertical?: boolean}> = ({vertical = fals
     const frame = useCurrentFrame();
 
     // Movimiento lento sobre la captura: desciende del hero a la exploración.
+    // En vertical el recorrido es más corto: con -120 y escala 1.1 el marco
+    // crecía hasta solaparse con el título.
     const camera = kenBurns(frame, 270, {
         fromScale: 1.0,
-        toScale: 1.1,
+        toScale: vertical ? 1.04 : 1.1,
         fromY: 0,
-        toY: vertical ? -120 : -70,
+        toY: vertical ? -40 : -70,
     });
 
     const chips = ['Hoy', 'Este fin de semana', 'Este mes', 'Ver catálogo'];
@@ -43,8 +45,8 @@ export const Scene02Descubre: React.FC<{vertical?: boolean}> = ({vertical = fals
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            padding: '150px 62px',
-                            gap: 52,
+                            padding: '120px 62px',
+                            gap: 42,
                         }}
                     >
                         <div style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center'}}>
@@ -56,12 +58,16 @@ export const Scene02Descubre: React.FC<{vertical?: boolean}> = ({vertical = fals
                             </MaskedTitle>
                         </div>
 
-                        <div style={{transform: camera}}>
+                        {/* home-full.png es la portada completa: a 880 px de
+                            ancho da altura de sobra para el marco. Con
+                            home-hero.png (2160x1350) el marco de 700 px
+                            quedaba medio vacío. */}
+                        <div style={{transform: camera, transformOrigin: 'center center'}}>
                             <BrowserFrame
-                                src="screenshots/real/home-hero.png"
+                                src="screenshots/real/home-full.png"
                                 width={880}
-                                height={700}
-                                offsetY={120}
+                                height={860}
+                                offsetY={40}
                             />
                         </div>
 
