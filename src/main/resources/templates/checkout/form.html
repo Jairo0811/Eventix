@@ -330,8 +330,16 @@
                         Eventix valida nuevamente precio, descuentos, disponibilidad, elegibilidad, sección y cupos en el servidor antes de confirmar la operación.
                     </div>
 
-                    <div class="alert alert-info small" role="note">
-                        <strong>Entorno de demostración.</strong> El proveedor seleccionado se procesa mediante la pasarela configurada en Eventix.
+                    <div class="alert alert-warning small"
+                         role="alert"
+                         th:if="${checkoutEnabled == false}">
+                        <strong>Compras no disponibles.</strong>
+                        Este entorno no tiene habilitada una pasarela comercial
+                        verificada. No se pueden completar pagos ni emitir boletas.
+                    </div>
+
+                    <div class="alert alert-info small" role="note" th:if="${checkoutEnabled}">
+                        <strong>Información de pago.</strong> Eventix procesa la operación con la pasarela disponible para este entorno.
                     </div>
 
                     <div class="alert alert-danger"
@@ -350,7 +358,8 @@
                         </p>
                     </div>
 
-                    <button class="btn btn-success btn-lg w-100" type="submit">
+                    <button class="btn btn-success btn-lg w-100" type="submit"
+                             th:disabled="${checkoutEnabled == false}">
                         <i class="bi bi-bag-check me-2" aria-hidden="true"></i>
                         Comprar entradas
                     </button>
