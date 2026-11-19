@@ -7,6 +7,21 @@ el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 
 ## [Sin publicar] - 2026-11-19
 
+### Fases 5–6 — Conciliación y preproducción (sin despliegue)
+
+- Flyway V36: ledger independiente de comparaciones entre eventos bancarios
+  **previamente verificados** y transacciones de Eventix; un registro por
+  proveedor e ID externo, sin almacenar datos de tarjetas.
+- `PaymentReconciliationService`: coincidencia por referencia externa,
+  importe exacto, moneda, proveedor y operación. Las discrepancias quedan
+  `REVIEW_REQUIRED` y **nunca aprueban automáticamente ventas**.
+- Tests de importe, moneda, evento repetido, hash incompatible y recibo ausente.
+- `render.staging.yaml` preparado con SQL Server **aislado**, perfil `prod`,
+  checkout cerrado y despliegue manual; no se creó infraestructura.
+- Inspección SQL de solo lectura y guía de backup/restore a staging.
+- Sigue pendiente la autenticación bancaria oficial y la conciliación de
+  extractos productivos.
+
 ### Preparación v1.4 — pagos e infraestructura (sin habilitar)
 
 - Bloqueada la pasarela simulada bajo el perfil `prod`; checkout de comprador
