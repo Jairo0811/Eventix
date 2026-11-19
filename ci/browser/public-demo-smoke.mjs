@@ -120,7 +120,7 @@ try {
     assert.match(await page.locator('body').innerText(), /Sin compras habilitadas/);
     await capture(page, netlifyUrl, 'netlify-home', '/', /Compra boletas/);
 
-    await page.locator('#demo-search').fill('Noche de Música');
+    await page.locator('#demo-search').fill('Festival de música');
     await page.locator('[data-demo-search]').click();
     assert.equal(await page.locator('[data-demo-event]:visible').count(), 1,
         'Static search must filter illustrative cards without API calls');
