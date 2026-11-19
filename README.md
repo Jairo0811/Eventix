@@ -389,7 +389,8 @@ En `prod` se excluye la pasarela simulada y el checkout queda cerrado
 (`EVENTIX_CHECKOUT_ENABLED=false`) hasta validar con un proveedor autorizado.
 Se ha preparado una bandeja de notificaciones verificadas para evitar
 repeticiones; no existe todavía un webhook público ni conciliación bancaria.
-Ver [preparación v1.4](docs/v1.4-payments-production-readiness.md) para los
+Ver [preparación v1.4](docs/v1.4-payments-production-readiness.md) y
+[conciliación / staging](docs/v1.4-reconciliation-and-staging.md) para los
 criterios técnicos y comerciales pendientes.
 
 ---
