@@ -41,6 +41,17 @@
 - Los datos del entorno gratuito no son persistentes: no debe usarse
   para guardar clientes, reservas, operaciones económicas o boletas reales.
 
+**QA de la demo — 19/11/2026:** el último `main` comprobado es
+[`4920c775`](https://github.com/Jairo0811/Eventix/commit/4920c775471a4013c8830bb8afd84c7c91c05c45);
+su [CI](https://github.com/Jairo0811/Eventix/actions/runs/43521476245) pasó.
+La aprobación del CI **no confirma** que Render o Netlify hayan desplegado ese
+commit. Para verificar ambos sitios en modo solo lectura se añadió
+[Public Eventix Demo Smoke](https://github.com/Jairo0811/Eventix/actions/workflows/public-demo-smoke.yml)
+(20 capturas, cinco anchos) y el
+[checklist de aceptación](docs/eventix-demo-acceptance-2026-11-13.md)
+separando resultados automatizados de las revisiones manuales pendientes.
+No introducir datos personales ni tarjetas reales en la demostración.
+
 **Importante:** la aprobación del CI no certifica pagos de producción.
 La última publicación formal en GitHub permanece en **v1.3.4** hasta
 alinear la versión Maven y las notas de release. Consulta
@@ -572,12 +583,12 @@ Consulta [`docs/accessibility-nortic-b2.md`](docs/accessibility-nortic-b2.md).
 - [x] aislamiento cross-tenant;
 - [x] Flyway V27.
 
-### Próximo bloque escolar
+### Beneficio de egresados — ✅ Integrado en `main` (PR #80)
 
-- descuento especial para egresados desde checkout;
-- selección del padrón/promoción asociado al evento;
-- verificación de cédula desde la compra;
-- aplicación server-side del beneficio únicamente a egresados verificados.
+- [x] Configuración del beneficio por centro/promoción.
+- [x] Integración de elegibilidad y descuento automático en checkout.
+- [x] Cotización y aplicación del descuento en backend; reglas de incompatibilidad con cupones.
+- [ ] Validación comercial de un proveedor de identidad autorizado para los datos reales; la demo no permite verificaciones oficiales.
 
 ### v1.4.0 — Pagos productivos
 
@@ -616,7 +627,7 @@ Consulta [`docs/accessibility-nortic-b2.md`](docs/accessibility-nortic-b2.md).
 | Cuentas institucionales | ✅ Integradas en `main` |
 | RBAC institucional scoped | ✅ Integrado |
 | Aislamiento cross-tenant | ✅ Integrado |
-| Beneficio de egresado en checkout | 🟡 Próximo bloque |
+| Beneficio de egresado en checkout | ✅ Integrado en `main`; validación externa pendiente |
 | Proveedor de identidad productivo | 🟡 Requiere fuente autorizada |
 | Gateway real de producción | 🔵 v1.4.0 |
 | Payouts automáticos | 🔵 v1.4.0 |
