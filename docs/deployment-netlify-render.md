@@ -82,6 +82,23 @@ El Blueprint deja **apagadas** las opciones externas de cobro, Wallet, correo
 y recordatorios. Activarlas requiere configuración, contratos y pruebas reales;
 no asumir que un adaptador o test con mocks significa cobros habilitados.
 
+### Validación preventiva de producción (fase 4)
+
+Antes de aprobar un despliegue con el perfil `prod`, Eventix ejecuta
+`ProductionReadinessValidator`: requiere `APP_BASE_URL` HTTPS,
+`DB_URL` con `encrypt=true;trustServerCertificate=false`,
+usuarios/contraseñas distintos para la app y Flyway, HMAC y claves Ed25519
+estables. Si falla, el proceso no alcanza el estado `ready`.
+
+Además `render.production.yaml` fija `EVENTIX_CHECKOUT_ENABLED=false`:
+se bloquea el checkout de comprador y los cobros nuevos del módulo de ventas.
+La pasarela simulada no existe como bean de Spring en el perfil `prod`.
+Los pagos reales siguen pendientes de certificación; **no** activar la bandera
+por el simple hecho de que el validador pase.
+
+Consulta [plan de preparación v1.4](v1.4-payments-production-readiness.md).
+Esta protección solo prepara el software: no crea Render, SQL Server ni pagos.
+
 ## 4. Comprobaciones de aceptación del backend
 
 Tras configurar de manera privada el servicio y el SQL Server:
