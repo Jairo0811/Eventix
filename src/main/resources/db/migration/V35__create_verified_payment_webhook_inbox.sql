@@ -8,7 +8,7 @@ CREATE TABLE dbo.payment_webhook_inbox
     id BIGINT IDENTITY(1,1) NOT NULL,
     provider NVARCHAR(20) NOT NULL,
     external_event_id NVARCHAR(160) NOT NULL,
-    payload_sha256 CHAR(64) NOT NULL,
+    payload_sha256 VARCHAR(64) NOT NULL,
     status NVARCHAR(20) NOT NULL DEFAULT 'VERIFIED',
     verified_at DATETIME2(6) NOT NULL DEFAULT SYSUTCDATETIME(),
     processed_at DATETIME2(6) NULL,
