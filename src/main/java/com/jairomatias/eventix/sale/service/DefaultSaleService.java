@@ -64,6 +64,9 @@ import com.jairomatias.eventix.user.repository.UserRepository;
 @Service
 public class DefaultSaleService implements SaleService {
 
+    @Value("${eventix.payments.checkout-enabled:true}")
+    private boolean checkoutEnabled = true;
+
     private static final int MAX_REFERENCE_ATTEMPTS = 5;
 
     private final SaleRepository saleRepository;
@@ -297,6 +300,7 @@ public class DefaultSaleService implements SaleService {
     public Long create(
             SaleForm form,
             String authenticatedLogin) {
+        requireCheckoutEnabled();
         validateForm(form);
         User actor = findActor(authenticatedLogin);
         Long eventId = findReservationEventId(form.getReservationId());
@@ -363,6 +367,7 @@ public class DefaultSaleService implements SaleService {
             Long id,
             PaymentForm form,
             String authenticatedLogin) {
+        requireCheckoutEnabled();
         validatePaymentForm(form);
         User actor = findActor(authenticatedLogin);
         Sale sale = lockSaleAggregate(id);
@@ -480,6 +485,13 @@ public class DefaultSaleService implements SaleService {
         sale.cancel(reason, cancelledAt);
         promotionService.releaseForSale(sale.getId(), cancelledAt);
         cancelLinkedReservation(sale, reason, cancelledAt);
+    }
+
+    private void requireCheckoutEnabled() {
+        if (!checkoutEnabled) {
+            throw new BusinessRuleException(
+                    "Las ventas y cobros están temporalmente deshabilitados en este entorno.");
+        }
     }
 
     private Sale lockSaleAggregate(Long saleId) {
