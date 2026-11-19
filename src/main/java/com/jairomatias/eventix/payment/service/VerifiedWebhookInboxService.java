@@ -2,6 +2,7 @@ package com.jairomatias.eventix.payment.service;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -27,7 +28,11 @@ public class VerifiedWebhookInboxService {
     private final PaymentWebhookInboxRepository repository;
     private final Clock clock;
 
-    public VerifiedWebhookInboxService(
+    public VerifiedWebhookInboxService(PaymentWebhookInboxRepository repository) {
+        this(repository, Clock.system(ZoneId.of("America/Santo_Domingo")));
+    }
+
+    VerifiedWebhookInboxService(
             PaymentWebhookInboxRepository repository, Clock clock) {
         this.repository = repository;
         this.clock = clock;
