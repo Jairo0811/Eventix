@@ -56,6 +56,9 @@ import com.jairomatias.eventix.venue.service.EventSectionPricingService;
 @Service
 public class CustomerCheckoutService {
 
+    @Value("${eventix.payments.checkout-enabled:true}")
+    private boolean checkoutEnabled = true;
+
     private static final int MAX_REFERENCE_ATTEMPTS = 5;
     private static final Set<PaymentProvider> CUSTOMER_PAYMENT_PROVIDERS = Set.of(
             PaymentProvider.CARDNET,
@@ -266,6 +269,10 @@ public class CustomerCheckoutService {
             Long eventId,
             CustomerCheckoutForm form,
             String authenticatedLogin) {
+        if (!checkoutEnabled) {
+            throw new BusinessRuleException(
+                    "Las compras están temporalmente deshabilitadas en este entorno.");
+        }
         if (form == null
                 || form.getTicketTypeId() == null
                 || form.getProvider() == null) {

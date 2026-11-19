@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -98,6 +99,20 @@ class DefaultSaleServiceTest {
                 promotionService,
                 "DOP",
                 clock);
+    }
+
+    @Test
+    void productionGateRejectsAdministrativeSalesBeforeMutations() {
+        ReflectionTestUtils.setField(service, "checkoutEnabled", false);
+        assertThatThrownBy(() -> service.create(saleForm(10L, 31L, 1), OPERATOR_LOGIN))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("temporalmente deshabilitados");
+        assertThatThrownBy(() -> service.processPayment(
+                55L, paymentForm(SimulationOutcome.APPROVE), OPERATOR_LOGIN))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("temporalmente deshabilitados");
+
+        verifyNoInteractions(saleRepository, paymentRepository, gatewayRegistry);
     }
 
     @Test

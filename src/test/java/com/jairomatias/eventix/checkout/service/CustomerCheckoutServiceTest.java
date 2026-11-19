@@ -114,6 +114,16 @@ class CustomerCheckoutServiceTest {
     }
 
     @Test
+    void rejectsCheckoutBeforeDatabaseWritesWhenProductionGateIsClosed() {
+        ReflectionTestUtils.setField(service, "checkoutEnabled", false);
+        assertThatThrownBy(() -> service.purchase(10L, validForm(1), CUSTOMER_LOGIN))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("temporalmente deshabilitadas");
+        verifyNoInteractions(eventRepository, reservationRepository,
+                saleRepository, paymentRepository, gatewayRegistry);
+    }
+
+    @Test
     void preloadsBuyerDataFromAuthenticatedAccount() {
         prepareCustomer();
         when(customer.getFirstName()).thenReturn("Ana");

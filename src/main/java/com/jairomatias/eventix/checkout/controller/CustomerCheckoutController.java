@@ -1,5 +1,6 @@
 package com.jairomatias.eventix.checkout.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -37,6 +38,9 @@ public class CustomerCheckoutController {
             PaymentProvider.PAYPAL,
             PaymentProvider.BANK_TRANSFER
     };
+
+    @Value("${eventix.payments.checkout-enabled:true}")
+    private boolean checkoutEnabled = true;
 
     private final CustomerCheckoutService checkoutService;
     private final AzulWalletProperties walletProperties;
@@ -143,10 +147,11 @@ public class CustomerCheckoutController {
     private void prepareModel(Long eventId, Authentication authentication, Model model) {
         model.addAttribute("checkout", checkoutService.getCheckout(eventId, authentication.getName()));
         model.addAttribute("paymentProviders", CUSTOMER_PAYMENT_PROVIDERS);
+        model.addAttribute("checkoutEnabled", checkoutEnabled);
         model.addAttribute(
                 "googlePay",
                 new GooglePayCheckoutConfig(
-                        walletProperties.isGooglePayReady(),
+                        checkoutEnabled && walletProperties.isGooglePayReady(),
                         walletProperties.getEnvironment().name(),
                         walletProperties.googleGatewayMerchantId(),
                         walletProperties.googlePayMerchantId(),

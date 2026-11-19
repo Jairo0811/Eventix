@@ -4,12 +4,14 @@ import java.util.UUID;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.jairomatias.eventix.payment.entity.PaymentProvider;
 import com.jairomatias.eventix.payment.entity.PaymentStatus;
 
 @Component
+@Profile("!prod")
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class SimulatedPaymentGateway implements PaymentGateway {
 

@@ -162,6 +162,7 @@ eventix:
     expiration-scan-interval: ${RESERVATION_EXPIRATION_SCAN_INTERVAL:PT1M}
 
   payments:
+    checkout-enabled: ${EVENTIX_CHECKOUT_ENABLED:true}
     azul-wallet:
       enabled: ${AZUL_WALLET_ENABLED:false}
       environment: ${AZUL_WALLET_ENVIRONMENT:TEST}
