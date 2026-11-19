@@ -89,7 +89,7 @@
                                 <strong>Compras temporalmente no disponibles.</strong>
                                 Esta instancia de Eventix todavía no tiene pagos comerciales habilitados.
                             </p>
-                            <th:block th:unless="${eventixDemoMode or eventixCheckoutEnabled == false}">
+                            <th:block th:unless="${eventixDemoMode == true or eventixCheckoutEnabled == false}">
                             <th:block th:if="${event.onSale}">
                                 <a class="btn btn-success btn-lg" sec:authorize="hasRole('USER')"
                                    th:href="@{/my/checkout/events/{id}(id=${event.id})}">
