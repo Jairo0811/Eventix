@@ -18,11 +18,11 @@ La conformidad se evalúa sobre páginas y procesos completos. El recorrido incl
 - Reportes, categorías y auditoría.
 - Páginas de error.
 
-Cada recorrido debe verificarse en tema **claro**, **oscuro** y **sistema**.
+Desde v1.3.3 Eventix usa una **identidad visual híbrida única**, sin selector claro/oscuro/sistema. Evaluar esta interfaz y las preferencias del navegador/sistema que sí siguen siendo aplicables: contraste forzado, zoom, tamaño de texto y movimiento reducido.
 
 ## Estado de la auditoría
 
-La **pasada técnica automatizable** está implementada: estructura semántica compartida, foco visible, asociaciones de formularios, prevención de errores financieros, capas de contraste Light/Dark, soporte de `prefers-reduced-motion`, zoom responsivo, estados accesibles, control de acceso/QR y pruebas de regresión.
+La **pasada técnica automatizable** está implementada: estructura semántica compartida, foco visible, asociaciones de formularios, prevención de errores financieros, capas de contraste de la identidad visual híbrida, soporte de `prefers-reduced-motion`, zoom responsivo, estados accesibles, control de acceso/QR y pruebas de regresión.
 
 La conformidad global **todavía requiere la pasada manual final** indicada más abajo: teclado, zoom real al 200 %, medición de contraste, lector de pantalla y validación visual de todos los roles y pantallas. Hasta completar esa pasada, Eventix no debe presentarse como certificado ni como auditoría AA cerrada.
 
@@ -35,9 +35,9 @@ La conformidad global **todavía requiere la pasada manual final** indicada más
 | Navegación | Landmark `nav` con nombre accesible | Implementado |
 | Ubicación | Elemento activo expuesto con `aria-current="page"` | Implementado |
 | Iconografía | Iconos decorativos ocultos a tecnología asistiva | Implementado en shell y flujos auditados |
-| Tema | Selector con nombre accesible y estado `aria-pressed` | Implementado |
-| Foco | Indicador `:focus-visible` de alto contraste en claro/oscuro | Implementado |
-| Contraste | Capas `theme-contrast.css` + `final-a11y.css` | Implementado técnicamente; medición manual pendiente |
+| Identidad visual | Tema híbrido único; el selector de tema fue retirado en v1.3.3 | Implementado |
+| Foco | Indicador `:focus-visible` de alto contraste en la interfaz híbrida | Implementado |
+| Contraste | Estilos actuales con enfoque en legibilidad; medir los colores **renderizados** | Implementado técnicamente; medición manual pendiente |
 | Mensajes | Confirmaciones y errores anunciables mediante live regions | Implementado |
 | Zoom | Protecciones de layout para contenido a 200 % | Implementado en base; recorrido manual pendiente |
 | Movimiento | Respeto a `prefers-reduced-motion` | Implementado |
@@ -92,15 +92,17 @@ Los criterios multimedia se consideran **no aplicables mientras Eventix no publi
 
 ## Pruebas manuales obligatorias antes del cierre
 
+Las 55 capturas automáticas de CI verifican layouts, no equivalen a revisión manual completa ni a certificación.
+
 1. Navegar cada flujo usando únicamente `Tab`, `Shift+Tab`, `Enter`, `Space` y flechas donde aplique.
 2. Verificar foco visible y orden lógico.
-3. Ejecutar todos los recorridos en claro, oscuro y sistema.
+3. Ejecutar todos los recorridos en la identidad visual híbrida vigente y comprobar `forced-colors` cuando el sistema lo permita.
 4. Aplicar zoom del navegador al 200 % y verificar ausencia de pérdida de contenido o función.
 5. Medir contraste: mínimo 4.5:1 en texto normal y 3:1 en texto grande.
 6. Ejecutar smoke test con lector de pantalla (NVDA recomendado en Windows) para navegación, formularios, tablas, alertas, checkout y control de acceso.
 7. Validar errores de formularios: identificación, asociación al campo y sugerencia correctiva.
 8. Validar operaciones financieras/destructivas con confirmación o posibilidad de revisión previa.
-9. Revisar Home/Login, Dashboard por rol, eventos, checkout, ventas, liquidaciones, reportes, boletas/QR, control de acceso y páginas 400/403/404/405/500 en ambos temas.
+9. Revisar Home/Login, Dashboard por rol, eventos, checkout, ventas, liquidaciones, reportes, boletas/QR, control de acceso y páginas 400/403/404/405/500 con la apariencia vigente.
 10. Validar contenido a alto contraste/forced-colors cuando el entorno lo permita.
 
 ## Criterio de cierre

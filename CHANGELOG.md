@@ -5,6 +5,41 @@ Todos los cambios relevantes de Eventix se documentan en este archivo.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 
+## [Sin publicar] - 2026-11-19
+
+> Trabajo de la rama principal posterior a la release estable v1.3.4.
+> No implica que exista una nueva release, despliegue público verificado ni
+> habilitación comercial de pagos.
+
+### Añadido
+
+- Catálogo público y portada del comprador, navegación de `Mi Eventix` y
+  presentación de boletas digitales 2.0 (PR #93–#97).
+- Beneficio de egresados en checkout, Google Pay condicionado por
+  configuración y mapa visual de asientos (PR #80, #82 y #90).
+- Mejoras responsive y pruebas E2E de compra **simulada** (PR #103).
+- Catálogo ficticio de solo lectura bajo perfil `render`, con tres eventos
+  y datos efímeros en H2 (PR #104).
+- Verificación automatizada opcional de las demos públicas en Render y Netlify,
+  con comprobaciones de contenido, filtros, salud y 20 capturas en cinco
+  resoluciones. La ejecución en hosting real queda pendiente.
+
+### Corregido
+
+- Conservación de reembolsos rechazados y cotización basada en asientos
+  retenidos (PR #89 y #102).
+- DDL de cupones compatible con H2 del perfil demo (PR #105).
+- Matriz de aceptación separada entre evidencias de CI y resultados todavía
+  no comprobados de los despliegues públicos.
+- Documentación de accesibilidad actualizada al tema visual híbrido vigente.
+
+### Pendiente antes del cierre público
+
+- Confirmar despliegues y versión `live` en Render/Netlify.
+- Revisar manualmente capturas y accesibilidad con teclado, zoom y lector.
+- Configuración persistente, proveedor de identidad autorizado y
+  gateway bancario productivo, todos fuera de la demo gratuita.
+
 ## [1.3.4] - 2026-08-29
 
 ### Añadido

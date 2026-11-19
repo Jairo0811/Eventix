@@ -1,0 +1,42 @@
+name: Public Eventix Demo Smoke
+
+# Manual by design: deployments may lag behind the repository.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eventix-public-demo-smoke
+  cancel-in-progress: true
+
+jobs:
+  public-demo:
+    name: Verify public demos and capture five viewports
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Playwright and Chromium
+        run: |
+          npm install --prefix ci/browser --ignore-scripts --no-audit --no-fund --package-lock=false
+          ./ci/browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Run public read-only acceptance
+        timeout-minutes: 20
+        env:
+          EVENTIX_PUBLIC_SMOKE_OUTPUT: target/public-demo-evidence
+        run: node ci/browser/public-demo-smoke.mjs
+      - name: Upload browser evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: eventix-public-demo-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 30
+          path: target/public-demo-evidence/**
