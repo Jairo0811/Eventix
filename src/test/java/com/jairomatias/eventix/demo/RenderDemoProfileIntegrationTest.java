@@ -78,4 +78,33 @@ class RenderDemoProfileIntegrationTest {
                 .andExpect(content().string(containsString("Solo demostración.")))
                 .andExpect(content().string(not(containsString("Inicia sesión para comprar"))));
     }
+
+    @Test
+    void renderCatalogFiltersByTitleWithoutExposingOtherSampleEvents() throws Exception {
+        mockMvc.perform(get("/e").param("term", "Eventix Tech"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Eventix Tech Experience")))
+                .andExpect(content().string(not(containsString("Noche de Música"))))
+                .andExpect(content().string(not(containsString("Encuentro Creativo"))))
+                .andExpect(content().string(containsString("noindex, nofollow")));
+
+        mockMvc.perform(get("/e").param("term", "no-existe-demo-987"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(
+                        "No encontramos eventos con esos filtros")));
+    }
+
+    @Test
+    void renderExposesThreeCategoriesAndHealthyReadOnlyActuator() throws Exception {
+        mockMvc.perform(get("/e"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Tecnología")))
+                .andExpect(content().string(containsString("Música")))
+                .andExpect(content().string(containsString("Cultura")));
+
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("\"status\":\"UP\"")));
+    }
+
 }
