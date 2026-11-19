@@ -1,0 +1,9 @@
+# Dependencias del proyecto audiovisual: se reinstalan con npm install.
+node_modules/
+
+# Caché de Remotion.
+.remotion/
+
+# Los MP4 son demasiado pesados para el repositorio principal. Ver README:
+# se entregan por separado y se reproducen con `npm run render:all`.
+renders/*.mp4
