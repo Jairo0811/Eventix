@@ -16,6 +16,27 @@
 Eventix usa apagado graceful durante 30 segundos. El orquestador debe conceder
 al menos 35 segundos antes de terminar el contenedor.
 
+## Puerta de entrada v1.4 — producción sin pagos habilitados
+
+- El perfil `prod` debe utilizar `EVENTIX_CHECKOUT_ENABLED=false`
+  hasta verificar formalmente el adquirente, las firmas de callbacks,
+  conciliación, disputa y reembolso.
+- `SimulatedPaymentGateway` no está disponible en producción. Nunca
+  desactives esta condición para facilitar una demostración comercial.
+- `ProductionReadinessValidator` rechaza al arrancar URL HTTP o local,
+  JDBC sin cifrado/certificado verificable, cuentas de SQL idénticas,
+  secretos faltantes y bootstrap inseguro. Los mensajes identifican el
+  **nombre** de la variable, no su contenido.
+- Las migraciones Flyway nuevas (V35) se aplican primero en una copia de
+  SQL Server restaurada. El inbox es **solo almacenamiento para eventos ya
+  autenticados**, no procesa cobros ni acepta solicitudes anónimas.
+- Un restore probado con claves Ed25519 conservadas es obligatorio antes
+  de recibir eventos reales. No usar `docker compose down -v` contra datos
+  persistentes.
+- Para habilitar en el futuro un proveedor real, revisa
+  [los criterios v1.4](v1.4-payments-production-readiness.md) y obtén
+  autorización de operaciones y finanzas.
+
 ## Verificación diaria
 
 1. Consulta `/actuator/health/readiness`.
