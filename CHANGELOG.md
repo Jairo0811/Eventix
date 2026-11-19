@@ -7,6 +7,18 @@ el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 
 ## [Sin publicar] - 2026-11-19
 
+### Preparación v1.4 — pagos e infraestructura (sin habilitar)
+
+- Bloqueada la pasarela simulada bajo el perfil `prod`; checkout de comprador
+  y cobros de operador desactivados por defecto, con guardia en backend y aviso UI.
+- Nuevo validador de arranque productivo: HTTPS, TLS SQL Server, roles distintos,
+  HMAC estable, Ed25519 persistente y credenciales mínimas.
+- Esquema Flyway V35 con índice único para notificaciones bancarias
+  **previamente verificadas**, sin endpoint de webhooks ni activación comercial.
+- Blueprint Render productivo explícitamente cerrado a operaciones reales
+  hasta aprobación; pruebas y guía de preparación añadidas.
+
+
 > Trabajo de la rama principal posterior a la release estable v1.3.4.
 > No implica que exista una nueva release, despliegue público verificado ni
 > habilitación comercial de pagos.
