@@ -15,8 +15,10 @@ import {CINEMATIC, fadeOut} from '../animations/easing';
 export const Scene01Inicio: React.FC<{vertical?: boolean}> = ({vertical = false}) => {
     const frame = useCurrentFrame();
 
-    // La luz nace de un punto y se abre.
-    const spark = interpolate(frame, [6, 40], [0, 1], {
+    // La luz nace de un punto y se abre. Arranca en el fotograma 0 con algo de
+    // brillo: un inicio completamente negro se convierte en la miniatura del
+    // vídeo en redes y parece que está roto.
+    const spark = interpolate(frame, [0, 34], [0.16, 1], {
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
         easing: CINEMATIC,
@@ -90,11 +92,14 @@ export const Scene01Inicio: React.FC<{vertical?: boolean}> = ({vertical = false}
                     </div>
                 </AbsoluteFill>
 
-                {/* Salida: la escena se apaga mientras entra el barrido */}
+                {/* Salida: la escena se oscurece mientras entra el barrido.
+                    El velo se queda en 0.6 a propósito: llevándolo a 1 el paso
+                    a la escena 2 producía seis fotogramas completamente negros,
+                    que es un corte accidental, no una transición. */}
                 <AbsoluteFill
                     style={{
                         backgroundColor: COLORS.background,
-                        opacity: 1 - fadeOut(frame, 214, 20),
+                        opacity: (1 - fadeOut(frame, 214, 20)) * 0.6,
                         pointerEvents: 'none',
                     }}
                 />

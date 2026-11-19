@@ -9,7 +9,7 @@
  * Uso: node scripts/qa-report.mjs
  * Escribe renders/QA-REPORT.md y devuelve código 1 si algo no cumple.
  */
-import {execFileSync} from 'node:child_process';
+import {execFileSync, spawnSync} from 'node:child_process';
 import {existsSync, mkdirSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -71,12 +71,14 @@ function probeStreams(file) {
  * tramos; se ignora el apagado final, que es intencionado.
  */
 function findBlackRuns(file, totalSeconds) {
-    const output = execFileSync(
+    // ffmpeg informa de blackdetect por stderr, no por stdout: hay que leer
+    // ese flujo o el resultado llega vacío.
+    const run = spawnSync(
         'ffmpeg',
         ['-hide_banner', '-i', file, '-vf', 'blackdetect=d=0.12:pix_th=0.06', '-f', 'null', '-'],
-        {stdio: ['ignore', 'ignore', 'pipe']}
-    )
-        .toString();
+        {encoding: 'utf8', maxBuffer: 32 * 1024 * 1024}
+    );
+    const output = `${run.stderr ?? ''}`;
 
     return [...output.matchAll(/black_start:([\d.]+) black_end:([\d.]+)/g)]
         .map((match) => ({start: Number(match[1]), end: Number(match[2])}))
