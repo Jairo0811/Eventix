@@ -1,0 +1,30 @@
+{
+  "name": "eventix-trailer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Proyecto audiovisual independiente del tráiler oficial de Eventix. No forma parte del build Maven ni añade dependencias al backend Java.",
+  "type": "module",
+  "scripts": {
+    "capture": "node scripts/capture-demo.mjs",
+    "recreate": "node scripts/render-recreations.mjs",
+    "audio": "python3 scripts/make-audio.py",
+    "studio": "remotion studio src/index.tsx",
+    "render:16x9": "remotion render src/index.tsx TrailerHorizontal renders/eventix-official-trailer-16x9.mp4 --browser-executable=/usr/bin/google-chrome",
+    "render:9x16": "remotion render src/index.tsx TrailerVertical renders/eventix-official-trailer-9x16.mp4 --browser-executable=/usr/bin/google-chrome",
+    "render:teaser": "remotion render src/index.tsx Teaser renders/eventix-teaser-15s.mp4 --browser-executable=/usr/bin/google-chrome",
+    "render:all": "npm run render:16x9 && npm run render:9x16 && npm run render:teaser",
+    "qa": "node scripts/qa-report.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.545",
+    "@remotion/renderer": "4.0.545",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.545"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1",
+    "qrcode": "^1.5.4",
+    "typescript": "5.9.3"
+  }
+}
