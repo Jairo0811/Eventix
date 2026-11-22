@@ -29,9 +29,7 @@
 > bancaria certificada y los despliegues públicos siguen sin verificar mediante
 > una ejecución remota.
 >
-> **Descargas verificadas:** los artefactos publicados siguen siendo los de
-> v1.3.4 hasta que la publicación de v1.4.0 adjunte los suyos —
-> [release v1.3.4](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.4) · [eventix.jar](https://github.com/Jairo0811/Eventix/releases/download/v1.3.4/eventix.jar) · [SBOM SPDX](https://github.com/Jairo0811/Eventix/releases/download/v1.3.4/eventix-sbom.spdx.json)
+> **Descargas:** [release v1.4.0](https://github.com/Jairo0811/Eventix/releases/tag/v1.4.0) · [eventix.jar](https://github.com/Jairo0811/Eventix/releases/download/v1.4.0/eventix.jar) · [SBOM SPDX](https://github.com/Jairo0811/Eventix/releases/download/v1.4.0/eventix-sbom.spdx.json)
 
 </div>
 
