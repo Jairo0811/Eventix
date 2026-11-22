@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Vista demo de Eventix, plataforma de eventos y boletas digitales. Explora ejemplos visuales del catálogo, la experiencia de comprador y el control de acceso QR.">
+  <meta name="description" content="Eventix v1.4.0 sigue en desarrollo. Descubre nuestra demostración de gestión de eventos, boletas digitales con QR y el tráiler oficial, sin compras habilitadas.">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#061c27">
-  <title>Eventix — Compra boletas para tus eventos favoritos · Demo</title>
+  <title>Eventix v1.4.0 · Plataforma en desarrollo · Demo</title>
   <link rel="icon" type="image/png" href="/images/eventix-favicon.png">
   <style>
     :root {
@@ -137,6 +137,29 @@
     .dialog-content h2{font-size:1.7rem;letter-spacing:-.04em}
     .dialog-content p{color:#506b5e}
     .dialog-hint{background:#e5f8eb;border:1px solid #bddbc8;border-radius:10px;padding:12px;margin:15px 0 0}
+    /* v1.4 presentation: brochure remains static, all real transactions live elsewhere. */
+    .launch-strip{background:#0b3037;color:#d8f8e9;border-bottom:1px solid #24765b}
+    .launch-strip-inner{min-height:48px;display:flex;gap:12px 24px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 0}
+    .launch-status{font-size:.82rem;font-weight:720}
+    .launch-status strong{color:#91fbb5}
+    .launch-strip a{color:#a9ffd7;font-size:.78rem;font-weight:800;text-underline-offset:3px}
+    .trailer-section{background:#f8fcfa;padding:78px 0}
+    .trailer-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:44px;align-items:center}
+    .trailer-poster{position:relative;margin:0;border-radius:21px;overflow:hidden;background:#071b25;border:1px solid #19574b;box-shadow:0 24px 65px rgba(2,31,29,.24)}
+    .trailer-poster img{display:block;aspect-ratio:16/9;object-fit:cover;width:100%;height:auto}
+    .trailer-poster figcaption{padding:12px 19px;background:#0b2a31;color:#d8f9ed;font-size:.73rem}
+    .trailer-stamp{position:absolute;left:15px;top:15px;padding:6px 11px;background:#052e2b;color:#adffd3;border:1px solid #7beabc;border-radius:999px;font-size:.7rem;font-weight:850}
+    .trailer-copy .kicker{display:block}
+    .trailer-copy h2{margin:14px 0;font-size:clamp(2rem,3.7vw,3.4rem);line-height:1.1;letter-spacing:-.055em;color:#0b2832}
+    .trailer-copy p{margin:0 0 17px;color:#516c66}
+    .trailer-facts{margin:0 0 22px;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+    .trailer-facts li{font-size:.75rem;border-radius:100px;border:1px solid #b8d8c7;background:#e9f8ef;padding:6px 11px;color:#145d41;font-weight:730}
+    .trailer-actions{display:flex;gap:11px;flex-wrap:wrap;align-items:center}
+    .trailer-secondary{display:inline-flex;min-height:43px;align-items:center;justify-content:center;padding:10px 16px;border-radius:9px;color:#195d43;border:1px solid #8ebfad;text-decoration:none;font-weight:800;font-size:.86rem}
+    .trailer-secondary:hover{background:#e2f5e9}
+    .trailer-clarity{display:block;margin-top:17px;font-size:.78rem;color:#5f756e}
+    @media(max-width:960px){.trailer-grid{grid-template-columns:1fr;gap:24px}}
+    @media(max-width:520px){.trailer-section{padding:55px 0}.trailer-stamp{font-size:.62rem}.trailer-actions a{width:100%}}
     @media(max-width:960px){
       .feature-event{grid-template-columns:1fr}
       .feature-art{min-height:310px}
@@ -187,6 +210,7 @@
     @media(forced-colors:active){.link-button,.chip,.event-card,.feature-event{border:1px solid CanvasText}}
   </style>
   <script src="/demo.js" defer></script>
+  <script src="/public-links.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#contenido">Saltar al contenido</a>
@@ -195,11 +219,18 @@
       <a href="/" aria-label="Eventix, volver al inicio"><img class="brand-logo" src="/images/eventix-logo.png" alt="Eventix" width="146" height="80"></a>
       <nav class="header-links" aria-label="Navegación principal">
         <a href="#explorar">Eventos</a>
+         <a href="#trailer">Tráiler</a>
         <a href="#organizadores">Organizadores</a>
         <a class="header-demo" href="#estado">Demo de Eventix</a>
       </nav>
     </div>
   </header>
+  <div class="launch-strip">
+    <div class="container launch-strip-inner">
+      <span class="launch-status"><strong>EVENTIX v1.4.0</strong> · En desarrollo para su futura comercialización</span>
+      <a href="https://github.com/Jairo0811/Eventix/releases/tag/v1.4.0" target="_blank" rel="noopener noreferrer">Consultar versión publicada ↗</a>
+    </div>
+  </div>
   <main id="contenido">
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-inner">
@@ -235,7 +266,28 @@
           <span><strong>▢</strong> Integraciones Wallet</span>
           <span><strong>✓</strong> Control de acceso</span>
         </div>
-        <div class="demo-note"><span class="live-dot" aria-hidden="true"></span><strong>Sitio en preparación</strong> · Vista de demostración, sin compras ni cuentas habilitadas.</div>
+        <div class="demo-note"><span class="live-dot" aria-hidden="true"></span><strong>Eventix v1.4.0 · En desarrollo</strong> · Esta es una demostración estática; todavía no permite compras ni cuentas reales.</div>
+      </div>
+    </section>
+    <section class="trailer-section" id="trailer" aria-labelledby="trailer-title">
+      <div class="container trailer-grid">
+        <figure class="trailer-poster">
+          <img src="/images/eventix-trailer-poster.jpg" alt="Fotograma del tráiler oficial de Eventix, con sus colores verde y turquesa y la identidad visual de la plataforma" width="1920" height="1080" loading="lazy" decoding="async">
+          <span class="trailer-stamp">TRÁILER OFICIAL · 50 SEGUNDOS</span>
+          <figcaption>Material audiovisual oficial de Eventix · No representa cobros reales ni una plataforma comercial abierta.</figcaption>
+        </figure>
+        <div class="trailer-copy">
+          <span class="kicker">Eventix en movimiento</span>
+          <h2 id="trailer-title">Transforma tus eventos. Conecta experiencias.</h2>
+          <p>Conoce la propuesta visual de Eventix: descubrimiento de eventos, gestión, boletas digitales con QR y control de acceso. Nuestro proyecto nació como trabajo académico y continúa evolucionando hacia una plataforma comercial.</p>
+          <ul class="trailer-facts" aria-label="Aspectos destacados"><li>Tráiler oficial</li><li>Diseño responsive</li><li>Versión 1.4.0</li><li>En desarrollo</li></ul>
+          <div class="trailer-actions">
+            <a id="eventix-trailer-link" class="link-button" href="#trailer" target="_blank" rel="noopener noreferrer" hidden>Ver tráiler oficial ↗</a>
+            <a id="eventix-app-link" class="link-button" href="#trailer" target="_blank" rel="noopener noreferrer" hidden>Explorar aplicación ↗</a>
+            <a class="trailer-secondary" href="https://github.com/Jairo0811/Eventix/tree/main/media/eventix-trailer" target="_blank" rel="noopener noreferrer">Conocer el proyecto audiovisual ↗</a>
+          </div>
+          <small class="trailer-clarity">Esta portada es demostrativa. La aplicación Java/Spring Boot funciona por separado y las compras reales continúan deshabilitadas.</small>
+        </div>
       </div>
     </section>
     <section class="section" id="explorar" aria-labelledby="explore-title">
