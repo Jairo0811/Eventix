@@ -10,7 +10,7 @@
 
 **Plataforma web modular para gestión integral de eventos, reservaciones, ventas, ticketing digital, elegibilidad, promociones escolares, cuentas institucionales y control de acceso.**
 
-[![Estado](https://img.shields.io/badge/Release-v1.3.4%20estable-2563EB?style=for-the-badge)](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.4)
+[![Estado](https://img.shields.io/badge/Release-v1.4.0-2563EB?style=for-the-badge)](https://github.com/Jairo0811/Eventix/releases/tag/v1.4.0)
 [![Eventix CI](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml/badge.svg)](https://github.com/Jairo0811/Eventix/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java_21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
@@ -19,11 +19,19 @@
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 
-> **Release estable publicada:** **Eventix v1.3.4**. Incluye la identidad visual híbrida unificada y la categoría `Promoción escolar`, además de las correcciones del flujo de identidad escolar incorporadas en v1.3.3.
+> **Release publicada:** **Eventix v1.4.0**. Incorpora el catálogo público de
+> eventos, la boleta digital 2.0, el beneficio para egresados, Google Pay
+> condicionado por configuración, el mapa de asientos reservados y el ledger de
+> conciliación. Detalle en [docs/releases/v1.4.0.md](docs/releases/v1.4.0.md).
 >
-> **Estado de `main`:** contiene trabajo posterior a v1.3.4, incluyendo cuentas organizacionales para centros educativos con membresías y permisos scoped. El `pom.xml` continúa en `1.3.4` hasta completar la alineación formal de la próxima release.
+> **Alcance:** esta versión cierra el código, no abre operaciones comerciales.
+> El checkout comercial sigue deshabilitado bajo perfil `prod`, no hay pasarela
+> bancaria certificada y los despliegues públicos siguen sin verificar mediante
+> una ejecución remota.
 >
-> **Descargas verificadas:** [release v1.3.4](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.4) · [eventix.jar](https://github.com/Jairo0811/Eventix/releases/download/v1.3.4/eventix.jar) · [SBOM SPDX](https://github.com/Jairo0811/Eventix/releases/download/v1.3.4/eventix-sbom.spdx.json)
+> **Descargas verificadas:** los artefactos publicados siguen siendo los de
+> v1.3.4 hasta que la publicación de v1.4.0 adjunte los suyos —
+> [release v1.3.4](https://github.com/Jairo0811/Eventix/releases/tag/v1.3.4) · [eventix.jar](https://github.com/Jairo0811/Eventix/releases/download/v1.3.4/eventix.jar) · [SBOM SPDX](https://github.com/Jairo0811/Eventix/releases/download/v1.3.4/eventix-sbom.spdx.json)
 
 </div>
 
@@ -53,7 +61,7 @@ separando resultados automatizados de las revisiones manuales pendientes.
 No introducir datos personales ni tarjetas reales en la demostración.
 
 **Importante:** la aprobación del CI no certifica pagos de producción.
-La última publicación formal en GitHub permanece en **v1.3.4** hasta
+La última publicación formal en GitHub es **v1.4.0**. Queda pendiente hasta
 alinear la versión Maven y las notas de release. Consulta
 [la matriz de aceptación de Eventix Demo](docs/eventix-demo-acceptance-2026-11-13.md).
 
