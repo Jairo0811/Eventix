@@ -35,7 +35,7 @@ class HostingDeploymentContractTest {
         String config = read("netlify.toml");
 
         assertThat(landing)
-                .contains("Compra boletas para tus eventos favoritos.")
+                .contains("Descubre eventos y nuevas experiencias.")
                 .contains("Eventix Tech Experience 2026")
                 .contains("src=\"/images/eventix-logo.png\"")
                 .contains("src=\"/images/eventix-tech-experience-2026.svg\"")
