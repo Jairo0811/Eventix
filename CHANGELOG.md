@@ -5,7 +5,7 @@ Todos los cambios relevantes de Eventix se documentan en este archivo.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y
 el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 
-## [Sin publicar] - 2026-11-19
+## [1.4.0] - 2026-11-22
 
 ### Fases 5–6 — Conciliación y preproducción (sin despliegue)
 
@@ -50,6 +50,13 @@ el proyecto utiliza [Versionado Semántico](https://semver.org/lang/es/).
 - Verificación automatizada opcional de las demos públicas en Render y Netlify,
   con comprobaciones de contenido, filtros, salud y 20 capturas en cinco
   resoluciones. La ejecución en hosting real queda pendiente.
+- Tráiler oficial en `media/eventix-trailer/`: proyecto Remotion independiente
+  que produce las tres piezas promocionales con capturas reales de la demo
+  pública, recreaciones rotuladas de las vistas autenticadas y música original
+  generada por código. No añade dependencias al build de Maven (PR #109).
+- Evidencia responsive en `docs/evidence/responsive/`: portada pública en 360,
+  390, 768, 1024 y 1440 px, con 0 px de desbordamiento horizontal medidos
+  durante la captura (PR #109).
 
 ### Corregido
 
