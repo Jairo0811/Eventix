@@ -60,8 +60,10 @@ jobs:
           echo "EVENTIX_ALLOW_DEFAULT_BOOTSTRAP_ADMIN=true" >> "$GITHUB_ENV"
           echo "TICKETING_ALLOW_EPHEMERAL_SIGNING_KEY=true" >> "$GITHUB_ENV"
 
-      - name: Check public demo smoke JavaScript syntax
-        run: node --check ci/browser/public-demo-smoke.mjs
+      - name: Check public demo and public link scripts
+        run: |
+          node --check ci/browser/public-demo-smoke.mjs
+          node --check netlify/public-links.js
 
       - name: Verify with Maven
         run: mvn --batch-mode --no-transfer-progress clean verify
