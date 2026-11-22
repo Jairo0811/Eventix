@@ -35,7 +35,7 @@ class HostingDeploymentContractTest {
         String config = read("netlify.toml");
 
         assertThat(landing)
-                .contains("Compra boletas para tus eventos favoritos.")
+                .contains("Descubre eventos y nuevas experiencias.")
                 .contains("Eventix Tech Experience 2026")
                 .contains("src=\"/images/eventix-logo.png\"")
                 .contains("src=\"/images/eventix-tech-experience-2026.svg\"")
@@ -61,6 +61,42 @@ class HostingDeploymentContractTest {
                 .doesNotContain("XMLHttpRequest")
                 .doesNotContain("localStorage")
                 .doesNotContain("sessionStorage");
+    }
+
+    @Test
+    void netlifyV140PromotesOfficialTrailerWithoutEnablingUnverifiedLinks()
+            throws IOException {
+        String landing = read("netlify/index.html");
+        String links = read("netlify/public-links.js");
+        String hosting = read("netlify.toml");
+
+        assertThat(landing)
+                .contains("Eventix v1.4.0")
+                .contains("En desarrollo")
+                .contains("Sitio en preparación")
+                .contains("id=\"trailer\"")
+                .contains("src=\"/images/eventix-trailer-poster.jpg\"")
+                .contains("id=\"eventix-trailer-link\"")
+                .contains("id=\"eventix-app-link\"")
+                .contains("src=\"/public-links.js\"")
+                .contains("noindex, nofollow")
+                .contains("Sin compras habilitadas")
+                .doesNotContain("https://eventix.onrender.com")
+                .doesNotContain("<form");
+
+        assertThat(Files.exists(Path.of("netlify/images/eventix-trailer-poster.jpg")))
+                .isTrue();
+        assertThat(links)
+                .contains("trailer: \"\"")
+                .contains("application: \"\"")
+                .contains("parsed.protocol !== \"https:\"")
+                .doesNotContain("fetch(")
+                .doesNotContain("localStorage")
+                .doesNotContain("sessionStorage");
+
+        assertThat(hosting)
+                .contains("publish = \"netlify\"")
+                .contains("script-src 'self'");
     }
 
     @Test

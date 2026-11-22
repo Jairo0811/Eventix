@@ -113,12 +113,12 @@ try {
 
     await gotoWithColdStart(page, netlifyUrl + '/');
     onApprovedHost(page, netlifyUrl);
-    assert.match(await page.locator('main h1').first().innerText(), /Compra boletas para tus eventos favoritos/);
+    assert.match(await page.locator('main h1').first().innerText(), /Descubre eventos y nuevas experiencias/);
     assert.equal(await page.locator('meta[name="robots"][content="noindex, nofollow"]').count(), 1);
     assert.equal(await page.locator('[data-demo-event]').count(), 4);
     assert.equal(await page.locator('form').count(), 0, 'Static Netlify demo may not process forms');
     assert.match(await page.locator('body').innerText(), /Sin compras habilitadas/);
-    await capture(page, netlifyUrl, 'netlify-home', '/', /Compra boletas/);
+    await capture(page, netlifyUrl, 'netlify-home', '/', /Descubre eventos/);
 
     await page.locator('#demo-search').fill('Festival de música');
     await page.locator('[data-demo-search]').click();
